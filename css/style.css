@@ -134,10 +134,9 @@ img { max-width: 100%; display: block; }
 }
 
 .nav-logo-img {
-  height: 42px;
+  height: 40px;
   width: auto;
   object-fit: contain;
-  filter: brightness(0) invert(1);
   transition: var(--transition);
 }
 
