@@ -854,14 +854,18 @@ img { max-width: 100%; display: block; }
 .accordion-group {
   max-width: 1200px;
   margin: 0 auto 60px;
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  display: flex;
   gap: 16px;
+  align-items: flex-start;
+}
+
+.accordion-item {
+  flex: 1;
 }
 
 @media (max-width: 768px) {
   .accordion-group {
-    grid-template-columns: 1fr;
+    flex-direction: column;
   }
 }
 
