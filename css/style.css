@@ -133,6 +133,14 @@ img { max-width: 100%; display: block; }
   color: var(--white);
 }
 
+.nav-logo-img {
+  height: 42px;
+  width: auto;
+  object-fit: contain;
+  filter: brightness(0) invert(1);
+  transition: var(--transition);
+}
+
 .nav-logo-text {
   font-family: 'RageItalic', 'Playfair Display', serif;
   font-size: 28px;
