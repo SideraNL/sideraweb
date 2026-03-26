@@ -850,53 +850,81 @@ img { max-width: 100%; display: block; }
    ═══════════════════════════════════════════════════════════════════════════ */
 
 /* Regulation info cards */
-.reg-cards {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 24px;
-  margin-bottom: 60px;
+/* Accordion regolamento */
+.accordion-group {
+  max-width: 800px;
+  margin: 0 auto 60px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
-.reg-card {
+.accordion-item {
   background: var(--white);
   border-radius: var(--radius);
-  padding: 32px;
   box-shadow: var(--shadow-sm);
+  overflow: hidden;
   border-left: 4px solid var(--accent);
-  transition: transform var(--transition), box-shadow var(--transition);
+  transition: box-shadow var(--transition);
 }
 
-.reg-card:hover {
-  transform: translateY(-2px);
+.accordion-item[open] {
   box-shadow: var(--shadow-md);
 }
 
-.reg-card h3 {
+.accordion-header {
   font-family: 'Inter', sans-serif;
   font-size: 16px;
   font-weight: 700;
   color: var(--primary);
-  margin-bottom: 12px;
+  padding: 18px 24px;
+  cursor: pointer;
+  list-style: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transition: background var(--transition);
 }
 
-.reg-card p, .reg-card ul {
+.accordion-header:hover {
+  background: var(--accent-light);
+}
+
+.accordion-header::-webkit-details-marker {
+  display: none;
+}
+
+.accordion-header::after {
+  content: '+';
+  font-size: 22px;
+  font-weight: 300;
+  color: var(--accent);
+  transition: transform var(--transition);
+}
+
+.accordion-item[open] .accordion-header::after {
+  content: '-';
+}
+
+.accordion-body {
+  padding: 0 24px 20px;
+}
+
+.accordion-body ul {
+  list-style: none;
+  padding: 0;
   font-size: 14px;
   color: var(--text-light);
   line-height: 1.7;
 }
 
-.reg-card ul {
-  list-style: none;
-  padding: 0;
-}
-
-.reg-card li {
+.accordion-body li {
   padding: 4px 0;
   padding-left: 20px;
   position: relative;
 }
 
-.reg-card li::before {
+.accordion-body li::before {
   content: '';
   position: absolute;
   left: 0; top: 12px;
