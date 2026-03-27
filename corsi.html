@@ -316,8 +316,17 @@
         });
       }
 
+      function parseDateIT(str) {
+        if (!str) return Infinity;
+        var p = str.split('/');
+        if (p.length < 3) return Infinity;
+        return new Date(Number(p[2]), Number(p[1]) - 1, Number(p[0])).getTime();
+      }
+
       function showCorsi(corsi) {
-        allCorsi = corsi;
+        allCorsi = corsi.slice().sort(function(a, b) {
+          return parseDateIT(a.data) - parseDateIT(b.data);
+        });
         document.getElementById('corso-loading').style.display = 'none';
         buildFilters(allCorsi);
         renderCards(allCorsi);
