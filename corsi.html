@@ -209,6 +209,7 @@
             dataFin:        gVal(c[COL.DATAFIN]),
             luogo:          gVal(c[COL.LUOGO]),
             crediti:        gVal(c[COL.CREDITI]),
+            costo:          gVal(c[COL.COSTO]),
             img:            convertDriveLink(gVal(c[COL.IMG])),
             linkIscrizione: gVal(c[COL.ISCR]),
             linkPdf:        gVal(c[COL.PDF]),
@@ -303,12 +304,16 @@
           if (c.dataFin && c.dataFin !== c.data) dataTxt += ' \u2013 ' + c.dataFin;
           card.innerHTML = imgTag +
             '<div class="corso-card-body">' +
-              '<div class="corso-card-area" style="color:' + areaColor(c.area) + '">' + (c.area || '') + '</div>' +
+              '<div style="display:flex;justify-content:space-between;align-items:center">' +
+                '<div class="corso-card-area" style="color:' + areaColor(c.area) + '">' + (c.area || '') + '</div>' +
+                '<span style="font-size:.75rem;font-weight:700;color:#64748b;background:#f1f5f9;border-radius:4px;padding:1px 6px">' + (c.id || '') + '</span>' +
+              '</div>' +
               '<div class="corso-card-title">' + (c.titolo || '') + '</div>' +
               '<div class="corso-card-meta">' +
                 '<span class="corso-card-date">' + dataTxt + '</span>' +
                 '<span>' + (c.luogo || '') + '</span>' +
                 ecmHtml(c.crediti) +
+                (c.costo && c.costo !== '0' ? '<span style="font-weight:600;color:#0f766e">\u20ac ' + c.costo + '</span>' : '<span style="color:#16a34a;font-weight:600">Gratuito</span>') +
               '</div>' +
               '<div class="corso-card-actions">' + iscr + locan + '</div>' +
             '</div>';
