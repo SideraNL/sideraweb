@@ -359,19 +359,14 @@ function resetProgetto() {
 // --- SCANNER QR ---
 
 function toggleScanner() {
-  if (scannerAttivo) {
-    stopScanner();
-  } else {
-    avviaScanner();
-  }
+  scannerAttivo ? stopScanner() : avviaScanner();
 }
 
 function avviaScanner() {
   nascondiDecision();
-  // Riusa istanza esistente o creane una nuova
-  if (!html5QrCode) {
-    html5QrCode = new Html5Qrcode("reader");
-  }
+  // Pulisci il contenitore reader prima di creare nuova istanza
+  document.getElementById('reader').innerHTML = '';
+  html5QrCode = new Html5Qrcode("reader");
   html5QrCode.start(
     { facingMode: "environment" },
     { fps: 10, qrbox: { width: 250, height: 250 } },
@@ -381,42 +376,25 @@ function avviaScanner() {
     document.getElementById('btn-scan').innerHTML =
       '<span class="material-icons">stop</span> FERMA SCANNER';
   }).catch(err => {
-    // Se fallisce, ricrea l'istanza e riprova
-    html5QrCode = new Html5Qrcode("reader");
-    html5QrCode.start(
-      { facingMode: "environment" },
-      { fps: 10, qrbox: { width: 250, height: 250 } },
-      onScanSuccess
-    ).then(() => {
-      scannerAttivo = true;
-      document.getElementById('btn-scan').innerHTML =
-        '<span class="material-icons">stop</span> FERMA SCANNER';
-    }).catch(err2 => {
-      toast('Errore fotocamera: ' + err2, 'error');
-    });
+    toast('Errore fotocamera: ' + err, 'error');
   });
 }
 
 function stopScanner() {
-  return new Promise(resolve => {
-    if (html5QrCode && scannerAttivo) {
-      html5QrCode.stop().then(() => {
-        scannerAttivo = false;
-        document.getElementById('btn-scan').innerHTML =
-          '<span class="material-icons">qr_code_scanner</span> AVVIA SCANNER';
-        resolve();
-      }).catch(() => {
-        scannerAttivo = false;
-        resolve();
-      });
-    } else {
-      resolve();
-    }
+  if (!html5QrCode || !scannerAttivo) return Promise.resolve();
+  return html5QrCode.stop().then(() => {
+    html5QrCode.clear();
+    html5QrCode = null;
+    scannerAttivo = false;
+    document.getElementById('btn-scan').innerHTML =
+      '<span class="material-icons">qr_code_scanner</span> AVVIA SCANNER';
+  }).catch(() => {
+    html5QrCode = null;
+    scannerAttivo = false;
   });
 }
 
 function onScanSuccess(decodedText) {
-  // Ferma scanner e mostra decision panel
   stopScanner().then(() => {
     const cf = decodedText.trim().toUpperCase();
     document.getElementById('cf-display').textContent = cf;
@@ -470,8 +448,8 @@ function registra(tipo) {
       toast(cf + ' — ' + label + ' registrato', 'success');
       addLog(cf, tipo, result.dataOra);
       nascondiDecision();
-      // Riavvia scanner per prossima scansione
-      setTimeout(() => avviaScanner(), 800);
+      // Riavvia scanner per prossima scansione (1.5s per rilascio camera mobile)
+      setTimeout(() => avviaScanner(), 1500);
     } else {
       toast('Errore: ' + (result.error || 'sconosciuto'), 'error');
     }
