@@ -339,6 +339,7 @@ function setProgetto() {
   const id = document.getElementById('input-idpgt').value.trim();
   if (!id) { toast('Inserisci un codice progetto', 'warning'); return; }
   currentProject = id;
+  sessionStorage.setItem('siderada10_progetto', id);
   document.getElementById('badge-id').textContent = id;
   document.getElementById('project-badge').classList.add('active');
   document.getElementById('setup-form').style.display = 'none';
@@ -346,8 +347,18 @@ function setProgetto() {
   toast('Progetto ' + id + ' selezionato', 'success');
 }
 
+// Auto-ripristina progetto al caricamento pagina
+(function autoRestore() {
+  const saved = sessionStorage.getItem('siderada10_progetto');
+  if (saved) {
+    document.getElementById('input-idpgt').value = saved;
+    setProgetto();
+  }
+})();
+
 function resetProgetto() {
   currentProject = null;
+  sessionStorage.removeItem('siderada10_progetto');
   stopScanner();
   document.getElementById('project-badge').classList.remove('active');
   document.getElementById('setup-form').style.display = '';
@@ -445,11 +456,14 @@ function registra(tipo) {
 
     if (result.ok) {
       const label = tipo === 'IN' ? 'INGRESSO' : 'USCITA';
-      toast(cf + ' — ' + label + ' registrato', 'success');
-      addLog(cf, tipo, result.dataOra);
-      nascondiDecision();
-      // Riavvia scanner per prossima scansione (1.5s per rilascio camera mobile)
-      setTimeout(() => avviaScanner(), 1500);
+      // Salva nel log persistente per questa sessione
+      const logs = JSON.parse(sessionStorage.getItem('siderada10_log') || '[]');
+      logs.unshift({ cf, tipo, dataOra: result.dataOra });
+      sessionStorage.setItem('siderada10_log', JSON.stringify(logs));
+      // Ricarica la pagina — risolve tutti i problemi camera mobile
+      alert(cf + ' — ' + label + ' registrato ✓');
+      location.reload();
+      return;
     } else {
       toast('Errore: ' + (result.error || 'sconosciuto'), 'error');
     }
@@ -481,6 +495,15 @@ function renderLog() {
     '</div>';
   }).join('');
 }
+
+// Ripristina log da sessionStorage al caricamento
+(function restoreLog() {
+  const saved = JSON.parse(sessionStorage.getItem('siderada10_log') || '[]');
+  if (saved.length > 0) {
+    logEntries = saved;
+    renderLog();
+  }
+})();
 
 // --- TOAST ---
 
