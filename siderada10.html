@@ -325,7 +325,10 @@ function toggleScanner() {
 
 function avviaScanner() {
   nascondiDecision();
-  html5QrCode = new Html5Qrcode("reader");
+  // Riusa istanza esistente o creane una nuova
+  if (!html5QrCode) {
+    html5QrCode = new Html5Qrcode("reader");
+  }
   html5QrCode.start(
     { facingMode: "environment" },
     { fps: 10, qrbox: { width: 250, height: 250 } },
@@ -335,26 +338,47 @@ function avviaScanner() {
     document.getElementById('btn-scan').innerHTML =
       '<span class="material-icons">stop</span> FERMA SCANNER';
   }).catch(err => {
-    toast('Errore fotocamera: ' + err, 'error');
+    // Se fallisce, ricrea l'istanza e riprova
+    html5QrCode = new Html5Qrcode("reader");
+    html5QrCode.start(
+      { facingMode: "environment" },
+      { fps: 10, qrbox: { width: 250, height: 250 } },
+      onScanSuccess
+    ).then(() => {
+      scannerAttivo = true;
+      document.getElementById('btn-scan').innerHTML =
+        '<span class="material-icons">stop</span> FERMA SCANNER';
+    }).catch(err2 => {
+      toast('Errore fotocamera: ' + err2, 'error');
+    });
   });
 }
 
 function stopScanner() {
-  if (html5QrCode && scannerAttivo) {
-    html5QrCode.stop().then(() => {
-      html5QrCode.clear();
-      scannerAttivo = false;
-      document.getElementById('btn-scan').innerHTML =
-        '<span class="material-icons">qr_code_scanner</span> AVVIA SCANNER';
-    }).catch(() => {});
-  }
+  return new Promise(resolve => {
+    if (html5QrCode && scannerAttivo) {
+      html5QrCode.stop().then(() => {
+        scannerAttivo = false;
+        document.getElementById('btn-scan').innerHTML =
+          '<span class="material-icons">qr_code_scanner</span> AVVIA SCANNER';
+        resolve();
+      }).catch(() => {
+        scannerAttivo = false;
+        resolve();
+      });
+    } else {
+      resolve();
+    }
+  });
 }
 
 function onScanSuccess(decodedText) {
-  stopScanner();
-  const cf = decodedText.trim().toUpperCase();
-  document.getElementById('cf-display').textContent = cf;
-  document.getElementById('decision').classList.add('active');
+  // Ferma scanner e mostra decision panel
+  stopScanner().then(() => {
+    const cf = decodedText.trim().toUpperCase();
+    document.getElementById('cf-display').textContent = cf;
+    document.getElementById('decision').classList.add('active');
+  });
 }
 
 function nascondiDecision() {
