@@ -311,7 +311,7 @@
               '<div class="corso-card-title">' + (c.titolo || '') + '</div>' +
               '<div class="corso-card-meta">' +
                 '<span class="corso-card-date">' + dataTxt + '</span>' +
-                '<span>' + (c.luogo || '') + '</span>' +
+                (function(l){ var w = (l||'').toUpperCase().indexOf('WEBINAR') >= 0; return '<span style="font-weight:600;font-size:.8rem;padding:2px 8px;border-radius:4px;' + (w ? 'background:#dbeafe;color:#1d4ed8' : 'background:#dcfce7;color:#15803d') + '">' + (l||'') + '</span>'; })(c.luogo) +
                 ecmHtml(c.crediti) +
                 (c.costo && c.costo !== '0' ? '<span style="font-weight:600;color:#0f766e">\u20ac ' + c.costo + '</span>' : '<span style="color:#16a34a;font-weight:600">Gratuito</span>') +
               '</div>' +
