@@ -87,7 +87,11 @@
       <div id="cs-q-box"></div>
       <div id="cs-sponsor-box" class="mt-3 hidden p-3 bg-light border"><label class="text-danger fw-bold">Specificare (obbligatorio):</label><textarea id="cs-sponsor-note" class="form-control"></textarea></div>
       <div id="cs-disclaimer" class="legal-note hidden">Se lo ritiene opportuno segnali ad ecmfeedback@agenas.it</div>
-      <button id="cs-btn-next" onclick="handleCsNext()" class="btn btn-success mt-3 float-end" disabled>Avanti</button>
+      <div class="d-flex justify-content-between mt-3">
+        <button id="cs-btn-back" onclick="handleCsBack()" class="btn btn-outline-secondary" style="display:none">Indietro</button>
+        <div></div>
+        <button id="cs-btn-next" onclick="handleCsNext()" class="btn btn-success" disabled>Avanti</button>
+      </div>
     </div>
 
     <!-- VIEW: TEST (regolamento + quiz) -->
@@ -116,7 +120,11 @@
         <div class="text-end"><span class="badge bg-info text-dark" id="t-uname"></span><br><span class="badge bg-light text-dark border mt-1" id="t-ucf"></span></div>
       </div>
       <div id="t-q-box"></div>
-      <button id="t-btn-next" onclick="nextTestQ()" class="btn btn-primary mt-3 float-end" disabled>Avanti</button>
+      <div class="d-flex justify-content-between mt-3">
+        <button id="t-btn-back" onclick="prevTestQ()" class="btn btn-outline-secondary" style="display:none">Indietro</button>
+        <div></div>
+        <button id="t-btn-next" onclick="nextTestQ()" class="btn btn-primary" disabled>Avanti</button>
+      </div>
     </div>
 
     <!-- VIEW: END -->
@@ -251,8 +259,15 @@ function renderCsQ() {
   document.getElementById('cs-disclaimer').classList.toggle('hidden', !(csSection===0 && csQIdx===4));
   const btn = document.getElementById('cs-btn-next'); btn.disabled = true;
   btn.innerText = (csSection===1 && csQIdx===4) ? 'INVIA TUTTO' : 'Avanti';
+  document.getElementById('cs-btn-back').style.display = (csSection===0 && csQIdx===0) ? 'none' : '';
 }
 function _csSponsorCheck(rad) { if(csSection===0 && csQIdx===4) document.getElementById('cs-sponsor-box').classList.toggle('hidden', !rad.value.includes('*')); }
+function handleCsBack() {
+  if (csQIdx > 0) { csQIdx--; csAnswers.pop(); if (csSection===0 && csQIdx===4) csAnswers.pop(); }
+  else if (csSection === 1) { csSection = 0; csQIdx = 4; csAnswers.pop(); csAnswers.pop(); }
+  else { showView('dashboard'); renderDashboard(); return; }
+  renderCsQ();
+}
 function handleCsNext() {
   const sel = document.querySelector('input[name="csans"]:checked');
   if (!sel) { showMsg('Rispondi', 'err'); return; }
@@ -292,6 +307,10 @@ function renderTestQ() {
   const btn = document.getElementById('t-btn-next'); btn.disabled = true;
   btn.innerText = tIdx === APP.quiz.length - 1 ? 'INVIA TEST' : 'Avanti';
   btn.onclick = tIdx === APP.quiz.length - 1 ? () => submitTest(false) : nextTestQ;
+  document.getElementById('t-btn-back').style.display = tIdx === 0 ? 'none' : '';
+}
+function prevTestQ() {
+  if (tIdx > 0) { tIdx--; tAnswers.pop(); renderTestQ(); }
 }
 function nextTestQ() {
   const sel = document.querySelector('input[name="tans"]:checked');
