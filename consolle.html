@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Portale Partecipante ECM — Sidera</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>S</text></svg>">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body { background-color: #f4f6f9; font-family: 'Segoe UI', sans-serif; }
+    .main-container { max-width: 900px; margin: 30px auto; background: #fff; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+    .hidden { display: none !important; }
+    .alert-custom { padding: 12px; border-radius: 6px; margin-bottom: 15px; font-size: .95rem; font-weight: 500; display: none; }
+    .alert-error { background-color: #f8d7da; color: #842029; border: 1px solid #f5c2c7; }
+    .alert-success { background-color: #d1e7dd; color: #0f5132; border: 1px solid #badbcc; }
+    .header-box { background-color: #e9ecef; padding: 15px; border-radius: 8px; font-size: .9rem; margin-bottom: 20px; border-left: 5px solid #0d6efd; }
+    .dash-card { border: 1px solid #dee2e6; border-radius: 10px; padding: 20px; text-align: center; transition: .3s; height: 100%; cursor: pointer; }
+    .dash-card:hover { box-shadow: 0 5px 15px rgba(0,0,0,.1); }
+    .status-done { border-color: #28a745; background-color: #f0fff4; }
+    .status-locked { opacity: .5; background-color: #e9ecef; border-color: #dee2e6; pointer-events: none; filter: grayscale(100%); cursor: not-allowed; }
+    .status-optional { border: 2px dashed #6c757d; background-color: #f8f9fa; }
+    .status-optional-done { border: 2px dashed #28a745; background-color: #f0fff4; }
+    .timer-wrapper { position: sticky; top: 0; background: #fff; z-index: 100; padding-bottom: 15px; border-bottom: 1px solid #eee; margin-bottom: 20px; }
+    .timer-text { font-weight: bold; font-size: 1.1rem; color: #555; display: flex; justify-content: space-between; margin-bottom: 5px; }
+    .progress { height: 10px; border-radius: 5px; background-color: #e9ecef; }
+    .question-text { font-size: 1.15rem; font-weight: bold; margin-bottom: 15px; color: #222; word-wrap: break-word; }
+    .option-label { display: block; padding: 12px; margin-bottom: 8px; border: 1px solid #dee2e6; border-radius: 6px; cursor: pointer; transition: .2s; }
+    .option-label:hover { background-color: #f8f9fa; border-color: #adb5bd; }
+    .option-input:checked + .option-label { border-color: #0d6efd; background-color: #f0f7ff; }
+    .legal-note { font-size: .8rem; color: #666; font-style: italic; margin-top: 15px; border-top: 1px solid #eee; padding-top: 10px; }
+    .badge-ver { background: #e0e0e0; color: #555; padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: bold; letter-spacing: 1px; }
+    .spinner { display: inline-block; width: 1.5rem; height: 1.5rem; border: 3px solid currentColor; border-radius: 50%; border-right-color: transparent; animation: spin .75s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+  <div class="main-container">
+    <div class="text-center mb-4">
+      <img src="https://i.ibb.co/XxFJ4bjn/logo-Sidera1280.png" style="max-width:200px">
+      <h4 class="mt-3 text-secondary">Portale ECM</h4>
+      <span class="badge-ver">v4.0</span>
+    </div>
+    <div id="global-msg" class="alert-custom"></div>
+    <div id="loading" class="text-center hidden"><div class="spinner text-primary"></div><p>Caricamento...</p></div>
+
+    <!-- VIEW: LOGIN -->
+    <div id="view-login" class="hidden">
+      <h5 class="text-center">Accesso Partecipante</h5>
+      <div class="header-box mt-3">
+        <div><strong>Provider:</strong> Sidera (ID 84)</div>
+        <div class="mt-1"><strong>Corso:</strong> <span id="d-corso"></span> - <span id="d-titolo"></span></div>
+        <div class="mt-1"><strong>Data:</strong> <span id="d-data"></span> | <strong>Luogo:</strong> <span id="d-luogo"></span> | <strong>ID:</strong> <span id="d-necm"></span></div>
+      </div>
+      <div id="otp-step-1">
+        <label class="form-label">Inserisci la tua Email:</label>
+        <input type="email" id="user-email" class="form-control mb-3" placeholder="nome.cognome@email.com" onkeydown="if(event.key==='Enter') requestOtp()">
+        <button id="btn-req-otp" onclick="requestOtp()" class="btn btn-primary w-100">Richiedi Codice di Verifica</button>
+      </div>
+      <div id="otp-step-2" class="hidden">
+        <div class="alert alert-success small">Codice inviato alla tua email!</div>
+        <label class="form-label">Inserisci il codice:</label>
+        <input type="text" id="user-otp" class="form-control mb-3 text-center fw-bold" maxlength="4" placeholder="XXXX" style="letter-spacing:5px;font-size:1.2rem" onkeydown="if(event.key==='Enter') verifyOtp()">
+        <button id="btn-verify" onclick="verifyOtp()" class="btn btn-success w-100">Verifica e Accedi</button>
+        <button onclick="document.getElementById('otp-step-2').classList.add('hidden');document.getElementById('otp-step-1').classList.remove('hidden')" class="btn btn-link w-100 mt-2 text-muted btn-sm">Indietro</button>
+      </div>
+    </div>
+
+    <!-- VIEW: DASHBOARD -->
+    <div id="view-dashboard" class="hidden">
+      <h5 class="text-center mb-4">Benvenuto <span id="u-name" class="text-primary"></span></h5>
+      <div class="row g-3">
+        <div class="col-md-4"><div class="dash-card" id="card-cs"><span style="font-size:2rem">&#11088;</span><h5>Customer Sat.</h5><div id="status-cs"></div>
+          <button id="btn-cs" class="btn btn-success w-100 mt-2" onclick="openCs()">Inizia CS</button></div></div>
+        <div class="col-md-4"><div class="dash-card" id="card-test"><span style="font-size:2rem">&#9997;</span><h5>Test ECM</h5><div id="status-test"></div>
+          <button id="btn-test" class="btn btn-primary w-100 mt-2" onclick="openTest()">Inizia Test</button></div></div>
+        <div class="col-md-4"><div class="dash-card status-optional" id="card-ric"><span style="font-size:2rem">&#128203;</span><h5>Ricadute</h5><span style="background:#e9ecef;color:#6c757d;font-size:.75rem;padding:4px 8px;border-radius:4px">Opzionale</span><div id="status-ric"></div>
+          <button id="btn-ric" class="btn btn-outline-secondary w-100 mt-2" onclick="openRicadute()">Compila</button></div></div>
+      </div>
+    </div>
+
+    <!-- VIEW: CS -->
+    <div id="view-cs" class="hidden">
+      <div class="header-box"><strong>Provider:</strong> Sidera (ID 84) | <strong>Corso:</strong> <span class="hd-corso"></span></div>
+      <h5 id="cs-main-title" class="text-success border-bottom pb-2"></h5>
+      <div id="cs-intro" class="text-center mb-3 small text-muted">Questionario anonimo</div>
+      <h6 id="cs-sec-title" class="text-secondary"></h6>
+      <div id="cs-q-box"></div>
+      <div id="cs-sponsor-box" class="mt-3 hidden p-3 bg-light border"><label class="text-danger fw-bold">Specificare (obbligatorio):</label><textarea id="cs-sponsor-note" class="form-control"></textarea></div>
+      <div id="cs-disclaimer" class="legal-note hidden">Se lo ritiene opportuno segnali ad ecmfeedback@agenas.it</div>
+      <button id="cs-btn-next" onclick="handleCsNext()" class="btn btn-success mt-3 float-end" disabled>Avanti</button>
+    </div>
+
+    <!-- VIEW: TEST (regolamento + quiz) -->
+    <div id="view-rules" class="hidden text-center">
+      <h4 class="text-danger border-bottom pb-2">Regolamento Test ECM</h4>
+      <ul class="text-start small" style="line-height:1.8">
+        <li><strong>Tentativo Unico:</strong> ammesso un solo tentativo.</li>
+        <li><strong>Soglia 75%:</strong> rispondere correttamente ad almeno il 75% delle domande.</li>
+        <li><strong>Customer Satisfaction:</strong> obbligatorio compilare il questionario (anonimo).</li>
+        <li><strong>Tempo Limite:</strong> hai <strong>60 minuti</strong>.</li>
+        <li><strong>Assistenza:</strong> direzione@sideraweb.it entro 3 giorni.</li>
+      </ul>
+      <button class="btn btn-danger w-100 mt-3" onclick="startTest()">Ho letto e ACCETTO di iniziare</button>
+      <button class="btn btn-link text-muted w-100 mt-1 btn-sm" onclick="showView('dashboard');renderDashboard()">Annulla</button>
+    </div>
+
+    <div id="view-test" class="hidden">
+      <div class="timer-wrapper">
+        <div class="timer-text"><span>Tempo:</span><span id="timer-disp">60:00</span></div>
+        <div class="progress"><div id="timer-bar" class="progress-bar bg-success" style="width:100%"></div></div>
+      </div>
+      <div class="header-box"><strong>Provider:</strong> Sidera (ID 84) | <strong>Corso:</strong> <span class="hd-corso"></span></div>
+      <h5 class="text-primary border-bottom pb-2">Test ECM</h5>
+      <div class="d-flex justify-content-between align-items-start mb-3">
+        <span class="badge bg-secondary">Domanda <span id="t-curr">1</span>/<span id="t-tot"></span></span>
+        <div class="text-end"><span class="badge bg-info text-dark" id="t-uname"></span><br><span class="badge bg-light text-dark border mt-1" id="t-ucf"></span></div>
+      </div>
+      <div id="t-q-box"></div>
+      <button id="t-btn-next" onclick="nextTestQ()" class="btn btn-primary mt-3 float-end" disabled>Avanti</button>
+    </div>
+
+    <!-- VIEW: END -->
+    <div id="view-end" class="hidden text-center"></div>
+  </div>
+
+<script>
+// ── CONFIG ──
+const GAS_URL = "https://script.google.com/macros/s/AKfycbwsFIxxUICpKrDwixE0EnAS7sqz6c2k0vlmmByjyWMD2d1SxSvzC_XJvOOo5WdDiHsu/exec";
+const URL_RICADUTE = "https://script.google.com/macros/s/AKfycbyt7cjcmSqPi_j2x7eh8SxFLioLfjpqYd_rM-q1eff9OxAIGk3BQ0B0y-gZrkDZQ_V8/exec";
+const params = new URLSearchParams(window.location.search);
+const corso = params.get('corso');
+
+let META = {}, APP = {}, USER_EMAIL = '';
+let csSection = 0, csQIdx = 0, csAnswers = [];
+let tIdx = 0, tAnswers = [], timerInterval = null;
+
+// ── CS DOMANDE (hardcoded AGENAS) ──
+const csQ1 = [
+  {t:"1. Come valuta la rilevanza degli argomenti trattati rispetto alle sue necessit\u00e0 di aggiornamento?", o:["5 - Molto rilevante","4 - Pi\u00f9 che rilevante","3 - Rilevante","2 - Poco rilevante","1 - Non rilevante"]},
+  {t:"2. Come valuta la qualit\u00e0 educativa del programma ECM?", o:["5 - Eccellente","4 - Buono","3 - Sufficiente","2 - Parziale","1 - Insufficiente"]},
+  {t:"3. Come valuta l\u2019utilit\u00e0 di questo evento per la sua formazione/aggiornamento?", o:["5 - Molto utile","4 - Pi\u00f9 che utile","3 - Utile","2 - Poco utile","1 - Insufficiente"]},
+  {t:"4. Il tempo dedicato ad acquisire le informazioni rispetto alle ore previste \u00e8 stato:", o:["Molto superiore","Poco superiore","Uguale al previsto","Poco inferiore","Molto inferiore"]},
+  {t:"SPONSOR", o:["Nessuna influenza","Influenza poco rilevante","Influenza rilevante","Influenza pi\u00f9 che rilevante*","Influenza molto rilevante*"]}
+];
+const csQ2 = [
+  {t:"1 - Quale \u00e8 il motivo principale per cui frequenta un corso di formazione?", o:["Esigenze professionali","Obblighi normativi","Altri motivi"]},
+  {t:"2 - Per quale area desidera formazione?", o:["Tecnico professionale e clinica","Gestionale ed economica","Relazionale e giuridica"]},
+  {t:"3 - Come considera nel complesso il tempo impiegato per ogni sessione?", o:["Adeguato e ben gestito","Adeguato","Inadeguato"]},
+  {t:"4 - Come valuta nel complesso l\u2019iniziativa formativa?", o:["Ottimo","Buono","Sufficiente","Mediocre","Insoddisfacente"]},
+  {t:"5 - Come valuta la docenza?", o:["Ottimo","Buono","Sufficiente","Mediocre","Insoddisfacente"]}
+];
+
+// ── UTILITY ──
+function showMsg(msg, type) {
+  const box = document.getElementById('global-msg');
+  box.innerText = msg; box.className = 'alert-custom ' + (type==='err'?'alert-error':'alert-success');
+  box.style.display = 'block'; setTimeout(() => box.style.display='none', 4000);
+}
+function loading(b) { document.getElementById('loading').classList.toggle('hidden', !b); }
+function showView(name) {
+  document.querySelectorAll('[id^="view-"]').forEach(el => el.classList.add('hidden'));
+  const el = document.getElementById('view-' + name);
+  if (el) el.classList.remove('hidden');
+}
+async function gasGet(params) {
+  const url = GAS_URL + '?' + new URLSearchParams(params).toString();
+  const r = await fetch(url); return r.json();
+}
+async function gasPost(action, body) {
+  const r = await fetch(GAS_URL + '?action=' + action, { method:'POST', headers:{'Content-Type':'text/plain'}, body: JSON.stringify(body) });
+  return r.json();
+}
+
+// ── INIT ──
+window.onload = async () => {
+  if (!corso) { document.querySelector('.main-container').innerHTML = '<h4 class="text-danger text-center mt-4">Parametro corso mancante</h4>'; return; }
+  loading(true);
+  try {
+    META = await gasGet({action:'info', corso});
+    if (!META.ok) { loading(false); document.querySelector('.main-container').innerHTML = '<h4 class="text-danger text-center mt-4">Corso non trovato</h4>'; return; }
+    document.getElementById('d-corso').innerText = corso;
+    document.getElementById('d-titolo').innerText = META.titolo;
+    document.getElementById('d-data').innerText = META.dataIN + (META.dataFIN && META.dataFIN !== META.dataIN ? ' - ' + META.dataFIN : '');
+    document.getElementById('d-luogo').innerText = META.luogo || 'Online';
+    document.getElementById('d-necm').innerText = META.necm;
+    document.querySelectorAll('.hd-corso').forEach(e => e.innerText = corso + ' - ' + META.titolo);
+    loading(false); showView('login');
+  } catch(e) { loading(false); showMsg('Errore: ' + e.message, 'err'); }
+};
+
+// ── OTP ──
+async function requestOtp() {
+  const email = document.getElementById('user-email').value.trim().toLowerCase();
+  if (!email) { showMsg('Inserisci email', 'err'); return; }
+  const btn = document.getElementById('btn-req-otp'); btn.disabled = true; btn.innerText = 'Invio...';
+  try {
+    const r = await gasGet({action:'otp', corso, email});
+    if (!r.ok) { showMsg(r.error || 'Errore', 'err'); btn.disabled = false; btn.innerText = 'Richiedi Codice di Verifica'; return; }
+    USER_EMAIL = email;
+    document.getElementById('otp-step-1').classList.add('hidden');
+    document.getElementById('otp-step-2').classList.remove('hidden');
+  } catch(e) { showMsg('Errore: ' + e.message, 'err'); }
+  btn.disabled = false; btn.innerText = 'Richiedi Codice di Verifica';
+}
+async function verifyOtp() {
+  const code = document.getElementById('user-otp').value.trim();
+  if (!code) { showMsg('Inserisci codice', 'err'); return; }
+  loading(true);
+  try {
+    const r = await gasGet({action:'verify', corso, email: USER_EMAIL, otp: code});
+    if (!r.ok) { loading(false); showMsg(r.error || 'Codice errato', 'err'); return; }
+    APP = r; loading(false);
+    document.getElementById('u-name').innerText = APP.userData.nome + ' ' + APP.userData.cognome;
+    document.getElementById('t-uname').innerText = APP.userData.nome + ' ' + APP.userData.cognome;
+    document.getElementById('t-ucf').innerText = APP.userData.cf;
+    showView('dashboard'); renderDashboard();
+  } catch(e) { loading(false); showMsg('Errore: ' + e.message, 'err'); }
+}
+
+// ── DASHBOARD ──
+function renderDashboard() {
+  const cC = document.getElementById('card-cs'), sC = document.getElementById('status-cs'), bC = document.getElementById('btn-cs');
+  cC.className = 'dash-card';
+  if (APP.status.csDone) { cC.classList.add('status-done'); sC.innerHTML="<b class='text-success'>COMPLETATO</b>"; bC.classList.add('hidden'); }
+  else if (!APP.status.csAttivo) { cC.classList.add('status-locked'); sC.innerHTML="<b class='text-danger'>CHIUSO</b>"; bC.classList.add('hidden'); }
+  else { sC.innerHTML="<span class='text-success'>Da completare</span>"; bC.classList.remove('hidden'); }
+  const cT = document.getElementById('card-test'), sT = document.getElementById('status-test'), bT = document.getElementById('btn-test');
+  cT.className = 'dash-card';
+  if (!APP.status.csDone) { cT.classList.add('status-locked'); sT.innerHTML="<span class='text-muted'>Completa prima la CS</span>"; bT.classList.add('hidden'); }
+  else if (APP.status.testDone) { cT.classList.add('status-done'); sT.innerHTML="<b class='text-success'>COMPLETATO</b>"; bT.classList.add('hidden'); }
+  else if (!APP.status.testAttivo) { cT.classList.add('status-locked'); sT.innerHTML="<b class='text-danger'>CHIUSO</b>"; bT.classList.add('hidden'); }
+  else { sT.innerHTML="<span class='text-primary'>Da completare</span>"; bT.classList.remove('hidden'); }
+  const cR = document.getElementById('card-ric'), sR = document.getElementById('status-ric'), bR = document.getElementById('btn-ric');
+  cR.className = 'dash-card status-optional';
+  if (localStorage.getItem('ricadute_done_' + corso)) { cR.classList.remove('status-optional'); cR.classList.add('status-optional-done'); sR.innerHTML="<b class='text-success'>Compilato</b>"; bR.classList.add('hidden'); }
+  else { sR.innerHTML="<span class='text-muted'>Facoltativo</span>"; bR.classList.remove('hidden'); }
+}
+function openRicadute() { localStorage.setItem('ricadute_done_'+corso,'1'); window.open(URL_RICADUTE+'?corso='+corso,'_blank'); setTimeout(renderDashboard, 500); }
+
+// ── CS ──
+function openCs() { showView('cs'); csSection = 0; csQIdx = 0; csAnswers = []; renderCsQ(); }
+function renderCsQ() {
+  const q = csSection === 0 ? csQ1[csQIdx] : csQ2[csQIdx];
+  document.getElementById('cs-main-title').innerText = csSection === 0 ? 'Valutazione Ministeriale ECM' : 'Valutazione Sidera';
+  document.getElementById('cs-sec-title').innerText = 'Domanda ' + (csQIdx+1) + '/5';
+  let txt = q.t;
+  if (txt === 'SPONSOR') txt = '5. Questo programma ECM \u00e8 stato preparato con il supporto di <strong>' + (META.sponsor || 'N/A') + '</strong>.<br>Ritiene che ci siano riferimenti non equilibrati per influenza dello sponsor?<br><span style="font-weight:normal;font-size:.9rem">(da compilare anche in assenza di sponsor)</span>';
+  document.getElementById('cs-q-box').innerHTML = '<div class="question-text">' + txt + '</div>' + q.o.map((o,i) => '<input type="radio" name="csans" value="'+o+'" id="cso'+i+'" class="option-input" style="display:none" onchange="document.getElementById(\'cs-btn-next\').disabled=false;_csSponsorCheck(this)"><label for="cso'+i+'" class="option-label">'+o+'</label>').join('');
+  document.getElementById('cs-sponsor-box').classList.add('hidden');
+  document.getElementById('cs-sponsor-note').value = '';
+  document.getElementById('cs-disclaimer').classList.toggle('hidden', !(csSection===0 && csQIdx===4));
+  const btn = document.getElementById('cs-btn-next'); btn.disabled = true;
+  btn.innerText = (csSection===1 && csQIdx===4) ? 'INVIA TUTTO' : 'Avanti';
+}
+function _csSponsorCheck(rad) { if(csSection===0 && csQIdx===4) document.getElementById('cs-sponsor-box').classList.toggle('hidden', !rad.value.includes('*')); }
+function handleCsNext() {
+  const sel = document.querySelector('input[name="csans"]:checked');
+  if (!sel) { showMsg('Rispondi', 'err'); return; }
+  if (csSection===0 && csQIdx===4) {
+    let note = '';
+    if (!document.getElementById('cs-sponsor-box').classList.contains('hidden')) {
+      note = document.getElementById('cs-sponsor-note').value;
+      if (!note) { showMsg('Specificare obbligatorio!', 'err'); return; }
+    }
+    csAnswers.push(sel.value); csAnswers.push(note);
+  } else csAnswers.push(sel.value);
+  if (csQIdx < 4) { csQIdx++; renderCsQ(); }
+  else if (csSection === 0) { csSection = 1; csQIdx = 0; showMsg('Parte 1 completata. Proseguiamo.', 'ok'); renderCsQ(); }
+  else submitCs();
+}
+async function submitCs() {
+  loading(true); showView('loading');
+  try {
+    const r = await gasPost('submitCs', {corso, email: USER_EMAIL, answers: csAnswers});
+    loading(false); APP.status.csDone = true;
+    document.getElementById('view-end').innerHTML = '<h2 class="text-success mt-4">CS Completata!</h2><div class="lead my-3">Grazie! Ora puoi fare il Test.</div><button class="btn btn-outline-primary mt-3" onclick="showView(\'dashboard\');renderDashboard()">Torna alla Dashboard</button>';
+    showView('end');
+  } catch(e) { loading(false); showMsg('Errore: ' + e.message, 'err'); showView('cs'); }
+}
+
+// ── TEST ──
+function openTest() { showView('rules'); }
+function startTest() {
+  showView('test');
+  document.getElementById('t-tot').innerText = APP.quiz.length;
+  tIdx = 0; tAnswers = []; renderTestQ(); startTimer();
+}
+function renderTestQ() {
+  const q = APP.quiz[tIdx];
+  document.getElementById('t-curr').innerText = tIdx + 1;
+  document.getElementById('t-q-box').innerHTML = '<div class="question-text">' + q.text + '</div>' + q.options.map((o,i) => '<input type="radio" name="tans" value="'+o.replace(/"/g,'&quot;')+'" id="to'+i+'" class="option-input" style="display:none" onchange="document.getElementById(\'t-btn-next\').disabled=false"><label for="to'+i+'" class="option-label">'+o+'</label>').join('');
+  const btn = document.getElementById('t-btn-next'); btn.disabled = true;
+  btn.innerText = tIdx === APP.quiz.length - 1 ? 'INVIA TEST' : 'Avanti';
+  btn.onclick = tIdx === APP.quiz.length - 1 ? () => submitTest(false) : nextTestQ;
+}
+function nextTestQ() {
+  const sel = document.querySelector('input[name="tans"]:checked');
+  if (!sel) { showMsg('Rispondi', 'err'); return; }
+  tAnswers.push({questionText: APP.quiz[tIdx].text, selectedOption: sel.value});
+  tIdx++; renderTestQ();
+}
+function startTimer() {
+  const duration = 60 * 60;
+  let savedEnd = localStorage.getItem('ecm_end_' + corso);
+  let endTime;
+  if (savedEnd && Date.now() < parseInt(savedEnd)) endTime = parseInt(savedEnd);
+  else { endTime = Date.now() + duration * 1000; localStorage.setItem('ecm_end_' + corso, endTime); }
+  clearInterval(timerInterval);
+  timerInterval = setInterval(() => {
+    const diff = endTime - Date.now();
+    const pct = (diff / (duration*1000)) * 100;
+    const bar = document.getElementById('timer-bar');
+    bar.style.width = pct + '%';
+    bar.className = 'progress-bar ' + (pct<10?'bg-danger':pct<50?'bg-warning':'bg-success');
+    if (diff <= 0) { clearInterval(timerInterval); document.getElementById('timer-disp').innerText='00:00'; bar.style.width='0%'; alert('Tempo scaduto!'); submitTest(true); localStorage.removeItem('ecm_end_'+corso); return; }
+    const m = Math.floor((diff%(3600000))/60000), s = Math.floor((diff%60000)/1000);
+    document.getElementById('timer-disp').innerText = (m<10?'0'+m:m)+':'+(s<10?'0'+s:s);
+  }, 1000);
+}
+async function submitTest(force) {
+  if (!force) {
+    const sel = document.querySelector('input[name="tans"]:checked');
+    if (!sel) { showMsg('Rispondi', 'err'); return; }
+    tAnswers.push({questionText: APP.quiz[tIdx].text, selectedOption: sel.value});
+  }
+  clearInterval(timerInterval); localStorage.removeItem('ecm_end_' + corso);
+  loading(true); showView('loading');
+  try {
+    const r = await gasPost('submitTest', {corso, userData: APP.userData, answers: tAnswers});
+    loading(false); APP.status.testDone = true;
+    const pct = Math.round((r.score/r.total)*100);
+    let html = '';
+    if (r.passed) html = '<h2 class="text-success mt-4">Test Superato!</h2><div class="lead my-3">Punteggio: <strong>'+r.score+'/'+r.total+'</strong> ('+pct+'%)<br><span class="text-success">Complimenti!</span><br><small class="text-muted">Esito inviato via email. Protocollo: '+r.protocollo+'</small></div>';
+    else html = '<h2 class="text-danger mt-4">Test Non Superato</h2><div class="lead my-3">Punteggio: <strong>'+r.score+'/'+r.total+'</strong> ('+pct+'%)<br><span class="text-danger">Non raggiunto il 75%.</span><br><small class="text-muted">Esito inviato via email.</small></div>';
+    document.getElementById('view-end').innerHTML = html + '<button class="btn btn-outline-primary mt-3" onclick="showView(\'dashboard\');renderDashboard()">Torna alla Dashboard</button>';
+    showView('end');
+  } catch(e) { loading(false); showMsg('Errore: ' + e.message, 'err'); showView('test'); }
+}
+
+// ── KEYBOARD ──
+document.addEventListener('keydown', e => {
+  if (e.key !== 'Enter') return;
+  const vt = document.getElementById('view-test');
+  if (vt && !vt.classList.contains('hidden')) { const b=document.getElementById('t-btn-next'); if(b&&!b.disabled) b.click(); e.preventDefault(); return; }
+  const vc = document.getElementById('view-cs');
+  if (vc && !vc.classList.contains('hidden')) { const b=document.getElementById('cs-btn-next'); if(b&&!b.disabled) b.click(); e.preventDefault(); }
+});
+</script>
+</body>
+</html>
