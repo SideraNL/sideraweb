@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#004aad">
+  <title>SideraDA10</title>
+  <link rel="icon" href="img/favicon.ico">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+  <style>
+    :root {
+      --primary: #004aad;
+      --accent: #00d2ff;
+      --success: #2e7d32;
+      --error: #c62828;
+      --warning: #f57f17;
+      --bg: #f5f5f5;
+      --card: #ffffff;
+      --text: #212121;
+      --text2: #757575;
+      --radius: 12px;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Roboto', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* --- Header --- */
+    .header {
+      width: 100%; max-width: 480px;
+      background: var(--primary);
+      color: #fff;
+      padding: 16px 20px;
+      display: flex; align-items: center; gap: 12px;
+      border-radius: 0 0 var(--radius) var(--radius);
+    }
+    .header img { height: 36px; }
+    .header .title { font-size: 18px; font-weight: 700; }
+    .header .ver { font-size: 11px; opacity: .7; }
+
+    /* --- Card --- */
+    .card {
+      width: 100%; max-width: 480px;
+      background: var(--card);
+      border-radius: var(--radius);
+      box-shadow: 0 2px 8px rgba(0,0,0,.08);
+      padding: 20px;
+      margin: 12px 16px;
+    }
+    .card-title {
+      font-size: 14px; font-weight: 700; color: var(--primary);
+      margin-bottom: 12px; text-transform: uppercase; letter-spacing: .5px;
+    }
+
+    /* --- Setup card --- */
+    .setup-row {
+      display: flex; gap: 10px; align-items: flex-end;
+    }
+    .setup-row .field { flex: 1; }
+    .setup-row label {
+      display: block; font-size: 12px; color: var(--text2);
+      margin-bottom: 4px; font-weight: 500;
+    }
+    .setup-row input {
+      width: 100%; padding: 10px 12px;
+      border: 2px solid #e0e0e0; border-radius: 8px;
+      font-size: 16px; font-family: inherit;
+      transition: border-color .2s;
+    }
+    .setup-row input:focus {
+      outline: none; border-color: var(--primary);
+    }
+    .btn {
+      padding: 10px 20px;
+      border: none; border-radius: 8px;
+      font-size: 14px; font-weight: 700;
+      cursor: pointer; font-family: inherit;
+      transition: opacity .2s, transform .1s;
+      display: inline-flex; align-items: center; gap: 6px;
+    }
+    .btn:active { transform: scale(.97); }
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-success { background: var(--success); color: #fff; }
+    .btn-error   { background: var(--error); color: #fff; }
+    .btn-outline {
+      background: transparent; color: var(--text2);
+      border: 2px solid #e0e0e0;
+    }
+    .btn:disabled { opacity: .4; cursor: not-allowed; }
+    .btn-lg {
+      padding: 16px 24px; font-size: 18px; width: 100%;
+      justify-content: center;
+    }
+
+    /* --- Project badge --- */
+    .project-badge {
+      display: none;
+      background: var(--primary); color: #fff;
+      padding: 8px 16px; border-radius: 8px;
+      font-size: 14px; font-weight: 500;
+      margin-bottom: 12px;
+      align-items: center; gap: 8px;
+    }
+    .project-badge.active { display: flex; }
+    .project-badge .id { font-weight: 700; font-size: 18px; }
+    .project-badge .close {
+      margin-left: auto; cursor: pointer;
+      opacity: .7; font-size: 20px;
+    }
+    .project-badge .close:hover { opacity: 1; }
+
+    /* --- Scanner --- */
+    #reader {
+      width: 100%; max-width: 400px;
+      margin: 0 auto; border-radius: 8px; overflow: hidden;
+    }
+    .scanner-wrap { display: none; }
+    .scanner-wrap.active { display: block; }
+
+    /* --- Decision panel --- */
+    .decision {
+      display: none; text-align: center;
+    }
+    .decision.active { display: block; }
+    .decision .cf-display {
+      font-size: 20px; font-weight: 700;
+      background: #f0f4ff; padding: 12px;
+      border-radius: 8px; margin-bottom: 16px;
+      letter-spacing: 1px; word-break: break-all;
+    }
+    .decision .btn-row {
+      display: flex; gap: 12px; margin-bottom: 12px;
+    }
+    .decision .btn-row .btn { flex: 1; }
+
+    /* --- Toast --- */
+    .toast {
+      position: fixed; bottom: 30px; left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: #323232; color: #fff;
+      padding: 14px 24px; border-radius: 10px;
+      font-size: 14px; font-weight: 500;
+      box-shadow: 0 4px 20px rgba(0,0,0,.25);
+      transition: transform .3s ease;
+      z-index: 999; max-width: 90%;
+      text-align: center;
+    }
+    .toast.show { transform: translateX(-50%) translateY(0); }
+    .toast.success { background: var(--success); }
+    .toast.error   { background: var(--error); }
+    .toast.warning { background: var(--warning); color: #000; }
+
+    /* --- Log --- */
+    .log-wrap { max-height: 200px; overflow-y: auto; margin-top: 12px; }
+    .log-entry {
+      display: flex; align-items: center; gap: 8px;
+      padding: 8px 0; border-bottom: 1px solid #f0f0f0;
+      font-size: 13px;
+    }
+    .log-entry .badge {
+      padding: 2px 8px; border-radius: 4px;
+      font-size: 11px; font-weight: 700; color: #fff;
+      min-width: 32px; text-align: center;
+    }
+    .log-entry .badge.in  { background: var(--success); }
+    .log-entry .badge.out { background: var(--error); }
+    .log-entry .time { color: var(--text2); margin-left: auto; font-size: 12px; }
+
+    /* --- Spinner --- */
+    .spinner {
+      display: none; text-align: center; padding: 20px;
+    }
+    .spinner.active { display: block; }
+    .spinner::after {
+      content: ''; display: inline-block;
+      width: 32px; height: 32px;
+      border: 3px solid #e0e0e0;
+      border-top-color: var(--primary);
+      border-radius: 50%;
+      animation: spin .8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* --- Responsive --- */
+    @media (max-width: 500px) {
+      .header { border-radius: 0; }
+      .card { margin: 8px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <div class="header">
+    <img src="img/logo-sidera-white.png" alt="Sidera" onerror="this.style.display='none'">
+    <div>
+      <div class="title">SideraDA10</div>
+      <div class="ver">Scanner Presenze ECM — v1.0</div>
+    </div>
+  </div>
+
+  <!-- Project setup -->
+  <div class="card" id="card-setup">
+    <div class="card-title">Seleziona Progetto</div>
+    <div class="project-badge" id="project-badge">
+      <span>Progetto:</span>
+      <span class="id" id="badge-id"></span>
+      <span class="material-icons close" onclick="resetProgetto()">close</span>
+    </div>
+    <div id="setup-form">
+      <div class="setup-row">
+        <div class="field">
+          <label>Codice Progetto (ID PGT)</label>
+          <input type="text" id="input-idpgt" placeholder="es. 1338" inputmode="numeric"
+                 onkeydown="if(event.key==='Enter')setProgetto()">
+        </div>
+        <button class="btn btn-primary" onclick="setProgetto()">
+          <span class="material-icons" style="font-size:18px">check</span> OK
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scanner -->
+  <div class="card scanner-wrap" id="card-scanner">
+    <div class="card-title">Scansione QR Code</div>
+
+    <div id="reader"></div>
+
+    <div style="text-align:center;margin-top:12px">
+      <button class="btn btn-primary btn-lg" id="btn-scan" onclick="toggleScanner()">
+        <span class="material-icons">qr_code_scanner</span> AVVIA SCANNER
+      </button>
+    </div>
+
+    <!-- Decision panel -->
+    <div class="decision" id="decision">
+      <div class="cf-display" id="cf-display"></div>
+      <div class="btn-row">
+        <button class="btn btn-success btn-lg" onclick="registra('IN')">
+          <span class="material-icons">login</span> INGRESSO
+        </button>
+        <button class="btn btn-error btn-lg" onclick="registra('OUT')">
+          <span class="material-icons">logout</span> USCITA
+        </button>
+      </div>
+      <button class="btn btn-outline" onclick="annulla()" style="width:100%">
+        <span class="material-icons" style="font-size:16px">refresh</span> Annulla / Nuova scansione
+      </button>
+    </div>
+
+    <div class="spinner" id="spinner"></div>
+  </div>
+
+  <!-- Log sessione -->
+  <div class="card scanner-wrap" id="card-log">
+    <div class="card-title">Registro sessione</div>
+    <div class="log-wrap" id="log-wrap">
+      <div style="color:var(--text2);font-size:13px;text-align:center;padding:12px">
+        Nessuna registrazione in questa sessione
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+
+<script>
+/* ========================================================
+   SideraDA10 — Scanner Presenze ECM
+   GitHub Pages + GAS endpoint
+   ======================================================== */
+
+// --- CONFIGURAZIONE ---
+// Dopo il deploy GAS, inserire qui l'URL della web app
+const GAS_ENDPOINT = "https://script.google.com/macros/s/AKfycbzxDPL5nOTryyxaWDfs43dVPFYD4vFhIoQPd5umPGSJYj8OUs4bHvfSYecuMDYbJaF7/exec";
+
+let currentProject = null;
+let html5QrCode    = null;
+let scannerAttivo  = false;
+let logEntries     = [];
+
+// --- PROGETTO ---
+
+function setProgetto() {
+  const id = document.getElementById('input-idpgt').value.trim();
+  if (!id) { toast('Inserisci un codice progetto', 'warning'); return; }
+  currentProject = id;
+  document.getElementById('badge-id').textContent = id;
+  document.getElementById('project-badge').classList.add('active');
+  document.getElementById('setup-form').style.display = 'none';
+  document.querySelectorAll('.scanner-wrap').forEach(el => el.classList.add('active'));
+  toast('Progetto ' + id + ' selezionato', 'success');
+}
+
+function resetProgetto() {
+  currentProject = null;
+  stopScanner();
+  document.getElementById('project-badge').classList.remove('active');
+  document.getElementById('setup-form').style.display = '';
+  document.getElementById('input-idpgt').value = '';
+  document.querySelectorAll('.scanner-wrap').forEach(el => el.classList.remove('active'));
+  nascondiDecision();
+}
+
+// --- SCANNER QR ---
+
+function toggleScanner() {
+  if (scannerAttivo) {
+    stopScanner();
+  } else {
+    avviaScanner();
+  }
+}
+
+function avviaScanner() {
+  nascondiDecision();
+  html5QrCode = new Html5Qrcode("reader");
+  html5QrCode.start(
+    { facingMode: "environment" },
+    { fps: 10, qrbox: { width: 250, height: 250 } },
+    onScanSuccess
+  ).then(() => {
+    scannerAttivo = true;
+    document.getElementById('btn-scan').innerHTML =
+      '<span class="material-icons">stop</span> FERMA SCANNER';
+  }).catch(err => {
+    toast('Errore fotocamera: ' + err, 'error');
+  });
+}
+
+function stopScanner() {
+  if (html5QrCode && scannerAttivo) {
+    html5QrCode.stop().then(() => {
+      html5QrCode.clear();
+      scannerAttivo = false;
+      document.getElementById('btn-scan').innerHTML =
+        '<span class="material-icons">qr_code_scanner</span> AVVIA SCANNER';
+    }).catch(() => {});
+  }
+}
+
+function onScanSuccess(decodedText) {
+  stopScanner();
+  const cf = decodedText.trim().toUpperCase();
+  document.getElementById('cf-display').textContent = cf;
+  document.getElementById('decision').classList.add('active');
+}
+
+function nascondiDecision() {
+  document.getElementById('decision').classList.remove('active');
+  document.getElementById('cf-display').textContent = '';
+}
+
+function annulla() {
+  nascondiDecision();
+  avviaScanner();
+}
+
+// --- REGISTRAZIONE ---
+
+function registra(tipo) {
+  if (!GAS_ENDPOINT) {
+    toast('Endpoint GAS non configurato', 'error');
+    return;
+  }
+  const cf = document.getElementById('cf-display').textContent;
+  if (!cf || !currentProject) return;
+
+  // Disabilita bottoni
+  document.querySelectorAll('.decision .btn').forEach(b => b.disabled = true);
+  document.getElementById('spinner').classList.add('active');
+
+  const payload = {
+    idPgt: currentProject,
+    cf: cf,
+    tipo: tipo
+  };
+
+  fetch(GAS_ENDPOINT, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain' },
+    body: JSON.stringify(payload),
+    redirect: 'follow'
+  })
+  .then(r => r.json())
+  .then(result => {
+    document.getElementById('spinner').classList.remove('active');
+    document.querySelectorAll('.decision .btn').forEach(b => b.disabled = false);
+
+    if (result.ok) {
+      const label = tipo === 'IN' ? 'INGRESSO' : 'USCITA';
+      toast(cf + ' — ' + label + ' registrato', 'success');
+      addLog(cf, tipo, result.dataOra);
+      nascondiDecision();
+      // Riavvia scanner per prossima scansione
+      setTimeout(() => avviaScanner(), 800);
+    } else {
+      toast('Errore: ' + (result.error || 'sconosciuto'), 'error');
+    }
+  })
+  .catch(err => {
+    document.getElementById('spinner').classList.remove('active');
+    document.querySelectorAll('.decision .btn').forEach(b => b.disabled = false);
+    toast('Errore di rete: ' + err.message, 'error');
+  });
+}
+
+// --- LOG SESSIONE ---
+
+function addLog(cf, tipo, dataOra) {
+  logEntries.unshift({ cf, tipo, dataOra });
+  renderLog();
+}
+
+function renderLog() {
+  const wrap = document.getElementById('log-wrap');
+  if (logEntries.length === 0) return;
+  wrap.innerHTML = logEntries.map(e => {
+    const cls = e.tipo === 'IN' ? 'in' : 'out';
+    const ora = e.dataOra ? e.dataOra.split(' ')[1] || '' : '';
+    return '<div class="log-entry">' +
+      '<span class="badge ' + cls + '">' + e.tipo + '</span>' +
+      '<span>' + e.cf + '</span>' +
+      '<span class="time">' + ora + '</span>' +
+    '</div>';
+  }).join('');
+}
+
+// --- TOAST ---
+
+function toast(msg, type) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = 'toast ' + (type || '') + ' show';
+  clearTimeout(el._timer);
+  el._timer = setTimeout(() => el.classList.remove('show'), 3500);
+}
+</script>
+
+</body>
+</html>
