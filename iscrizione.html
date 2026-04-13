@@ -204,12 +204,12 @@
     <!-- ── STEP 3: OCR TESSERA (solo ECM) ─────────────────────────────────── -->
     <div id="s-ocr" class="step">
       <div class="pbar"><div class="fill" style="width:42%"></div></div>
-      <div class="step-title">📄 Scansione Tessera Sanitaria</div>
+      <div class="step-title">📄 Scansione <span style="background:#fff3cd;color:#856404;border-radius:4px;padding:1px 6px;font-weight:800;letter-spacing:.5px">TESSERA SANITARIA</span></div>
       <div class="priv-notice">
         🔒 La foto è usata <strong>esclusivamente</strong> per estrarre i dati anagrafici via <strong>Google Vision API</strong>. L'immagine <strong>non viene salvata</strong> dopo l'elaborazione.
       </div>
       <div class="msg msg-warn" style="display:block;margin-bottom:14px">
-        📸 Fotografa il <strong>RETRO</strong> della Tessera Sanitaria dove è visibile il <strong>Codice Fiscale a 16 caratteri</strong>. Inquadra tutta la tessera su una superficie piana con buona luce.
+        📸 Fotografa il <strong>RETRO</strong> della <strong>Tessera Sanitaria</strong> dove è visibile il <strong>Codice Fiscale a 16 caratteri</strong>. Inquadra tutta la tessera su una superficie piana con buona luce.
       </div>
       <div class="upload-zone" id="upload-zone" onclick="document.getElementById('u-img').click()">
         <input type="file" id="u-img" accept="image/*" onchange="onFileSelect(this)">
