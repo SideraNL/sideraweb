@@ -205,7 +205,7 @@
     <img src="img/logo-sidera-white.png" alt="Sidera" onerror="this.style.display='none'">
     <div>
       <div class="title">SideraDA10</div>
-      <div class="ver">Scanner Presenze ECM — v1.0</div>
+      <div class="ver">Scanner Presenze ECM — v1.1</div>
     </div>
   </div>
 
@@ -259,6 +259,11 @@
 
     <!-- Decision panel -->
     <div class="decision" id="decision">
+      <div id="pax-name" style="display:none;font-size:18px;font-weight:700;color:var(--success);margin-bottom:8px;text-align:center"></div>
+      <div id="pax-warning" style="display:none;font-size:13px;color:var(--warning);margin-bottom:8px;text-align:center;font-weight:500">
+        <span class="material-icons" style="font-size:16px;vertical-align:middle">warning</span>
+        CF non in lista iscritti
+      </div>
       <div class="cf-display" id="cf-display"></div>
       <div class="btn-row">
         <button class="btn btn-success btn-lg" onclick="registra('IN')">
@@ -291,15 +296,18 @@
 
 <script>
 /* ========================================================
-   SideraDA10 — Scanner Presenze ECM
+   SideraDA10 — Scanner Presenze ECM v1.1
    GitHub Pages + GAS endpoint
+   PAX: verifica CF contro lista iscritti
    ======================================================== */
 
-// --- CONFIGURAZIONE ---
-// Dopo il deploy GAS, inserire qui l'URL della web app
 const GAS_ENDPOINT = "https://script.google.com/macros/s/AKfycbzxDPL5nOTryyxaWDfs43dVPFYD4vFhIoQPd5umPGSJYj8OUs4bHvfSYecuMDYbJaF7/exec";
 
 let currentProject = null;
+let currentSsId    = null;
+let paxList        = [];      // [{cf, cognome, nome, email}, ...]
+let paxLoaded      = false;
+let eventiData     = [];      // corsi.json con ssId
 let html5QrCode    = null;
 let scannerAttivo  = false;
 let logEntries     = [];
@@ -310,8 +318,16 @@ let logEntries     = [];
   fetch('corsi.json?' + Date.now())
     .then(r => r.json())
     .then(eventi => {
-      // Prendi solo i primi 3
-      const prossimi = eventi.slice(0, 3);
+      eventiData = eventi;
+      const oggi = new Date(); oggi.setHours(0,0,0,0);
+      // Solo eventi futuri con ssId
+      const prossimi = eventi.filter(e => {
+        if (!e.ssId) return false;
+        const parts = e.data.split('/');
+        if (parts.length !== 3) return false;
+        const d = new Date(parts[2], parts[1]-1, parts[0]);
+        return d >= oggi;
+      }).slice(0, 5);
       if (prossimi.length === 0) return;
       const sel = document.getElementById('select-evento');
       prossimi.forEach(e => {
@@ -327,42 +343,93 @@ let logEntries     = [];
 
 function selezionaDaDropdown() {
   const sel = document.getElementById('select-evento');
-  if (sel.value) {
+  if (!sel.value) return;
+  const evt = eventiData.find(e => e.idPgt === sel.value);
+  if (evt && evt.ssId) {
     document.getElementById('input-idpgt').value = sel.value;
-    setProgetto();
+    setProgetto(evt.ssId);
   }
 }
 
 // --- PROGETTO ---
 
-function setProgetto() {
+function setProgetto(ssId) {
   const id = document.getElementById('input-idpgt').value.trim();
   if (!id) { toast('Inserisci un codice progetto', 'warning'); return; }
+
+  // Se non è passato ssId, prova a cercarlo da eventiData
+  if (!ssId) {
+    const evt = eventiData.find(e => e.idPgt === id);
+    ssId = evt ? evt.ssId : null;
+  }
+  if (!ssId) {
+    toast('Progetto non trovato — usa il menu a tendina', 'error');
+    return;
+  }
+
   currentProject = id;
+  currentSsId = ssId;
+  paxLoaded = false;
+  paxList = [];
   sessionStorage.setItem('siderada10_progetto', id);
+  sessionStorage.setItem('siderada10_ssid', ssId);
   document.getElementById('badge-id').textContent = id;
   document.getElementById('project-badge').classList.add('active');
   document.getElementById('setup-form').style.display = 'none';
+
+  // Carica PAX prima di abilitare lo scanner
+  caricaPax(ssId);
+}
+
+function caricaPax(ssId) {
+  document.getElementById('spinner').classList.add('active');
   document.querySelectorAll('.scanner-wrap').forEach(el => el.classList.add('active'));
-  toast('Progetto ' + id + ' selezionato', 'success');
+  document.getElementById('btn-scan').disabled = true;
+
+  const url = GAS_ENDPOINT + '?action=pax&ssId=' + encodeURIComponent(ssId);
+  fetch(url, { redirect: 'follow' })
+    .then(r => r.json())
+    .then(result => {
+      document.getElementById('spinner').classList.remove('active');
+      if (result.ok) {
+        paxList = result.pax || [];
+        paxLoaded = true;
+        document.getElementById('btn-scan').disabled = false;
+        toast(paxList.length + ' iscritti caricati', 'success');
+      } else {
+        toast('Errore PAX: ' + (result.error || 'sconosciuto'), 'error');
+        resetProgetto();
+      }
+    })
+    .catch(err => {
+      document.getElementById('spinner').classList.remove('active');
+      toast('Errore rete PAX: ' + err.message, 'error');
+      resetProgetto();
+    });
 }
 
 // Auto-ripristina progetto al caricamento pagina
 (function autoRestore() {
-  const saved = sessionStorage.getItem('siderada10_progetto');
-  if (saved) {
-    document.getElementById('input-idpgt').value = saved;
-    setProgetto();
+  const savedId   = sessionStorage.getItem('siderada10_progetto');
+  const savedSsId = sessionStorage.getItem('siderada10_ssid');
+  if (savedId && savedSsId) {
+    document.getElementById('input-idpgt').value = savedId;
+    setProgetto(savedSsId);
   }
 })();
 
 function resetProgetto() {
   currentProject = null;
+  currentSsId = null;
+  paxList = [];
+  paxLoaded = false;
   sessionStorage.removeItem('siderada10_progetto');
+  sessionStorage.removeItem('siderada10_ssid');
   stopScanner();
   document.getElementById('project-badge').classList.remove('active');
   document.getElementById('setup-form').style.display = '';
   document.getElementById('input-idpgt').value = '';
+  document.getElementById('select-evento').value = '';
   document.querySelectorAll('.scanner-wrap').forEach(el => el.classList.remove('active'));
   nascondiDecision();
 }
@@ -374,8 +441,8 @@ function toggleScanner() {
 }
 
 function avviaScanner() {
+  if (!paxLoaded) { toast('Lista iscritti non caricata', 'warning'); return; }
   nascondiDecision();
-  // Pulisci il contenitore reader prima di creare nuova istanza
   document.getElementById('reader').innerHTML = '';
   html5QrCode = new Html5Qrcode("reader");
   html5QrCode.start(
@@ -409,6 +476,19 @@ function onScanSuccess(decodedText) {
   stopScanner().then(() => {
     const cf = decodedText.trim().toUpperCase();
     document.getElementById('cf-display').textContent = cf;
+
+    // Verifica CF nella lista PAX
+    const found = paxList.find(p => p.cf === cf);
+    const nameEl = document.getElementById('pax-name');
+    const warnEl = document.getElementById('pax-warning');
+    if (found) {
+      nameEl.textContent = found.cognome + ' ' + found.nome;
+      nameEl.style.display = 'block';
+      warnEl.style.display = 'none';
+    } else {
+      nameEl.style.display = 'none';
+      warnEl.style.display = 'block';
+    }
     document.getElementById('decision').classList.add('active');
   });
 }
@@ -416,6 +496,8 @@ function onScanSuccess(decodedText) {
 function nascondiDecision() {
   document.getElementById('decision').classList.remove('active');
   document.getElementById('cf-display').textContent = '';
+  document.getElementById('pax-name').style.display = 'none';
+  document.getElementById('pax-warning').style.display = 'none';
 }
 
 function annulla() {
@@ -426,44 +508,31 @@ function annulla() {
 // --- REGISTRAZIONE ---
 
 function registra(tipo) {
-  if (!GAS_ENDPOINT) {
-    toast('Endpoint GAS non configurato', 'error');
-    return;
-  }
   const cf = document.getElementById('cf-display').textContent;
   if (!cf || !currentProject) return;
 
-  // Disabilita bottoni
   document.querySelectorAll('.decision .btn').forEach(b => b.disabled = true);
   document.getElementById('spinner').classList.add('active');
-
-  const payload = {
-    idPgt: currentProject,
-    cf: cf,
-    tipo: tipo
-  };
 
   fetch(GAS_ENDPOINT, {
     method: 'POST',
     headers: { 'Content-Type': 'text/plain' },
-    body: JSON.stringify(payload),
+    body: JSON.stringify({ idPgt: currentProject, cf: cf, tipo: tipo }),
     redirect: 'follow'
   })
   .then(r => r.json())
   .then(result => {
     document.getElementById('spinner').classList.remove('active');
     document.querySelectorAll('.decision .btn').forEach(b => b.disabled = false);
-
     if (result.ok) {
       const label = tipo === 'IN' ? 'INGRESSO' : 'USCITA';
-      // Salva nel log persistente per questa sessione
+      const found = paxList.find(p => p.cf === cf);
+      const nome = found ? ' — ' + found.cognome + ' ' + found.nome : '';
       const logs = JSON.parse(sessionStorage.getItem('siderada10_log') || '[]');
-      logs.unshift({ cf, tipo, dataOra: result.dataOra });
+      logs.unshift({ cf, tipo, dataOra: result.dataOra, nome: nome.replace(' — ', '') });
       sessionStorage.setItem('siderada10_log', JSON.stringify(logs));
-      // Ricarica la pagina — risolve tutti i problemi camera mobile
-      alert(cf + ' — ' + label + ' registrato ✓');
+      alert(cf + nome + ' — ' + label + ' registrato ✓');
       location.reload();
-      return;
     } else {
       toast('Errore: ' + (result.error || 'sconosciuto'), 'error');
     }
@@ -477,26 +546,21 @@ function registra(tipo) {
 
 // --- LOG SESSIONE ---
 
-function addLog(cf, tipo, dataOra) {
-  logEntries.unshift({ cf, tipo, dataOra });
-  renderLog();
-}
-
 function renderLog() {
   const wrap = document.getElementById('log-wrap');
   if (logEntries.length === 0) return;
   wrap.innerHTML = logEntries.map(e => {
     const cls = e.tipo === 'IN' ? 'in' : 'out';
     const ora = e.dataOra ? e.dataOra.split(' ')[1] || '' : '';
+    const nome = e.nome ? ' — ' + e.nome : '';
     return '<div class="log-entry">' +
       '<span class="badge ' + cls + '">' + e.tipo + '</span>' +
-      '<span>' + e.cf + '</span>' +
+      '<span>' + e.cf + nome + '</span>' +
       '<span class="time">' + ora + '</span>' +
     '</div>';
   }).join('');
 }
 
-// Ripristina log da sessionStorage al caricamento
 (function restoreLog() {
   const saved = JSON.parse(sessionStorage.getItem('siderada10_log') || '[]');
   if (saved.length > 0) {
