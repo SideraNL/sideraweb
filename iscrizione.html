@@ -45,6 +45,13 @@
     .data-card .dl { font-size: .72rem; color: #888; text-transform: uppercase; letter-spacing: .5px; }
     .data-card .dv { font-size: .98rem; font-weight: 600; color: #222; margin-top: 2px; }
     .priv-notice { background: #f0f7ff; border: 1px solid #b6d4fe; border-radius: 8px; padding: 10px 14px; font-size: .8rem; color: #333; margin-bottom: 14px; }
+    .tessera-esempio { margin: 12px 0 16px; }
+    .tessera-esempio summary { cursor: pointer; color: #0d47a1; font-size: .85rem; font-weight: 600; padding: 8px 14px; background: #e3f2fd; border-radius: 6px; border: 1px solid #90caf9; list-style: none; user-select: none; }
+    .tessera-esempio summary::-webkit-details-marker { display: none; }
+    .tessera-esempio summary::before { content: "▶ "; font-size: .75rem; }
+    .tessera-esempio[open] summary::before { content: "▼ "; }
+    .tessera-esempio .svg-wrap { margin-top: 10px; border-radius: 8px; overflow: hidden; border: 1px solid #bbdefb; }
+    .tessera-esempio .svg-caption { font-size: .78rem; color: #555; margin-top: 8px; text-align: center; }
     .pbar { height: 4px; background: #e9ecef; border-radius: 2px; margin-bottom: 20px; }
     .pbar .fill { height: 100%; border-radius: 2px; background: #1565c0; transition: width .35s; }
     .spin { display: inline-block; width: 1rem; height: 1rem; border: 2px solid currentColor; border-radius: 50%; border-right-color: transparent; animation: spin .7s linear infinite; vertical-align: middle; margin-left: 6px; display: none; }
@@ -206,11 +213,66 @@
       <div class="pbar"><div class="fill" style="width:42%"></div></div>
       <div class="step-title">📄 Scansione <span style="background:#fff3cd;color:#856404;border-radius:4px;padding:1px 6px;font-weight:800;letter-spacing:.5px">TESSERA SANITARIA</span></div>
       <div class="priv-notice">
-        🔒 La foto è usata <strong>esclusivamente</strong> per estrarre i dati anagrafici via <strong>Google Vision API</strong>. L'immagine <strong>non viene salvata</strong> dopo l'elaborazione.
+        🔒 La foto sarà utilizzata <strong>esclusivamente</strong> per estrarre i dati anagrafici ai fini ECM mediante <strong>Google Vision API</strong> (Google LLC, USA). L'immagine <strong>non verrà salvata</strong> ed è eliminata immediatamente dopo l'elaborazione. Il trasferimento avviene in modo cifrato e Google tratta i dati come sub-responsabile ai sensi del <strong>GDPR</strong>.
       </div>
-      <div class="msg msg-warn" style="display:block;margin-bottom:14px">
+      <div class="msg msg-warn" style="display:block;margin-bottom:4px">
         📸 Fotografa il <strong>RETRO</strong> della <strong>Tessera Sanitaria</strong> dove è visibile il <strong>Codice Fiscale a 16 caratteri</strong>. Inquadra tutta la tessera su una superficie piana con buona luce.
       </div>
+      <details class="tessera-esempio">
+        <summary>📖 Vedi come fotografare la tessera</summary>
+        <div class="svg-wrap">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 328" width="100%" style="display:block;">
+            <rect width="520" height="328" rx="14" ry="14" fill="#cde8f5"/>
+            <rect x="0" y="0" width="520" height="66" rx="14" ry="14" fill="#1565c0"/>
+            <rect x="0" y="52" width="520" height="14" fill="#1565c0"/>
+            <rect x="14" y="12" width="12" height="34" fill="#009246"/>
+            <rect x="26" y="12" width="12" height="34" fill="#ffffff"/>
+            <rect x="38" y="12" width="12" height="34" fill="#ce2b37"/>
+            <text x="270" y="28" text-anchor="middle" fill="white" font-size="10.5" font-weight="700" font-family="Arial,sans-serif">TESSERA EUROPEA DI ASSICURAZIONE MALATTIA</text>
+            <text x="270" y="42" text-anchor="middle" fill="#90caf9" font-size="8.5" font-family="Arial,sans-serif">Carta Europea di Assicurazione Malattia</text>
+            <text x="270" y="55" text-anchor="middle" fill="#90caf9" font-size="8" font-family="Arial,sans-serif">European Health Insurance Card</text>
+            <rect x="55" y="74" width="350" height="46" rx="2" fill="#222"/>
+            <g fill="white" opacity="0.85">
+              <rect x="65" y="78" width="2" height="38"/> <rect x="70" y="78" width="4" height="38"/> <rect x="77" y="78" width="2" height="38"/> <rect x="82" y="78" width="3" height="38"/> <rect x="88" y="78" width="2" height="38"/> <rect x="93" y="78" width="5" height="38"/>
+              <rect x="101" y="78" width="2" height="38"/> <rect x="106" y="78" width="3" height="38"/> <rect x="112" y="78" width="2" height="38"/> <rect x="117" y="78" width="4" height="38"/> <rect x="124" y="78" width="2" height="38"/> <rect x="129" y="78" width="5" height="38"/>
+              <rect x="137" y="78" width="2" height="38"/> <rect x="142" y="78" width="3" height="38"/> <rect x="148" y="78" width="2" height="38"/> <rect x="153" y="78" width="4" height="38"/> <rect x="160" y="78" width="2" height="38"/> <rect x="165" y="78" width="5" height="38"/>
+              <rect x="173" y="78" width="2" height="38"/> <rect x="178" y="78" width="3" height="38"/> <rect x="184" y="78" width="2" height="38"/> <rect x="189" y="78" width="4" height="38"/> <rect x="196" y="78" width="2" height="38"/> <rect x="201" y="78" width="5" height="38"/>
+              <rect x="209" y="78" width="2" height="38"/> <rect x="214" y="78" width="3" height="38"/> <rect x="220" y="78" width="2" height="38"/> <rect x="225" y="78" width="4" height="38"/> <rect x="232" y="78" width="2" height="38"/> <rect x="237" y="78" width="5" height="38"/>
+              <rect x="245" y="78" width="2" height="38"/> <rect x="250" y="78" width="3" height="38"/> <rect x="256" y="78" width="2" height="38"/> <rect x="261" y="78" width="4" height="38"/> <rect x="268" y="78" width="2" height="38"/> <rect x="273" y="78" width="5" height="38"/>
+              <rect x="281" y="78" width="2" height="38"/> <rect x="286" y="78" width="3" height="38"/> <rect x="292" y="78" width="2" height="38"/> <rect x="297" y="78" width="4" height="38"/> <rect x="304" y="78" width="2" height="38"/> <rect x="309" y="78" width="5" height="38"/>
+              <rect x="317" y="78" width="2" height="38"/> <rect x="322" y="78" width="3" height="38"/> <rect x="328" y="78" width="2" height="38"/> <rect x="333" y="78" width="4" height="38"/> <rect x="340" y="78" width="2" height="38"/> <rect x="345" y="78" width="5" height="38"/>
+              <rect x="353" y="78" width="2" height="38"/> <rect x="358" y="78" width="3" height="38"/> <rect x="364" y="78" width="2" height="38"/> <rect x="369" y="78" width="4" height="38"/> <rect x="376" y="78" width="2" height="38"/> <rect x="381" y="78" width="3" height="38"/> <rect x="387" y="78" width="2" height="38"/> <rect x="392" y="78" width="5" height="38"/>
+            </g>
+            <circle cx="478" cy="97" r="24" fill="#003399"/>
+            <text x="478" y="93" text-anchor="middle" fill="#FFCC00" font-size="7">★ ★ ★</text>
+            <text x="478" y="101" text-anchor="middle" fill="#FFCC00" font-size="9" font-weight="bold" font-family="Arial,sans-serif">IT</text>
+            <text x="478" y="110" text-anchor="middle" fill="#FFCC00" font-size="7">★ ★ ★</text>
+            <line x1="10" y1="134" x2="450" y2="134" stroke="#90caf9" stroke-width="0.7"/>
+            <text x="14" y="148" fill="#1565c0" font-size="7.5" font-family="Arial,sans-serif">3 Cognome</text>
+            <text x="305" y="148" fill="#1565c0" font-size="7.5" font-family="Arial,sans-serif">5 Data di nascita</text>
+            <text x="14" y="162" fill="#222" font-size="10" font-family="Arial,sans-serif">XXXXXXXXXXXXXXXXXX</text>
+            <text x="305" y="162" fill="#222" font-size="10" font-family="Arial,sans-serif">XX XX XXXX</text>
+            <line x1="10" y1="168" x2="450" y2="168" stroke="#90caf9" stroke-width="0.7"/>
+            <text x="14" y="181" fill="#1565c0" font-size="7.5" font-family="Arial,sans-serif">4 Nome</text>
+            <text x="14" y="195" fill="#222" font-size="10" font-family="Arial,sans-serif">XXXXXXXXXXXXXXXXXX</text>
+            <line x1="10" y1="201" x2="450" y2="201" stroke="#90caf9" stroke-width="0.7"/>
+            <rect x="10" y="204" width="210" height="42" rx="4" fill="#fff9c4" stroke="#f9a825" stroke-width="1.5"/>
+            <text x="14" y="217" fill="#e65100" font-size="7" font-family="Arial,sans-serif" font-weight="bold">6 Numero di identificazione personale</text>
+            <text x="14" y="236" fill="#333" font-size="11.5" font-family="monospace" font-weight="bold">XXXXXXXXXXXXXXXX</text>
+            <text x="228" y="217" fill="#1565c0" font-size="7" font-family="Arial,sans-serif">7 Numero di identificazione dell'istituzione</text>
+            <text x="228" y="229" fill="#1565c0" font-size="7.5" font-weight="600" font-family="Arial,sans-serif">SSN-MIN. SALUTE</text>
+            <text x="228" y="241" fill="#222" font-size="9.5" font-family="Arial,sans-serif">XXXXXXXXX</text>
+            <line x1="10" y1="252" x2="450" y2="252" stroke="#90caf9" stroke-width="0.7"/>
+            <text x="14" y="264" fill="#1565c0" font-size="7.5" font-family="Arial,sans-serif">8 Numero della tessera</text>
+            <text x="340" y="264" fill="#1565c0" font-size="7.5" font-family="Arial,sans-serif">9 Scadenza</text>
+            <text x="14" y="278" fill="#222" font-size="10" font-family="Arial,sans-serif">XXXXXXXXXXXXXXXXXXXXXXXXX</text>
+            <text x="340" y="278" fill="#222" font-size="10" font-family="Arial,sans-serif">XX XXXX</text>
+            <rect x="10" y="293" width="420" height="24" rx="4" fill="#fff3e0" stroke="#ffcc80" stroke-width="1"/>
+            <text x="220" y="309" text-anchor="middle" fill="#e65100" font-size="9" font-family="Arial,sans-serif" font-weight="bold">⬆ Il campo 6 contiene il Codice Fiscale (16 caratteri) — assicurati che sia leggibile</text>
+          </svg>
+        </div>
+        <p class="svg-caption">📸 Fotografa il <strong>retro</strong> su una superficie piana con buona illuminazione, inquadrando tutta la tessera</p>
+      </details>
       <div class="upload-zone" id="upload-zone" onclick="document.getElementById('u-img').click()">
         <input type="file" id="u-img" accept="image/*" onchange="onFileSelect(this)">
         <div style="font-size:2.5rem">📷</div>
