@@ -260,12 +260,12 @@
     <!-- Decision panel -->
     <div class="decision" id="decision">
       <div id="pax-name" style="display:none;font-size:18px;font-weight:700;color:var(--success);margin-bottom:8px;text-align:center"></div>
-      <div id="pax-warning" style="display:none;font-size:13px;color:var(--warning);margin-bottom:8px;text-align:center;font-weight:500">
-        <span class="material-icons" style="font-size:16px;vertical-align:middle">warning</span>
-        CF non in lista iscritti
+      <div id="pax-warning" style="display:none;font-size:14px;color:var(--error);margin-bottom:8px;text-align:center;font-weight:600">
+        <span class="material-icons" style="font-size:18px;vertical-align:middle">block</span>
+        Partecipante non iscritto
       </div>
       <div class="cf-display" id="cf-display"></div>
-      <div class="btn-row">
+      <div class="btn-row" id="btn-row-reg">
         <button class="btn btn-success btn-lg" onclick="registra('IN')">
           <span class="material-icons">login</span> INGRESSO
         </button>
@@ -481,13 +481,16 @@ function onScanSuccess(decodedText) {
     const found = paxList.find(p => p.cf === cf);
     const nameEl = document.getElementById('pax-name');
     const warnEl = document.getElementById('pax-warning');
+    const regRow = document.getElementById('btn-row-reg');
     if (found) {
       nameEl.textContent = found.cognome + ' ' + found.nome;
       nameEl.style.display = 'block';
       warnEl.style.display = 'none';
+      regRow.style.display = 'flex';
     } else {
       nameEl.style.display = 'none';
       warnEl.style.display = 'block';
+      regRow.style.display = 'none';
     }
     document.getElementById('decision').classList.add('active');
   });
@@ -498,6 +501,7 @@ function nascondiDecision() {
   document.getElementById('cf-display').textContent = '';
   document.getElementById('pax-name').style.display = 'none';
   document.getElementById('pax-warning').style.display = 'none';
+  document.getElementById('btn-row-reg').style.display = 'flex';
 }
 
 function annulla() {
