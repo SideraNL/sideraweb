@@ -241,6 +241,47 @@
       padding: 4px 0 8px;
     }
 
+    /* --- Report panel --- */
+    .report-overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,.5); z-index: 100;
+      justify-content: center; align-items: flex-start;
+      padding: 20px;
+    }
+    .report-overlay.active { display: flex; }
+    .report-panel {
+      width: 100%; max-width: 480px; max-height: 85vh;
+      background: var(--card); border-radius: var(--radius);
+      box-shadow: 0 8px 32px rgba(0,0,0,.2);
+      display: flex; flex-direction: column; margin-top: 10px;
+    }
+    .report-header {
+      padding: 16px 20px; border-bottom: 1px solid #e0e0e0;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .report-header .card-title { margin: 0; flex: 1; }
+    .report-list {
+      flex: 1; overflow-y: auto; padding: 0 8px 12px;
+    }
+    .report-item {
+      display: flex; align-items: center; padding: 10px 12px;
+      border-bottom: 1px solid #f0f0f0; gap: 10px; font-size: 14px;
+    }
+    .report-dot {
+      width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0;
+    }
+    .report-dot.green { background: var(--success); }
+    .report-dot.red { background: var(--error); }
+    .report-dot.grey { background: #bdbdbd; }
+    .report-item .r-name { flex: 1; font-weight: 500; }
+    .report-item .r-pct { font-weight: 700; min-width: 50px; text-align: right; }
+    .report-item .r-time { font-size: 12px; color: var(--text2); min-width: 60px; text-align: right; }
+    .report-summary {
+      padding: 10px 20px; font-size: 13px; color: var(--text2);
+      border-bottom: 1px solid #e0e0e0; text-align: center;
+    }
+    .report-loading { text-align: center; padding: 30px; color: var(--text2); }
+
     /* --- Responsive --- */
     @media (max-width: 500px) {
       .header { border-radius: 0; }
@@ -255,7 +296,7 @@
     <img src="img/logo-sidera-white.png" alt="Sidera" onerror="this.style.display='none'">
     <div>
       <div class="title">SideraDA10</div>
-      <div class="ver">Scanner Presenze ECM — v1.4</div>
+      <div class="ver">Scanner Presenze ECM — v1.5</div>
     </div>
   </div>
 
@@ -309,6 +350,11 @@
         <span class="material-icons">people</span> PAX
       </button>
     </div>
+    <div style="text-align:center;margin-top:8px">
+      <button class="btn btn-outline" id="btn-report" onclick="apriReport()" style="font-size:12px;padding:6px 16px" disabled>
+        <span class="material-icons" style="font-size:16px">assessment</span> Report presenze
+      </button>
+    </div>
 
     <!-- Decision panel -->
     <div class="decision" id="decision">
@@ -360,6 +406,22 @@
     </div>
   </div>
 
+  <!-- Report overlay -->
+  <div class="report-overlay" id="report-overlay" onclick="if(event.target===this)chiudiReport()">
+    <div class="report-panel">
+      <div class="report-header">
+        <div class="card-title">Report Presenze</div>
+        <button class="pax-close" onclick="chiudiReport()">
+          <span class="material-icons">close</span>
+        </button>
+      </div>
+      <div class="report-summary" id="report-summary"></div>
+      <div class="report-list" id="report-list">
+        <div class="report-loading" id="report-loading">Caricamento...</div>
+      </div>
+    </div>
+  </div>
+
   <!-- Toast -->
   <div class="toast" id="toast"></div>
 
@@ -374,6 +436,7 @@ const GAS_ENDPOINT = "https://script.google.com/macros/s/AKfycbzxDPL5nOTryyxaWDf
 
 let currentProject = null;
 let currentSsId    = null;
+let currentOrari   = [];      // [{giorno, data, ora_in, ora_out, pause:[{in,out}]}]
 let paxList        = [];      // [{cf, cognome, nome, email}, ...]
 let paxLoaded      = false;
 let eventiData     = [];      // corsi.json con ssId
@@ -438,6 +501,8 @@ function setProgetto(ssId) {
 
   currentProject = id;
   currentSsId = ssId;
+  const evt2 = eventiData.find(e => e.idPgt === id);
+  currentOrari = (evt2 && evt2.orari) || [];
   paxLoaded = false;
   paxList = [];
   sessionStorage.setItem('siderada10_progetto', id);
@@ -465,6 +530,7 @@ function caricaPax(ssId) {
         paxLoaded = true;
         document.getElementById('btn-scan').disabled = false;
         document.getElementById('btn-pax').disabled = false;
+        document.getElementById('btn-report').disabled = false;
         toast(paxList.length + ' iscritti caricati', 'success');
       } else {
         toast('Errore PAX: ' + (result.error || 'sconosciuto'), 'error');
@@ -702,6 +768,129 @@ function selezionaPax(cf) {
     regRow.style.display = 'none';
   }
   document.getElementById('decision').classList.add('active');
+}
+
+// --- REPORT PRESENZE ---
+
+function _parseHhmm(s) {
+  if (!s) return 0;
+  const p = s.split(':');
+  return parseInt(p[0]) * 60 + (parseInt(p[1]) || 0);
+}
+
+function apriReport() {
+  if (!currentProject || !paxLoaded) return;
+  document.getElementById('report-overlay').classList.add('active');
+  document.getElementById('report-list').innerHTML = '<div class="report-loading">Caricamento scansioni...</div>';
+  document.getElementById('report-summary').textContent = '';
+
+  fetch(GAS_ENDPOINT + '?action=scans&idPgt=' + encodeURIComponent(currentProject), { redirect: 'follow' })
+    .then(r => r.json())
+    .then(result => {
+      if (!result.ok) { document.getElementById('report-list').innerHTML = '<div class="report-loading">Errore: ' + (result.error||'') + '</div>'; return; }
+      renderReport(result.scans || []);
+    })
+    .catch(err => {
+      document.getElementById('report-list').innerHTML = '<div class="report-loading">Errore rete: ' + err.message + '</div>';
+    });
+}
+
+function chiudiReport() {
+  document.getElementById('report-overlay').classList.remove('active');
+}
+
+function renderReport(scans) {
+  // 1. Mappa date → giorno dal PROGRAMMA
+  const dateToDay = {};
+  const dayInfo = {};
+  let plannedTotal = 0;
+  currentOrari.forEach(g => {
+    const dn = parseInt(g.giorno);
+    dateToDay[g.data] = dn;
+    const oIn = _parseHhmm(g.ora_in), oOut = _parseHhmm(g.ora_out);
+    let pauseMins = 0;
+    (g.pause || []).forEach(p => { pauseMins += _parseHhmm(p.out) - _parseHhmm(p.in); });
+    dayInfo[dn] = { ora_in: oIn, ora_out: oOut, pause: g.pause || [], planned: Math.max(0, oOut - oIn - pauseMins) };
+    plannedTotal += dayInfo[dn].planned;
+  });
+
+  const soglia = plannedTotal * 0.90;
+  const TOLLERANZA = 10;
+
+  // 2. Raggruppa scansioni per CF e giorno
+  const cfDays = {};
+  scans.forEach(s => {
+    const parts = s.dataOra.split(' ');
+    if (parts.length < 2) return;
+    const dateStr = parts[0], timeStr = parts[1];
+    const dn = dateToDay[dateStr];
+    if (!dn) return;
+    if (!cfDays[s.cf]) cfDays[s.cf] = {};
+    if (!cfDays[s.cf][dn]) cfDays[s.cf][dn] = [];
+    cfDays[s.cf][dn].push({ tipo: s.tipo, time: _parseHhmm(timeStr) });
+  });
+
+  // 3. Calcola per ogni partecipante
+  const reportData = paxList.map(p => {
+    const days = cfDays[p.cf] || {};
+    let totalNet = 0;
+    Object.keys(days).forEach(dnStr => {
+      const dn = parseInt(dnStr);
+      const di = dayInfo[dn];
+      if (!di) return;
+      const dScans = days[dn];
+      const ins = dScans.filter(s => s.tipo === 'IN').sort((a,b) => a.time - b.time);
+      const outs = dScans.filter(s => s.tipo === 'OUT').sort((a,b) => a.time - b.time);
+      if (!ins.length) return;
+      const realIn = ins[0].time;
+      const realOut = outs.length ? outs[outs.length-1].time : di.ora_out;
+      // Clamp
+      const ecmIn = Math.max(realIn, di.ora_in);
+      const ecmOut = Math.min(realOut, di.ora_out);
+      if (ecmOut <= ecmIn) return;
+      // Pause overlap
+      let pov = 0;
+      (di.pause || []).forEach(pa => {
+        const pIn = _parseHhmm(pa['in']), pOut = _parseHhmm(pa.out);
+        const ovS = Math.max(ecmIn, pIn), ovE = Math.min(ecmOut, pOut);
+        if (ovE > ovS) pov += ovE - ovS;
+      });
+      totalNet += Math.max(0, (ecmOut - ecmIn) - pov);
+    });
+
+    // Tolleranza
+    const gap = soglia - totalNet;
+    const ecmOk = plannedTotal > 0 && (totalNet >= soglia || (gap > 0 && gap <= TOLLERANZA));
+    const pct = plannedTotal > 0 ? Math.min(100, Math.round((totalNet / plannedTotal) * 100)) : 0;
+    const absent = Object.keys(days).length === 0;
+
+    return { cognome: p.cognome, nome: p.nome, cf: p.cf, pct, totalNet, ecmOk, absent };
+  }).sort((a,b) => a.cognome.localeCompare(b.cognome));
+
+  // 4. Render
+  const nOk = reportData.filter(r => r.ecmOk).length;
+  const nNo = reportData.filter(r => !r.ecmOk && !r.absent).length;
+  const nAbs = reportData.filter(r => r.absent).length;
+  const plannedStr = Math.floor(plannedTotal/60) + 'h' + String(plannedTotal%60).padStart(2,'0');
+  document.getElementById('report-summary').innerHTML =
+    'Durata netta: <b>' + plannedStr + '</b> · Soglia 90%: <b>' + Math.round(soglia) + ' min</b><br>' +
+    '<span style="color:var(--success)">● ' + nOk + ' idonei</span> · ' +
+    '<span style="color:var(--error)">● ' + nNo + ' non idonei</span> · ' +
+    '<span style="color:#bdbdbd">● ' + nAbs + ' assenti</span>';
+
+  const list = document.getElementById('report-list');
+  if (!reportData.length) { list.innerHTML = '<div class="report-loading">Nessun partecipante</div>'; return; }
+  list.innerHTML = reportData.map(r => {
+    const dotCls = r.absent ? 'grey' : r.ecmOk ? 'green' : 'red';
+    const pctColor = r.absent ? '#bdbdbd' : r.ecmOk ? 'var(--success)' : 'var(--error)';
+    const timeStr = Math.floor(r.totalNet/60) + ':' + String(Math.round(r.totalNet%60)).padStart(2,'0');
+    return '<div class="report-item">' +
+      '<div class="report-dot ' + dotCls + '"></div>' +
+      '<div class="r-name">' + r.cognome + ' ' + r.nome + '</div>' +
+      '<div class="r-time">' + (r.absent ? '—' : timeStr) + '</div>' +
+      '<div class="r-pct" style="color:' + pctColor + '">' + (r.absent ? 'A' : r.pct + '%') + '</div>' +
+    '</div>';
+  }).join('');
 }
 
 // --- TOAST ---
