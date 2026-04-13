@@ -1,0 +1,914 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Iscrizione Corso ECM — Sidera</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>S</text></svg>">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body { background: #f0f4f8; font-family: 'Segoe UI', Tahoma, sans-serif; }
+    .card-main { max-width: 660px; margin: 28px auto 40px; background: #fff; border-radius: 14px; box-shadow: 0 4px 24px rgba(0,0,0,.1); overflow: hidden; }
+    .evt-head { background: #1565c0; color: #fff; padding: 16px 24px; display: none; }
+    .evt-head h1 { font-size: 1.05rem; margin: 0 0 5px; font-weight: 600; line-height: 1.3; }
+    .evt-head .meta { font-size: .82rem; opacity: .88; }
+    .step-body { padding: 24px; }
+    .step { display: none; }
+    .step.active { display: block; }
+    .step-title { font-size: 1.05rem; font-weight: 700; color: #1565c0; margin-bottom: 16px; padding-bottom: 8px; border-bottom: 2px solid #e3f0ff; }
+    label.f-label { font-size: .85rem; font-weight: 600; color: #333; margin-bottom: 4px; display: block; }
+    .form-control, .form-select { font-size: .9rem; border-color: #ced4da; }
+    .form-control:focus, .form-select:focus { border-color: #1565c0; box-shadow: 0 0 0 .2rem rgba(21,101,192,.15); }
+    .msg { border-radius: 8px; padding: 10px 14px; font-size: .87rem; margin-top: 10px; display: none; }
+    .msg-ok   { background: #d1e7dd; color: #0f5132; border: 1px solid #badbcc; }
+    .msg-err  { background: #f8d7da; color: #842029; border: 1px solid #f5c2c7; }
+    .msg-info { background: #cfe2ff; color: #084298; border: 1px solid #b6d4fe; }
+    .msg-warn { background: #fff3cd; color: #664d03; border: 1px solid #ffecb5; }
+    .btn-prim { background: #1565c0; color: #fff; border: none; border-radius: 8px; padding: 11px 0; font-weight: 600; font-size: .9rem; cursor: pointer; width: 100%; transition: background .2s; }
+    .btn-prim:hover:not(:disabled) { background: #0d47a1; }
+    .btn-prim:disabled { opacity: .55; cursor: not-allowed; }
+    .btn-prim.danger { background: #c62828; }
+    .btn-prim.danger:hover:not(:disabled) { background: #b71c1c; }
+    .btn-sec { background: #e9ecef; color: #444; border: none; border-radius: 8px; padding: 10px 20px; font-size: .88rem; cursor: pointer; transition: background .2s; }
+    .btn-sec:hover { background: #dee2e6; }
+    .choice-box { border: 2px solid #dee2e6; border-radius: 12px; padding: 18px 14px; cursor: pointer; text-align: center; transition: all .2s; height: 100%; }
+    .choice-box:hover { border-color: #1565c0; background: #f0f7ff; }
+    .choice-box.sel { border-color: #1565c0; background: #e3f0ff; }
+    .choice-box .icon { font-size: 2rem; }
+    .choice-box h3 { font-size: .95rem; font-weight: 700; margin: 8px 0 4px; color: #1565c0; }
+    .choice-box p { font-size: .8rem; color: #666; margin: 0; }
+    .upload-zone { border: 2px dashed #adb5bd; border-radius: 10px; padding: 26px 16px; text-align: center; cursor: pointer; transition: all .2s; background: #f8f9fa; }
+    .upload-zone:hover { border-color: #1565c0; background: #f0f7ff; }
+    #u-img { display: none; }
+    #preview-img { max-width: 100%; max-height: 220px; border-radius: 8px; border: 1px solid #dee2e6; display: none; margin: 10px auto; }
+    .data-card { background: #f8f9fa; border: 1px solid #e9ecef; border-radius: 8px; padding: 12px 14px; }
+    .data-card .dl { font-size: .72rem; color: #888; text-transform: uppercase; letter-spacing: .5px; }
+    .data-card .dv { font-size: .98rem; font-weight: 600; color: #222; margin-top: 2px; }
+    .priv-notice { background: #f0f7ff; border: 1px solid #b6d4fe; border-radius: 8px; padding: 10px 14px; font-size: .8rem; color: #333; margin-bottom: 14px; }
+    .pbar { height: 4px; background: #e9ecef; border-radius: 2px; margin-bottom: 20px; }
+    .pbar .fill { height: 100%; border-radius: 2px; background: #1565c0; transition: width .35s; }
+    .spin { display: inline-block; width: 1rem; height: 1rem; border: 2px solid currentColor; border-radius: 50%; border-right-color: transparent; animation: spin .7s linear infinite; vertical-align: middle; margin-left: 6px; display: none; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .rie-box { background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 8px; padding: 14px; margin-bottom: 16px; font-size: .85rem; }
+    @media (max-width: 480px) { .card-main { margin: 0; border-radius: 0; min-height: 100vh; } }
+  </style>
+</head>
+<body>
+<div class="card-main">
+
+  <!-- Event header (populated on load) -->
+  <div class="evt-head" id="evt-head">
+    <div style="display:flex;align-items:center;gap:12px">
+      <img src="https://i.ibb.co/XxFJ4bjn/logo-Sidera1280.png" style="height:28px;filter:brightness(0)invert(1)" onerror="this.style.display='none'" alt="Sidera">
+      <div>
+        <h1 id="evt-titolo">Caricamento...</h1>
+        <div class="meta" id="evt-meta"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="step-body">
+
+    <!-- LOADING -->
+    <div id="s-loading" class="step active" style="text-align:center;padding:40px 20px">
+      <div class="spin" style="display:inline-block;width:2.2rem;height:2.2rem;border-width:3px"></div>
+      <p style="color:#777;margin-top:18px;font-size:.9rem">Caricamento in corso...</p>
+    </div>
+
+    <!-- ERROR -->
+    <div id="s-error" class="step">
+      <div style="text-align:center;padding:30px 10px">
+        <div style="font-size:2.5rem">⚠️</div>
+        <h4 style="color:#842029;margin:10px 0">Errore</h4>
+        <p id="s-error-msg" style="color:#666;font-size:.9rem">Impossibile caricare il progetto.</p>
+      </div>
+    </div>
+
+    <!-- CLOSED -->
+    <div id="s-closed" class="step">
+      <div style="text-align:center;padding:30px 10px">
+        <div style="font-size:3rem">🔒</div>
+        <h3 style="margin-top:12px">Iscrizioni Chiuse</h3>
+        <p id="s-closed-reason" style="color:#666;font-size:.9rem"></p>
+      </div>
+    </div>
+
+    <!-- ── UNSUBSCRIBE FLOW ────────────────────────────────────────────────── -->
+    <div id="s-unsub" class="step">
+      <div id="unsub-loading" style="text-align:center;padding:30px">
+        <div class="spin" style="display:inline-block;width:2rem;height:2rem;border-width:3px"></div>
+        <p style="color:#777;margin-top:14px;font-size:.9rem">Verifica iscrizione...</p>
+      </div>
+      <div id="unsub-err" style="display:none;text-align:center;padding:30px">
+        <div style="font-size:2.5rem">❌</div>
+        <h4 style="margin:10px 0">Impossibile procedere</h4>
+        <p id="unsub-err-msg" style="color:#666;font-size:.9rem"></p>
+        <p style="font-size:.82rem;color:#888">Per assistenza: <a href="mailto:direzione@sideraweb.it">direzione@sideraweb.it</a></p>
+      </div>
+      <div id="unsub-confirm" style="display:none">
+        <div class="step-title">⚠️ Annulla Iscrizione</div>
+        <p style="color:#666;font-size:.88rem;margin-bottom:14px">Stai per annullare la tua iscrizione al seguente corso:</p>
+        <div class="data-card mb-3">
+          <div class="row g-2">
+            <div class="col-12"><div class="dl">Corso</div><div class="dv" id="unsub-corso">-</div></div>
+            <div class="col-6"><div class="dl">Data</div><div class="dv" id="unsub-data">-</div></div>
+            <div class="col-6"><div class="dl">Luogo</div><div class="dv" id="unsub-luogo">-</div></div>
+            <div class="col-12" style="border-top:1px solid #e9ecef;margin-top:6px;padding-top:8px">
+              <div class="dl">Partecipante</div><div class="dv" id="unsub-nome">-</div>
+            </div>
+            <div class="col-12"><div class="dl">Email</div><div class="dv" id="unsub-email">-</div></div>
+          </div>
+        </div>
+        <div class="msg msg-warn" style="display:block"><strong>⚠️ Attenzione:</strong> Questa operazione è irreversibile.</div>
+        <div style="display:flex;gap:10px;margin-top:16px">
+          <button class="btn-sec" style="flex:1" onclick="window.close()">Chiudi</button>
+          <button class="btn-prim danger" style="flex:2" id="btn-unsub" onclick="doUnsub(this)">
+            CONFERMA CANCELLAZIONE <span class="spin"></span>
+          </button>
+        </div>
+        <div class="msg" id="msg-unsub" style="margin-top:10px"></div>
+      </div>
+      <div id="unsub-ok" style="display:none;text-align:center;padding:30px">
+        <div style="font-size:3rem">✅</div>
+        <h4 style="color:#0f5132;margin:12px 0">Iscrizione Annullata</h4>
+        <p><strong id="unsub-ok-nome"></strong>, la tua iscrizione è stata annullata con successo.</p>
+        <p style="color:#777;font-size:.82rem">Puoi chiudere questa pagina.</p>
+      </div>
+    </div>
+
+    <!-- ── STEP 1: OTP ─────────────────────────────────────────────────────── -->
+    <div id="s-otp" class="step">
+      <div class="pbar"><div class="fill" style="width:14%"></div></div>
+      <div class="step-title">📧 Verifica Email</div>
+      <div id="otp-1">
+        <label class="f-label">La tua email personale</label>
+        <input type="email" id="u-email" class="form-control mb-2" placeholder="nome.cognome@email.com"
+               onkeydown="if(event.key==='Enter')reqOtp()">
+        <div class="msg msg-info" style="display:block;margin-bottom:14px">
+          <strong>📧 Come funziona la verifica:</strong>
+          <ol style="margin:6px 0 0 16px;padding:0;font-size:.84rem">
+            <li>Clicca "Richiedi Codice OTP"</li>
+            <li>Riceverai un'email con un <strong>codice di 4 cifre</strong></li>
+            <li>Se non la ricevi entro 2 minuti, controlla lo <strong>Spam</strong></li>
+          </ol>
+          <div style="margin-top:8px;font-size:.82rem;background:#fff8e1;border:1px solid #ffe0b2;border-radius:5px;padding:6px 10px">
+            Si consiglia un'email personale (non aziendale). Le comunicazioni successive — link test ECM e attestati — saranno inviate a questo indirizzo.
+          </div>
+        </div>
+        <button class="btn-prim" id="btn-req-otp" onclick="reqOtp()">
+          Richiedi Codice OTP <span class="spin"></span>
+        </button>
+      </div>
+      <div id="otp-2" style="display:none">
+        <p style="color:#444;font-size:.88rem;margin-bottom:12px">Codice inviato a <strong id="otp-email-shown"></strong></p>
+        <label class="f-label">Codice OTP (4 cifre)</label>
+        <input type="text" id="u-otp" class="form-control mb-1 text-center"
+               style="font-size:1.5rem;letter-spacing:8px;max-width:180px;margin:0 auto 10px"
+               maxlength="4" placeholder="____" onkeydown="if(event.key==='Enter')verOtp()">
+        <div style="text-align:center;color:#777;font-size:.8rem;margin-bottom:14px">Valido per 15 minuti</div>
+        <div style="display:flex;gap:8px">
+          <button class="btn-sec" onclick="resetOtp()">← Cambia email</button>
+          <button class="btn-prim" id="btn-ver-otp" onclick="verOtp()" style="flex:1">
+            Verifica Codice <span class="spin"></span>
+          </button>
+        </div>
+      </div>
+      <div class="msg" id="msg-otp" style="margin-top:10px"></div>
+    </div>
+
+    <!-- ── STEP 2: TIPO ISCRIZIONE ─────────────────────────────────────────── -->
+    <div id="s-choice" class="step">
+      <div class="pbar"><div class="fill" style="width:28%"></div></div>
+      <div class="step-title">Tipo di Partecipazione</div>
+      <p style="color:#666;font-size:.87rem;margin-bottom:16px">Seleziona come vuoi partecipare al corso</p>
+      <div class="row g-3 mb-3">
+        <div class="col-6">
+          <div class="choice-box" id="choice-ecm" onclick="selChoice('ECM')">
+            <div class="icon">🎓</div>
+            <h3>CON CREDITI ECM</h3>
+            <p>Partecipo per ottenere i crediti formativi ECM. Richiede verifica dei dati anagrafici.</p>
+          </div>
+        </div>
+        <div class="col-6">
+          <div class="choice-box" id="choice-noecm" onclick="selChoice('NON_ECM')">
+            <div class="icon">👤</div>
+            <h3>SENZA CREDITI ECM</h3>
+            <p>Studenti, non sanitari o chi non necessita di crediti ECM.</p>
+          </div>
+        </div>
+      </div>
+      <button class="btn-prim" id="btn-choice" onclick="goFromChoice()" disabled>Prosegui →</button>
+      <div class="msg" id="msg-choice" style="margin-top:10px"></div>
+    </div>
+
+    <!-- ── STEP 3: OCR TESSERA (solo ECM) ─────────────────────────────────── -->
+    <div id="s-ocr" class="step">
+      <div class="pbar"><div class="fill" style="width:42%"></div></div>
+      <div class="step-title">📄 Scansione Tessera Sanitaria</div>
+      <div class="priv-notice">
+        🔒 La foto è usata <strong>esclusivamente</strong> per estrarre i dati anagrafici via <strong>Google Vision API</strong>. L'immagine <strong>non viene salvata</strong> dopo l'elaborazione.
+      </div>
+      <div class="msg msg-warn" style="display:block;margin-bottom:14px">
+        📸 Fotografa il <strong>RETRO</strong> della Tessera Sanitaria dove è visibile il <strong>Codice Fiscale a 16 caratteri</strong>. Inquadra tutta la tessera su una superficie piana con buona luce.
+      </div>
+      <div class="upload-zone" id="upload-zone" onclick="document.getElementById('u-img').click()">
+        <input type="file" id="u-img" accept="image/*" onchange="onFileSelect(this)">
+        <div style="font-size:2.5rem">📷</div>
+        <div style="font-size:.95rem"><strong>Clicca qui</strong> oppure trascina l'immagine</div>
+        <small style="color:#888">Formati accettati: JPG, PNG — max 5 MB</small>
+      </div>
+      <div style="text-align:center">
+        <img id="preview-img" alt="Anteprima">
+        <div id="file-info" style="display:none;font-size:.82rem;color:#666;margin-top:4px">
+          <span id="file-name"></span>
+          <button onclick="removeImg()" style="background:none;border:none;color:#c62828;cursor:pointer;margin-left:8px;font-size:.82rem">✕ Rimuovi</button>
+        </div>
+      </div>
+      <button class="btn-prim mt-3" id="btn-ocr" onclick="doOcr(this)" disabled>
+        ESTRAI DATI DAL DOCUMENTO <span class="spin"></span>
+      </button>
+      <div class="msg" id="msg-ocr" style="margin-top:10px"></div>
+    </div>
+
+    <!-- ── STEP 4: REVISIONE DATI OCR (solo ECM) ──────────────────────────── -->
+    <div id="s-ocr-rev" class="step">
+      <div class="pbar"><div class="fill" style="width:55%"></div></div>
+      <div class="step-title">📋 Dati Estratti dalla Tessera</div>
+      <div class="msg" id="msg-omo" style="margin-bottom:12px"></div>
+      <div class="msg" id="msg-datafix" style="margin-bottom:12px"></div>
+      <div id="ocr-ok">
+        <div class="row g-2 mb-3">
+          <div class="col-6"><div class="data-card"><div class="dl">Cognome</div><div class="dv" id="d-cognome">-</div></div></div>
+          <div class="col-6"><div class="data-card"><div class="dl">Nome</div><div class="dv" id="d-nome">-</div></div></div>
+          <div class="col-6"><div class="data-card"><div class="dl">Data di Nascita</div><div class="dv" id="d-datanascita">-</div></div></div>
+          <div class="col-6"><div class="data-card"><div class="dl">Luogo di Nascita</div><div class="dv" id="d-luogonascita">-</div></div></div>
+          <div class="col-12"><div class="data-card"><div class="dl">Codice Fiscale</div><div class="dv" id="d-cf" style="font-family:monospace;letter-spacing:2px;font-size:1.05rem">-</div></div></div>
+        </div>
+        <div class="msg msg-info" style="display:block;margin-bottom:14px">
+          Verifica che i dati corrispondano alla tua Tessera Sanitaria. I dati errati compromettono l'attribuzione dei crediti ECM.
+        </div>
+        <div style="display:flex;gap:10px">
+          <button class="btn-sec" onclick="showStep('s-ocr')">← Riprova</button>
+          <button class="btn-prim" id="btn-ocr-ok" onclick="confirmOcr(this)" style="flex:1">
+            Sì, i dati sono corretti → <span class="spin"></span>
+          </button>
+        </div>
+      </div>
+      <div id="ocr-fail" style="display:none">
+        <div class="msg msg-err" style="display:block">
+          <strong>⚠️ Estrazione incompleta</strong><br>
+          Non sono stati acquisiti tutti i dati necessari per l'iscrizione ECM.<br>
+          Riprova con una foto più nitida del <strong>retro della tessera sanitaria</strong>.
+        </div>
+        <div style="background:#fff3cd;border:1px solid #ffecb5;border-radius:8px;padding:10px 14px;font-size:.82rem;margin-top:10px;color:#664d03">
+          Se il problema persiste, scrivi a <a href="mailto:direzione@sideraweb.it" style="color:#0d47a1">direzione@sideraweb.it</a>
+          allegando la foto del retro della tessera.
+        </div>
+        <button class="btn-sec mt-3" onclick="showStep('s-ocr')">← Riprova</button>
+      </div>
+    </div>
+
+    <!-- ── STEP 5: DATI ANAGRAFICI ─────────────────────────────────────────── -->
+    <div id="s-ana" class="step">
+      <div class="pbar"><div class="fill" style="width:68%"></div></div>
+      <div class="step-title">👤 Dati Anagrafici</div>
+      <!-- ECM: readonly da tessera -->
+      <div id="ana-ecm" style="display:none">
+        <div class="row g-2">
+          <div class="col-6"><label class="f-label">Cognome</label><input type="text" id="f-cognome" class="form-control" readonly style="background:#f8f9fa"></div>
+          <div class="col-6"><label class="f-label">Nome</label><input type="text" id="f-nome" class="form-control" readonly style="background:#f8f9fa"></div>
+          <div class="col-6"><label class="f-label">Data di Nascita</label><input type="text" id="f-datanascita" class="form-control" readonly style="background:#f8f9fa"></div>
+          <div class="col-6"><label class="f-label">Luogo di Nascita</label><input type="text" id="f-luogonascita" class="form-control" readonly style="background:#f8f9fa"></div>
+          <div class="col-12"><label class="f-label">Codice Fiscale</label><input type="text" id="f-cf" class="form-control" readonly style="background:#f8f9fa;font-family:monospace;letter-spacing:2px"></div>
+        </div>
+        <div class="msg msg-info" style="display:block;margin-top:10px;font-size:.82rem">I dati anagrafici sono stati acquisiti dalla Tessera Sanitaria e non possono essere modificati.</div>
+      </div>
+      <!-- Non-ECM: editabile -->
+      <div id="ana-noecm" style="display:none">
+        <div class="row g-2">
+          <div class="col-6"><label class="f-label">Cognome *</label><input type="text" id="f2-cognome" class="form-control" placeholder="ROSSI" style="text-transform:uppercase" oninput="this.value=this.value.toUpperCase()"></div>
+          <div class="col-6"><label class="f-label">Nome *</label><input type="text" id="f2-nome" class="form-control" placeholder="MARIO" style="text-transform:uppercase" oninput="this.value=this.value.toUpperCase()"></div>
+        </div>
+      </div>
+      <button class="btn-prim mt-3" id="btn-ana" onclick="goFromAna(this)">
+        Prosegui → <span class="spin"></span>
+      </button>
+      <div class="msg" id="msg-ana" style="margin-top:10px"></div>
+    </div>
+
+    <!-- ── STEP 6: PROFESSIONE ─────────────────────────────────────────────── -->
+    <div id="s-prof" class="step">
+      <div class="pbar"><div class="fill" style="width:80%"></div></div>
+      <div class="step-title">🏥 Professione</div>
+      <div class="mb-3">
+        <label class="f-label">Professione *</label>
+        <select id="f-professione" class="form-select" onchange="onProfChange()">
+          <option value="">— Seleziona la professione —</option>
+        </select>
+      </div>
+      <!-- Solo ECM -->
+      <div id="blk-occ" style="display:none">
+        <div class="mb-3">
+          <label class="f-label">Occupazione *</label>
+          <select id="f-occupazione" class="form-select">
+            <option value="">— Seleziona —</option>
+            <option>DIPENDENTE SSN</option>
+            <option>LIBERO PROFESSIONISTA</option>
+            <option>UNIVERSITARIO</option>
+            <option>STUDENTE</option>
+            <option>ALTRO</option>
+          </select>
+        </div>
+        <!-- Sponsor (se presenti nel progetto) -->
+        <div id="blk-sponsor" class="mb-3" style="display:none">
+          <label class="f-label">Dichiarazione di Invito</label>
+          <div style="font-size:.8rem;color:#666;margin-bottom:6px">Se sei stato invitato da uno degli sponsor del corso, selezionalo</div>
+          <select id="f-sponsor" class="form-select">
+            <option value="">— Nessuno / Non applicabile —</option>
+          </select>
+        </div>
+        <!-- Albo (per professioni che lo richiedono) -->
+        <div id="blk-albo" class="mb-3" style="display:none">
+          <div class="step-title" style="font-size:.92rem;margin-bottom:12px">Dati Albo Professionale</div>
+          <div class="row g-2">
+            <div class="col-7"><label class="f-label">Albo di iscrizione</label><input type="text" id="f-albo" class="form-control" placeholder="es. Ordine Medici di Roma"></div>
+            <div class="col-5"><label class="f-label">N° Iscrizione</label><input type="text" id="f-num-iscrizione" class="form-control" placeholder="es. 12345"></div>
+          </div>
+        </div>
+      </div>
+      <button class="btn-prim mt-2" onclick="goFromProf()">Prosegui →</button>
+      <div class="msg" id="msg-prof" style="margin-top:10px"></div>
+    </div>
+
+    <!-- ── STEP 7: CONSENSI + SUBMIT ──────────────────────────────────────── -->
+    <div id="s-consensi" class="step">
+      <div class="pbar"><div class="fill" style="width:92%"></div></div>
+      <div class="step-title">📝 Consensi e Conferma</div>
+
+      <!-- Solo ECM -->
+      <div id="blk-consenso-ecm" style="display:none">
+        <div class="form-check mb-3">
+          <input class="form-check-input" type="checkbox" id="f-consenso-ecm">
+          <label class="form-check-label" for="f-consenso-ecm" style="font-size:.86rem">
+            <strong>Consenso ECM *</strong> — Autorizzo il trattamento dei miei dati personali ai fini del riconoscimento dei crediti ECM e la comunicazione al Co.Ge.A.P.S. e agli enti accreditatori, ai sensi del D.Lgs. 196/2003 e GDPR 2016/679.
+          </label>
+        </div>
+        <div class="form-check mb-3">
+          <input class="form-check-input" type="checkbox" id="f-dichiarazione-invito" checked>
+          <label class="form-check-label" for="f-dichiarazione-invito" style="font-size:.86rem">
+            <strong>Dichiarazione *</strong> — Dichiaro di non essere dipendente dello sponsor del corso e di non avere conflitti di interesse che possano influenzare i miei giudizi professionali.
+          </label>
+        </div>
+      </div>
+
+      <div class="form-check mb-4">
+        <input class="form-check-input" type="checkbox" id="f-privacy" checked>
+        <label class="form-check-label" for="f-privacy" style="font-size:.86rem">
+          <strong>Privacy *</strong> — Ho letto e accetto l'<a href="https://www.sideraweb.com/privacy.html" target="_blank" style="color:#1565c0">Informativa sulla Privacy</a> (GDPR art. 13) e acconsento al trattamento dei miei dati per la gestione dell'iscrizione al corso.
+        </label>
+      </div>
+
+      <!-- Riepilogo -->
+      <div class="rie-box">
+        <strong style="display:block;margin-bottom:8px;color:#1565c0">📋 Riepilogo</strong>
+        <div class="row g-1 small">
+          <div class="col-6"><span style="color:#888">Tipo:</span> <strong id="rie-tipo">-</strong></div>
+          <div class="col-6"><span style="color:#888">Email:</span> <strong id="rie-email">-</strong></div>
+          <div class="col-6"><span style="color:#888">Nome:</span> <strong id="rie-nome">-</strong></div>
+          <div class="col-6"><span style="color:#888">Professione:</span> <strong id="rie-prof">-</strong></div>
+        </div>
+      </div>
+
+      <button class="btn-prim" id="btn-submit" onclick="doSubmit(this)">
+        ✅ CONFERMA ISCRIZIONE <span class="spin"></span>
+      </button>
+      <div class="msg" id="msg-submit" style="margin-top:10px"></div>
+    </div>
+
+    <!-- ── SUCCESSO ───────────────────────────────────────────────────────── -->
+    <div id="s-success" class="step">
+      <div style="text-align:center;padding:30px 10px">
+        <div style="font-size:3.5rem">✅</div>
+        <h3 style="color:#0f5132;margin:14px 0 8px">Iscrizione Completata!</h3>
+        <p id="s-success-msg" style="color:#444;font-size:.9rem"></p>
+        <div style="background:#d1e7dd;border:1px solid #badbcc;border-radius:8px;padding:14px;font-size:.85rem;color:#0f5132;margin-top:16px;text-align:left">
+          📧 Riceverai una <strong>email di conferma</strong> con il riepilogo dell'iscrizione.<br>
+          Controlla anche la cartella <strong>Spam</strong> se non la ricevi entro pochi minuti.
+        </div>
+        <p style="color:#777;font-size:.8rem;margin-top:20px">Puoi chiudere questa pagina.</p>
+      </div>
+    </div>
+
+  </div><!-- /step-body -->
+</div><!-- /card-main -->
+
+<script>
+// ─────────────────────────────────────────────────────────────────────────────
+// CONFIGURAZIONE
+// ─────────────────────────────────────────────────────────────────────────────
+const GAS_API = 'https://script.google.com/macros/s/AKfycbzmAHe6n0kLk7N-cXGEBKSGsSDAF32ZtkQ-Lu19UNut3k_Bb00ueHajWubZr9wpNZEd/exec';
+
+// ─────────────────────────────────────────────────────────────────────────────
+// STATO
+// ─────────────────────────────────────────────────────────────────────────────
+let idPgt = '';
+let tipoIscrizione = '';   // 'ECM' | 'NON_ECM'
+let emailVerificata = '';
+let ocrData = {};
+let cfgSponsor = [];
+let cfgProfessioni = [];
+let imgBase64 = '';
+let unsubToken = '';
+
+// ─────────────────────────────────────────────────────────────────────────────
+// UTILITY
+// ─────────────────────────────────────────────────────────────────────────────
+function showStep(id) {
+  document.querySelectorAll('.step').forEach(el => el.classList.remove('active'));
+  const el = document.getElementById(id);
+  if (el) el.classList.add('active');
+}
+
+function showMsg(elId, html, type) {
+  const el = document.getElementById(elId);
+  if (!el) return;
+  el.className = 'msg msg-' + type;
+  el.innerHTML = html;
+  el.style.display = 'block';
+}
+
+function hideMsg(elId) {
+  const el = document.getElementById(elId);
+  if (el) el.style.display = 'none';
+}
+
+function spin(btn, on) {
+  if (!btn) return;
+  btn.disabled = on;
+  const sp = btn.querySelector('.spin');
+  if (sp) sp.style.display = on ? 'inline-block' : 'none';
+}
+
+async function gasPost(action, body) {
+  const r = await fetch(GAS_API + '?action=' + action, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain' },
+    body: JSON.stringify(body)
+  });
+  return r.json();
+}
+
+function richiedeAlbo(prof) {
+  const p = (prof || '').toUpperCase();
+  return p.includes('MEDICO') || p.includes('ODONTOIATRA') ||
+         p.includes('INFERMIERE') || p.includes('INFERMIERISTICA') ||
+         p.includes('PSICOLOGO') || p.includes('PSICOLOGIA');
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// INIT
+// ─────────────────────────────────────────────────────────────────────────────
+async function init() {
+  const params = new URLSearchParams(window.location.search);
+  const action = params.get('action');
+  const token  = params.get('token');
+  idPgt = params.get('id') || '';
+
+  if (action === 'unsub' && token) {
+    showStep('s-unsub');
+    await loadUnsub(token);
+    return;
+  }
+
+  if (!idPgt) {
+    document.getElementById('s-error-msg').textContent = 'ID progetto mancante nell\'URL. Usa il link fornito da Sidera.';
+    showStep('s-error');
+    return;
+  }
+
+  try {
+    const d = await gasPost('getEvent', { idpgt: idPgt });
+    if (!d.ok) {
+      document.getElementById('s-error-msg').textContent = d.error || 'Progetto non trovato.';
+      showStep('s-error');
+      return;
+    }
+
+    // Popola header evento
+    const ev = d.evento || {};
+    const head = document.getElementById('evt-head');
+    head.style.display = 'block';
+    document.getElementById('evt-titolo').textContent = ev.titolo || ('Progetto ' + idPgt);
+    const metaParts = [
+      ev.date   ? '📅 ' + ev.date   : '',
+      ev.luogo  ? '📍 ' + ev.luogo  : '',
+      ev.necm   ? '🔖 ECM: ' + ev.necm : '',
+      ev.crediti ? ev.crediti + ' crediti' : ''
+    ].filter(Boolean);
+    document.getElementById('evt-meta').textContent = metaParts.join('  |  ');
+
+    // Sponsor e professioni
+    cfgSponsor     = (d.sponsor     || '').split('|').map(s => s.trim()).filter(Boolean);
+    cfgProfessioni = (d.professioni || '').split('|').map(s => s.trim()).filter(Boolean);
+
+    const selProf = document.getElementById('f-professione');
+    cfgProfessioni.forEach(p => {
+      const o = document.createElement('option');
+      o.value = p; o.textContent = p; selProf.appendChild(o);
+    });
+    const oAlt = document.createElement('option');
+    oAlt.value = 'ALTRO'; oAlt.textContent = 'ALTRO — Altra professione'; selProf.appendChild(oAlt);
+
+    const selSpon = document.getElementById('f-sponsor');
+    cfgSponsor.forEach(s => {
+      const o = document.createElement('option');
+      o.value = s; o.textContent = s; selSpon.appendChild(o);
+    });
+    if (cfgSponsor.length > 0) {
+      document.getElementById('blk-sponsor').style.display = 'block';
+    }
+
+    if (!d.isOpen) {
+      document.getElementById('s-closed-reason').textContent = d.reason || 'Le iscrizioni sono chiuse.';
+      showStep('s-closed');
+      return;
+    }
+
+    showStep('s-otp');
+  } catch (e) {
+    document.getElementById('s-error-msg').textContent = 'Errore di connessione: ' + e.message;
+    showStep('s-error');
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// STEP 1 — OTP
+// ─────────────────────────────────────────────────────────────────────────────
+async function reqOtp() {
+  const email = document.getElementById('u-email').value.trim();
+  if (!email || !email.includes('@') || !email.includes('.')) {
+    showMsg('msg-otp', 'Inserisci un\'indirizzo email valido.', 'err'); return;
+  }
+  hideMsg('msg-otp');
+  const btn = document.getElementById('btn-req-otp');
+  spin(btn, true);
+  try {
+    const d = await gasPost('sendOtp', { email, idpgt: idPgt });
+    if (d.ok) {
+      document.getElementById('otp-email-shown').textContent = email;
+      document.getElementById('otp-1').style.display = 'none';
+      document.getElementById('otp-2').style.display = 'block';
+      showMsg('msg-otp', '✅ Codice OTP inviato a <strong>' + email + '</strong>. Controlla anche lo Spam.', 'ok');
+    } else {
+      showMsg('msg-otp', '❌ ' + (d.error || 'Errore invio OTP. Riprova.'), 'err');
+      spin(btn, false);
+    }
+  } catch (e) {
+    showMsg('msg-otp', 'Errore connessione: ' + e.message, 'err');
+    spin(btn, false);
+  }
+}
+
+function resetOtp() {
+  document.getElementById('otp-1').style.display = 'block';
+  document.getElementById('otp-2').style.display = 'none';
+  document.getElementById('u-otp').value = '';
+  hideMsg('msg-otp');
+}
+
+async function verOtp() {
+  const email = document.getElementById('u-email').value.trim();
+  const otp   = document.getElementById('u-otp').value.trim();
+  if (otp.length !== 4) { showMsg('msg-otp', 'Il codice OTP è composto da 4 cifre.', 'err'); return; }
+  hideMsg('msg-otp');
+  const btn = document.getElementById('btn-ver-otp');
+  spin(btn, true);
+  try {
+    const d = await gasPost('verifyOtp', { email, otp, idpgt: idPgt });
+    if (d.ok) {
+      emailVerificata = email;
+      showStep('s-choice');
+    } else {
+      showMsg('msg-otp', '❌ ' + (d.error || 'Codice OTP errato o scaduto. Richiedine uno nuovo.'), 'err');
+    }
+  } catch (e) {
+    showMsg('msg-otp', 'Errore connessione: ' + e.message, 'err');
+  }
+  spin(btn, false);
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// STEP 2 — SCELTA TIPO ISCRIZIONE
+// ─────────────────────────────────────────────────────────────────────────────
+function selChoice(tipo) {
+  tipoIscrizione = tipo;
+  document.getElementById('choice-ecm').classList.toggle('sel', tipo === 'ECM');
+  document.getElementById('choice-noecm').classList.toggle('sel', tipo === 'NON_ECM');
+  document.getElementById('btn-choice').disabled = false;
+  hideMsg('msg-choice');
+}
+
+function goFromChoice() {
+  if (!tipoIscrizione) { showMsg('msg-choice', 'Seleziona un tipo di iscrizione.', 'err'); return; }
+  if (tipoIscrizione === 'ECM') {
+    showStep('s-ocr');
+  } else {
+    document.getElementById('ana-ecm').style.display = 'none';
+    document.getElementById('ana-noecm').style.display = 'block';
+    showStep('s-ana');
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// STEP 3 — OCR TESSERA
+// ─────────────────────────────────────────────────────────────────────────────
+function onFileSelect(input) {
+  const file = input.files[0];
+  if (!file) return;
+  if (file.size > 5 * 1024 * 1024) {
+    showMsg('msg-ocr', 'File troppo grande (max 5 MB).', 'err'); return;
+  }
+  const reader = new FileReader();
+  reader.onload = ev => {
+    imgBase64 = ev.target.result;
+    const img = document.getElementById('preview-img');
+    img.src = imgBase64;
+    img.style.display = 'block';
+    document.getElementById('file-name').textContent = file.name;
+    document.getElementById('file-info').style.display = 'block';
+    document.getElementById('upload-zone').style.display = 'none';
+    document.getElementById('btn-ocr').disabled = false;
+    hideMsg('msg-ocr');
+  };
+  reader.readAsDataURL(file);
+}
+
+function removeImg() {
+  imgBase64 = '';
+  document.getElementById('preview-img').style.display = 'none';
+  document.getElementById('file-info').style.display = 'none';
+  document.getElementById('upload-zone').style.display = 'block';
+  document.getElementById('btn-ocr').disabled = true;
+  document.getElementById('u-img').value = '';
+  hideMsg('msg-ocr');
+}
+
+async function doOcr(btn) {
+  if (!imgBase64) return;
+  spin(btn, true);
+  hideMsg('msg-ocr');
+  try {
+    const d = await gasPost('ocrTessera', { imageBase64: imgBase64 });
+    spin(btn, false);
+    if (!d.ok) {
+      showMsg('msg-ocr', '❌ ' + (d.error || 'Errore elaborazione immagine.'), 'err'); return;
+    }
+    ocrData = d;
+
+    // Popola step revisione
+    document.getElementById('d-cognome').textContent     = d.cognome     || '-';
+    document.getElementById('d-nome').textContent        = d.nome        || '-';
+    document.getElementById('d-datanascita').textContent = d.dataNascita || '-';
+    document.getElementById('d-luogonascita').textContent= d.luogoNascita|| '-';
+    document.getElementById('d-cf').textContent          = d.cf          || '-';
+
+    const msgOmo  = document.getElementById('msg-omo');
+    const msgFix  = document.getElementById('msg-datafix');
+
+    if (d.isOmocodia) {
+      showMsg('msg-omo', '<strong>ℹ️ CF omocodia</strong> — Il tuo Codice Fiscale è stato decodificato automaticamente dalla forma omocodia alla forma standard.', 'info');
+    } else { msgOmo.style.display = 'none'; }
+
+    if (d.dataAutoCorretta) {
+      showMsg('msg-datafix', '<strong>⚠️ Data corretta automaticamente</strong> — Data OCR: <strong>' + (d.dataNascitaOriginale||'-') + '</strong> → Ricavata dal CF: <strong>' + (d.dataDaCF||'-') + '</strong>', 'warn');
+    } else { msgFix.style.display = 'none'; }
+
+    document.getElementById('ocr-ok').style.display   = d.complete ? 'block' : 'none';
+    document.getElementById('ocr-fail').style.display = d.complete ? 'none'  : 'block';
+    showStep('s-ocr-rev');
+  } catch (e) {
+    showMsg('msg-ocr', 'Errore connessione: ' + e.message, 'err');
+    spin(btn, false);
+  }
+}
+
+async function confirmOcr(btn) {
+  const cf = ocrData.cf || '';
+  if (!cf) { goToAna(); return; }
+  spin(btn, true);
+  try {
+    const d = await gasPost('checkDuplicateCF', { cf, idpgt: idPgt });
+    if (d.isDuplicate) {
+      document.getElementById('ocr-ok').style.display = 'none';
+      document.getElementById('ocr-fail').style.display = 'block';
+      document.getElementById('ocr-fail').querySelector('.msg').innerHTML =
+        '<strong>⚠️ Già iscritto</strong><br>Risulti già iscritto a questo corso con questo Codice Fiscale.';
+    } else {
+      goToAna();
+    }
+  } catch (e) {
+    goToAna(); // Non bloccare per errori di rete
+  }
+  spin(btn, false);
+}
+
+function goToAna() {
+  document.getElementById('f-cognome').value      = ocrData.cognome      || '';
+  document.getElementById('f-nome').value         = ocrData.nome         || '';
+  document.getElementById('f-datanascita').value  = ocrData.dataNascita  || '';
+  document.getElementById('f-luogonascita').value = ocrData.luogoNascita || '';
+  document.getElementById('f-cf').value           = ocrData.cf           || '';
+  document.getElementById('ana-ecm').style.display   = 'block';
+  document.getElementById('ana-noecm').style.display = 'none';
+  showStep('s-ana');
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// STEP 5 — ANAGRAFICA
+// ─────────────────────────────────────────────────────────────────────────────
+async function goFromAna(btn) {
+  hideMsg('msg-ana');
+  let cognome, nome;
+  if (tipoIscrizione === 'ECM') {
+    cognome = document.getElementById('f-cognome').value.trim();
+    nome    = document.getElementById('f-nome').value.trim();
+  } else {
+    cognome = document.getElementById('f2-cognome').value.trim();
+    nome    = document.getElementById('f2-nome').value.trim();
+  }
+  if (!cognome || !nome) {
+    showMsg('msg-ana', 'Inserisci Cognome e Nome.', 'err'); return;
+  }
+  if (tipoIscrizione === 'NON_ECM') {
+    spin(btn, true);
+    try {
+      const d = await gasPost('checkDuplicateNomeCognome', { nome, cognome, idpgt: idPgt });
+      if (d.isDuplicate) {
+        showMsg('msg-ana', '⚠️ Risulti già iscritto a questo corso con questo nominativo.', 'err');
+        spin(btn, false); return;
+      }
+    } catch (e) { /* non bloccare */ }
+    spin(btn, false);
+  }
+
+  // Mostra/nascondi occupazione per ECM
+  document.getElementById('blk-occ').style.display = tipoIscrizione === 'ECM' ? 'block' : 'none';
+  showStep('s-prof');
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// STEP 6 — PROFESSIONE
+// ─────────────────────────────────────────────────────────────────────────────
+function onProfChange() {
+  if (tipoIscrizione !== 'ECM') return;
+  const prof = document.getElementById('f-professione').value;
+  document.getElementById('blk-albo').style.display = richiedeAlbo(prof) ? 'block' : 'none';
+}
+
+function goFromProf() {
+  hideMsg('msg-prof');
+  const prof = document.getElementById('f-professione').value;
+  if (!prof) { showMsg('msg-prof', 'Seleziona la professione.', 'err'); return; }
+  if (tipoIscrizione === 'ECM') {
+    const occ = document.getElementById('f-occupazione').value;
+    if (!occ) { showMsg('msg-prof', 'Seleziona l\'occupazione.', 'err'); return; }
+  }
+
+  // Popola riepilogo
+  const cognome = tipoIscrizione === 'ECM'
+    ? document.getElementById('f-cognome').value
+    : document.getElementById('f2-cognome').value;
+  const nome = tipoIscrizione === 'ECM'
+    ? document.getElementById('f-nome').value
+    : document.getElementById('f2-nome').value;
+
+  document.getElementById('rie-tipo').textContent  = tipoIscrizione === 'ECM' ? 'CON CREDITI ECM' : 'SENZA CREDITI ECM';
+  document.getElementById('rie-email').textContent = emailVerificata;
+  document.getElementById('rie-nome').textContent  = cognome + ' ' + nome;
+  document.getElementById('rie-prof').textContent  = prof;
+
+  document.getElementById('blk-consenso-ecm').style.display = tipoIscrizione === 'ECM' ? 'block' : 'none';
+  showStep('s-consensi');
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// STEP 7 — SUBMIT
+// ─────────────────────────────────────────────────────────────────────────────
+async function doSubmit(btn) {
+  hideMsg('msg-submit');
+  if (tipoIscrizione === 'ECM') {
+    if (!document.getElementById('f-consenso-ecm').checked) {
+      showMsg('msg-submit', 'Il consenso ECM è obbligatorio.', 'err'); return;
+    }
+    if (!document.getElementById('f-dichiarazione-invito').checked) {
+      showMsg('msg-submit', 'La dichiarazione di invito è obbligatoria.', 'err'); return;
+    }
+  }
+  if (!document.getElementById('f-privacy').checked) {
+    showMsg('msg-submit', 'L\'accettazione della privacy policy è obbligatoria.', 'err'); return;
+  }
+
+  const cognome = tipoIscrizione === 'ECM'
+    ? document.getElementById('f-cognome').value.trim()
+    : document.getElementById('f2-cognome').value.trim();
+  const nome = tipoIscrizione === 'ECM'
+    ? document.getElementById('f-nome').value.trim()
+    : document.getElementById('f2-nome').value.trim();
+
+  const formData = {
+    IDPGT: idPgt,
+    Email: emailVerificata,
+    Cognome: cognome,
+    Nome: nome,
+    tipoIscrizione: tipoIscrizione,
+    Professione: document.getElementById('f-professione').value,
+  };
+
+  if (tipoIscrizione === 'ECM') {
+    formData.CodiceFiscale      = ocrData.cf           || '';
+    formData.NatoA              = ocrData.luogoNascita || '';
+    formData.NatoIl             = ocrData.dataNascita  || '';
+    formData.Occupazione        = document.getElementById('f-occupazione').value;
+    formData.Sponsor            = document.getElementById('f-sponsor').value;
+    formData.DichiarazioneInvito= 'Sì';
+    formData.ConsensoECM        = 'Sì';
+    formData.Albo               = document.getElementById('f-albo').value.trim();
+    formData.NumIscrizione      = document.getElementById('f-num-iscrizione').value.trim();
+  }
+
+  spin(btn, true);
+  try {
+    const d = await gasPost('saveRegistration', formData);
+    if (d.ok) {
+      const ev = d.eventData || {};
+      document.getElementById('s-success-msg').innerHTML =
+        'Iscrizione di <strong>' + cognome + ' ' + nome + '</strong> al corso <em>' +
+        (ev.titolo || idPgt) + '</em> registrata con successo.';
+      showStep('s-success');
+    } else {
+      showMsg('msg-submit', '❌ ' + (d.error || 'Errore durante il salvataggio. Riprova o contatta direzione@sideraweb.it'), 'err');
+      spin(btn, false);
+    }
+  } catch (e) {
+    showMsg('msg-submit', 'Errore connessione: ' + e.message, 'err');
+    spin(btn, false);
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// UNSUBSCRIBE
+// ─────────────────────────────────────────────────────────────────────────────
+async function loadUnsub(token) {
+  unsubToken = token;
+  try {
+    const d = await gasPost('loadUnsub', { token });
+    document.getElementById('unsub-loading').style.display = 'none';
+    if (!d.ok) {
+      document.getElementById('unsub-err-msg').textContent = d.error || 'Iscrizione non trovata o già cancellata.';
+      document.getElementById('unsub-err').style.display = 'block';
+      return;
+    }
+    document.getElementById('unsub-corso').textContent = (d.evento && d.evento.titolo) || '-';
+    document.getElementById('unsub-data').textContent  = (d.evento && d.evento.date)   || '-';
+    document.getElementById('unsub-luogo').textContent = (d.evento && d.evento.luogo)  || '-';
+    document.getElementById('unsub-nome').textContent  = (d.cognome || '') + ' ' + (d.nome || '');
+    document.getElementById('unsub-email').textContent = d.email || '-';
+    document.getElementById('unsub-confirm').style.display = 'block';
+
+    const head = document.getElementById('evt-head');
+    head.style.display = 'block';
+    document.getElementById('evt-titolo').textContent = (d.evento && d.evento.titolo) || 'Annulla Iscrizione';
+    document.getElementById('evt-meta').textContent = '';
+  } catch (e) {
+    document.getElementById('unsub-loading').style.display = 'none';
+    document.getElementById('unsub-err-msg').textContent = 'Errore connessione: ' + e.message;
+    document.getElementById('unsub-err').style.display = 'block';
+  }
+}
+
+async function doUnsub(btn) {
+  hideMsg('msg-unsub');
+  spin(btn, true);
+  try {
+    const d = await gasPost('executeUnsub', { token: unsubToken });
+    if (d.ok) {
+      document.getElementById('unsub-confirm').style.display = 'none';
+      document.getElementById('unsub-ok-nome').textContent = (d.cognome || '') + ' ' + (d.nome || '');
+      document.getElementById('unsub-ok').style.display = 'block';
+    } else {
+      showMsg('msg-unsub', '❌ ' + (d.error || 'Errore durante la cancellazione.'), 'err');
+      spin(btn, false);
+    }
+  } catch (e) {
+    showMsg('msg-unsub', 'Errore connessione: ' + e.message, 'err');
+    spin(btn, false);
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// START
+// ─────────────────────────────────────────────────────────────────────────────
+init();
+</script>
+</body>
+</html>
