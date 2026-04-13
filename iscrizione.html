@@ -684,9 +684,10 @@ function goFromChoice() {
 // ─────────────────────────────────────────────────────────────────────────────
 // STEP 3 — OCR TESSERA
 // ─────────────────────────────────────────────────────────────────────────────
-function onFileSelect(input) {
-  const file = input.files[0];
-  if (!file) return;
+function _handleDroppedFile(file) {
+  if (!file || !file.type.startsWith('image/')) {
+    showMsg('msg-ocr', 'Carica un\'immagine JPG o PNG.', 'err'); return;
+  }
   if (file.size > 5 * 1024 * 1024) {
     showMsg('msg-ocr', 'File troppo grande (max 5 MB).', 'err'); return;
   }
@@ -703,6 +704,23 @@ function onFileSelect(input) {
     hideMsg('msg-ocr');
   };
   reader.readAsDataURL(file);
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  const zone = document.getElementById('upload-zone');
+  zone.addEventListener('dragover', e => { e.preventDefault(); zone.style.borderColor = '#1565c0'; zone.style.background = '#f0f7ff'; });
+  zone.addEventListener('dragleave', () => { zone.style.borderColor = ''; zone.style.background = ''; });
+  zone.addEventListener('drop', e => {
+    e.preventDefault();
+    zone.style.borderColor = '';
+    zone.style.background = '';
+    const file = e.dataTransfer.files[0];
+    _handleDroppedFile(file);
+  });
+});
+
+function onFileSelect(input) {
+  _handleDroppedFile(input.files[0]);
 }
 
 function removeImg() {
