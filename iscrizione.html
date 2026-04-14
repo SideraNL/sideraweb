@@ -479,6 +479,8 @@ let emailVerificata = '';
 let ocrData = {};
 let cfgSponsor = [];
 let cfgProfessioni = [];
+let cfgQuote = {};
+let cfgCounts = { byProfession: {}, nonEcmTotal: 0 };
 let imgBase64 = '';
 let unsubToken = '';
 
@@ -569,17 +571,28 @@ async function init() {
     ].filter(Boolean);
     document.getElementById('evt-meta').textContent = metaParts.join('  |  ');
 
-    // Sponsor e professioni
+    // Sponsor, professioni, quote e counts
     cfgSponsor     = (d.sponsor     || '').split('|').map(s => s.trim()).filter(Boolean);
     cfgProfessioni = (d.professioni || '').split('|').map(s => s.trim()).filter(Boolean);
+    cfgQuote       = d.quote  || {};
+    cfgCounts      = d.counts || { byProfession: {}, nonEcmTotal: 0 };
 
-    const selProf = document.getElementById('f-professione');
-    cfgProfessioni.forEach(p => {
-      const o = document.createElement('option');
-      o.value = p; o.textContent = p; selProf.appendChild(o);
-    });
-    const oAlt = document.createElement('option');
-    oAlt.value = 'ALTRO'; oAlt.textContent = 'ALTRO — Altra professione'; selProf.appendChild(oAlt);
+    // NB: la select f-professione viene popolata DINAMICAMENTE in populateProfessionSelect()
+    // quando l'utente arriva allo step professione, in base al tipoIscrizione scelto.
+
+    // Se i posti NON ECM sono esauriti, disabilita la choice box SENZA CREDITI ECM
+    const maxNonEcm = cfgQuote['__NON_ECM__'] || 0;
+    if (maxNonEcm > 0 && cfgCounts.nonEcmTotal >= maxNonEcm) {
+      const box = document.getElementById('choice-noecm');
+      if (box) {
+        box.style.opacity = '0.45';
+        box.style.cursor = 'not-allowed';
+        box.style.pointerEvents = 'none';
+        box.setAttribute('aria-disabled', 'true');
+        const p = box.querySelector('p');
+        if (p) p.innerHTML = '<strong style="color:#c62828;">⛔ Posti esauriti</strong>';
+      }
+    }
 
     const selSpon = document.getElementById('f-sponsor');
     cfgSponsor.forEach(s => {
@@ -833,12 +846,58 @@ async function goFromAna(btn) {
 
   // Mostra/nascondi occupazione per ECM
   document.getElementById('blk-occ').style.display = tipoIscrizione === 'ECM' ? 'block' : 'none';
+  // Popola la select professione in base al tipo iscrizione scelto
+  populateProfessionSelect();
   showStep('s-prof');
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
 // STEP 6 — PROFESSIONE
 // ─────────────────────────────────────────────────────────────────────────────
+// Popola la select f-professione dinamicamente in base al tipoIscrizione scelto,
+// applicando i limiti quote (opzioni piene disabilitate con "(posti esauriti)").
+function populateProfessionSelect() {
+  const selProf = document.getElementById('f-professione');
+  selProf.innerHTML = '<option value="">— Seleziona la professione —</option>';
+
+  if (tipoIscrizione === 'NON_ECM') {
+    // Solo due opzioni fisse per NON ECM
+    const opts = [
+      'ALTRO NON ECM',
+      'DIPENDENTE / COLLABORATORE DI AZIENDA FARMACEUTICA O BIOMEDICALE'
+    ];
+    const maxNonEcm = cfgQuote['__NON_ECM__'] || 0;
+    const nonEcmFull = maxNonEcm > 0 && cfgCounts.nonEcmTotal >= maxNonEcm;
+    opts.forEach(p => {
+      const o = document.createElement('option');
+      o.value = p;
+      o.textContent = nonEcmFull ? (p + ' — posti esauriti') : p;
+      if (nonEcmFull) o.disabled = true;
+      selProf.appendChild(o);
+    });
+  } else {
+    // ECM: solo professioni ECM (escludi NON ECM / farmaceutica / biomedicale) + ALTRO
+    const ecmProfs = cfgProfessioni.filter(p => {
+      const upper = (p || '').toUpperCase();
+      return !upper.includes('ALTRO NON ECM') && !upper.includes('FARMACEUTICA') && !upper.includes('BIOMEDICALE');
+    });
+    ecmProfs.forEach(p => {
+      const o = document.createElement('option');
+      o.value = p;
+      const baseProf = p.split(' - ')[0].trim();
+      const max = cfgQuote[baseProf] || 0;
+      const current = (cfgCounts.byProfession && cfgCounts.byProfession[baseProf]) || 0;
+      const isFull = max > 0 && current >= max;
+      o.textContent = isFull ? (p + ' — posti esauriti') : p;
+      if (isFull) o.disabled = true;
+      selProf.appendChild(o);
+    });
+    const oAlt = document.createElement('option');
+    oAlt.value = 'ALTRO'; oAlt.textContent = 'ALTRO — Altra professione';
+    selProf.appendChild(oAlt);
+  }
+}
+
 function onProfChange() {
   if (tipoIscrizione !== 'ECM') return;
   const prof = document.getElementById('f-professione').value;
