@@ -273,14 +273,70 @@
     .report-dot.green { background: var(--success); }
     .report-dot.red { background: var(--error); }
     .report-dot.grey { background: #bdbdbd; }
+    .report-dot.live { background: #2196f3; animation: livePulse 1.6s ease-in-out infinite; }
+    @keyframes livePulse {
+      0%,100% { box-shadow: 0 0 0 0 rgba(33,150,243,.6); }
+      50%     { box-shadow: 0 0 0 5px rgba(33,150,243,0); }
+    }
     .report-item .r-name { flex: 1; font-weight: 500; }
     .report-item .r-pct { font-weight: 700; min-width: 50px; text-align: right; }
+    .report-item .r-pct.live { font-style: italic; color: #2196f3; }
     .report-item .r-time { font-size: 12px; color: var(--text2); min-width: 60px; text-align: right; }
+    .report-item .r-time.live { color: #2196f3; font-style: italic; }
     .report-summary {
       padding: 10px 20px; font-size: 13px; color: var(--text2);
-      border-bottom: 1px solid #e0e0e0; text-align: center;
+      border-bottom: 1px solid #e0e0e0; text-align: center; line-height: 1.8;
     }
     .report-loading { text-align: center; padding: 30px; color: var(--text2); }
+
+    /* --- Missing rilevazioni popup --- */
+    .missing-overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,.6); z-index: 200;
+      justify-content: center; align-items: flex-start;
+      padding: 20px;
+    }
+    .missing-overlay.active { display: flex; }
+    .missing-panel {
+      width: 100%; max-width: 480px; max-height: 85vh;
+      background: var(--card); border-radius: var(--radius);
+      box-shadow: 0 8px 32px rgba(0,0,0,.2);
+      display: flex; flex-direction: column; margin-top: 10px;
+      border-top: 4px solid var(--warning);
+    }
+    .missing-header {
+      padding: 16px 20px; border-bottom: 1px solid #e0e0e0;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .missing-header .card-title { margin: 0; flex: 1; color: var(--warning); }
+    .missing-info {
+      padding: 12px 20px; font-size: 13px; color: #5d4037;
+      border-bottom: 1px solid #e0e0e0; background: #fffbf0;
+      line-height: 1.4;
+    }
+    .missing-list { flex: 1; overflow-y: auto; padding: 4px 8px; }
+    .missing-item {
+      display: flex; align-items: center; padding: 10px 12px;
+      border-bottom: 1px solid #f0f0f0; gap: 10px;
+    }
+    .missing-item .info { flex: 1; min-width: 0; }
+    .missing-item .m-name { font-weight: 600; font-size: 14px; }
+    .missing-item .m-det {
+      font-size: 11px; color: var(--text2); margin-top: 2px;
+    }
+    .missing-item .m-tipo {
+      display: inline-block; padding: 1px 6px; border-radius: 4px;
+      font-size: 10px; font-weight: 700; color: #fff;
+      background: var(--warning); margin-right: 4px;
+    }
+    .missing-item .btn-reg {
+      padding: 6px 12px; font-size: 12px; flex-shrink: 0;
+    }
+    .missing-footer {
+      padding: 12px 16px; border-top: 1px solid #e0e0e0;
+      display: flex; gap: 10px;
+    }
+    .missing-footer .btn { flex: 1; }
 
     /* --- Responsive --- */
     @media (max-width: 500px) {
@@ -296,7 +352,7 @@
     <img src="img/sidera_logo.jpg" alt="Sidera" style="border-radius:6px" onerror="this.style.display='none'">
     <div>
       <div class="title">SideraDA10</div>
-      <div class="ver">Scanner Presenze ECM — v1.6</div>
+      <div class="ver">Scanner Presenze ECM — v1.7</div>
     </div>
   </div>
 
@@ -418,6 +474,27 @@
       <div class="report-summary" id="report-summary"></div>
       <div class="report-list" id="report-list">
         <div class="report-loading" id="report-loading">Caricamento...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Missing rilevazioni overlay -->
+  <div class="missing-overlay" id="missing-overlay" onclick="if(event.target===this)chiudiMissing()">
+    <div class="missing-panel">
+      <div class="missing-header">
+        <div class="card-title">
+          <span class="material-icons" style="font-size:18px;vertical-align:middle">warning</span>
+          Mancate Rilevazioni
+        </div>
+        <button class="pax-close" onclick="chiudiMissing()">
+          <span class="material-icons">close</span>
+        </button>
+      </div>
+      <div class="missing-info" id="missing-info"></div>
+      <div class="missing-list" id="missing-list"></div>
+      <div class="missing-footer">
+        <button class="btn btn-outline" onclick="chiudiMissing()">Annulla</button>
+        <button class="btn btn-primary" onclick="registraTutteMissing()">Registra tutte</button>
       </div>
     </div>
   </div>
@@ -772,18 +849,49 @@ function selezionaPax(cf) {
 
 // --- REPORT PRESENZE ---
 
+let reportRefreshTimer  = null;
+let primoCaricamentoReport = true;
+let mancateRilevazioni  = [];
+
 function _parseHhmm(s) {
   if (!s) return 0;
   const p = s.split(':');
   return parseInt(p[0]) * 60 + (parseInt(p[1]) || 0);
 }
 
+function _minToHhmm(m) {
+  const h = Math.floor(m/60), mm = m % 60;
+  return String(h).padStart(2,'0') + ':' + String(mm).padStart(2,'0');
+}
+
+function _todayStr() {
+  const d = new Date();
+  return String(d.getDate()).padStart(2,'0') + '/' +
+         String(d.getMonth()+1).padStart(2,'0') + '/' +
+         d.getFullYear();
+}
+
+function _nowMin() {
+  const d = new Date();
+  return d.getHours() * 60 + d.getMinutes();
+}
+
 function apriReport() {
   if (!currentProject || !paxLoaded) return;
+  primoCaricamentoReport = true;
   document.getElementById('report-overlay').classList.add('active');
   document.getElementById('report-list').innerHTML = '<div class="report-loading">Caricamento scansioni...</div>';
   document.getElementById('report-summary').textContent = '';
 
+  refreshReport();
+
+  // Auto-refresh ogni 60 secondi
+  if (reportRefreshTimer) clearInterval(reportRefreshTimer);
+  reportRefreshTimer = setInterval(refreshReport, 60000);
+}
+
+function refreshReport() {
+  if (!currentProject) return;
   fetch(GAS_ENDPOINT + '?action=scans&idPgt=' + encodeURIComponent(currentProject), { redirect: 'follow' })
     .then(r => r.json())
     .then(result => {
@@ -797,9 +905,14 @@ function apriReport() {
 
 function chiudiReport() {
   document.getElementById('report-overlay').classList.remove('active');
+  if (reportRefreshTimer) { clearInterval(reportRefreshTimer); reportRefreshTimer = null; }
+  primoCaricamentoReport = true;
 }
 
 function renderReport(scans) {
+  const todayStr = _todayStr();
+  const nowMin = _nowMin();
+
   // 1. Mappa date → giorno dal PROGRAMMA
   const dateToDay = {};
   const dayInfo = {};
@@ -810,7 +923,13 @@ function renderReport(scans) {
     const oIn = _parseHhmm(g.ora_in), oOut = _parseHhmm(g.ora_out);
     let pauseMins = 0;
     (g.pause || []).forEach(p => { pauseMins += _parseHhmm(p.out) - _parseHhmm(p.in); });
-    dayInfo[dn] = { ora_in: oIn, ora_out: oOut, pause: g.pause || [], planned: Math.max(0, oOut - oIn - pauseMins) };
+    dayInfo[dn] = {
+      ora_in: oIn,
+      ora_out: oOut,
+      pause: g.pause || [],
+      planned: Math.max(0, oOut - oIn - pauseMins),
+      data: g.data
+    };
     plannedTotal += dayInfo[dn].planned;
   });
 
@@ -830,24 +949,60 @@ function renderReport(scans) {
     cfDays[s.cf][dn].push({ tipo: s.tipo, time: _parseHhmm(timeStr) });
   });
 
-  // 3. Calcola per ogni partecipante
+  // 3. Reset mancate rilevazioni prima del calcolo
+  mancateRilevazioni = [];
+
+  // 4. Calcola per ogni partecipante
   const reportData = paxList.map(p => {
     const days = cfDays[p.cf] || {};
     let totalNet = 0;
+    let isLive = false;
+
     Object.keys(days).forEach(dnStr => {
       const dn = parseInt(dnStr);
       const di = dayInfo[dn];
       if (!di) return;
       const dScans = days[dn];
-      const ins = dScans.filter(s => s.tipo === 'IN').sort((a,b) => a.time - b.time);
+      const ins  = dScans.filter(s => s.tipo === 'IN').sort((a,b) => a.time - b.time);
       const outs = dScans.filter(s => s.tipo === 'OUT').sort((a,b) => a.time - b.time);
+      const dayIsToday = di.data === todayStr;
+
+      // Detect mancate rilevazioni (solo giorni passati, non quello di oggi)
+      if (!dayIsToday) {
+        if (ins.length > outs.length) {
+          mancateRilevazioni.push({
+            cf: p.cf, cognome: p.cognome, nome: p.nome,
+            giorno: dn, data: di.data,
+            tipo: 'OUT',
+            oraProposta: _minToHhmm(di.ora_out)
+          });
+        } else if (outs.length > ins.length) {
+          mancateRilevazioni.push({
+            cf: p.cf, cognome: p.cognome, nome: p.nome,
+            giorno: dn, data: di.data,
+            tipo: 'IN',
+            oraProposta: _minToHhmm(di.ora_in)
+          });
+        }
+      }
+
       if (!ins.length) return;
       const realIn = ins[0].time;
-      const realOut = outs.length ? outs[outs.length-1].time : di.ora_out;
+      let realOut;
+
+      // Live = persona in aula OGGI con IN senza OUT corrispondente
+      if (dayIsToday && ins.length > outs.length) {
+        realOut = nowMin;
+        isLive = true;
+      } else {
+        realOut = outs.length ? outs[outs.length-1].time : di.ora_out;
+      }
+
       // Clamp
       const ecmIn = Math.max(realIn, di.ora_in);
       const ecmOut = Math.min(realOut, di.ora_out);
       if (ecmOut <= ecmIn) return;
+
       // Pause overlap
       let pov = 0;
       (di.pause || []).forEach(pa => {
@@ -858,39 +1013,161 @@ function renderReport(scans) {
       totalNet += Math.max(0, (ecmOut - ecmIn) - pov);
     });
 
-    // Tolleranza
+    // Tolleranza (applicata anche ai live)
     const gap = soglia - totalNet;
     const ecmOk = plannedTotal > 0 && (totalNet >= soglia || (gap > 0 && gap <= TOLLERANZA));
     const pct = plannedTotal > 0 ? Math.min(100, Math.round((totalNet / plannedTotal) * 100)) : 0;
     const absent = Object.keys(days).length === 0;
 
-    return { cognome: p.cognome, nome: p.nome, cf: p.cf, pct, totalNet, ecmOk, absent };
+    return { cognome: p.cognome, nome: p.nome, cf: p.cf, pct, totalNet, ecmOk, absent, isLive };
   }).sort((a,b) => a.cognome.localeCompare(b.cognome));
 
-  // 4. Render
-  const nOk = reportData.filter(r => r.ecmOk).length;
-  const nNo = reportData.filter(r => !r.ecmOk && !r.absent).length;
-  const nAbs = reportData.filter(r => r.absent).length;
+  // 5. Contatori (live esclusi da idonei/non idonei, 4° contatore in aula)
+  const nOk   = reportData.filter(r => r.ecmOk && !r.isLive).length;
+  const nNo   = reportData.filter(r => !r.ecmOk && !r.absent && !r.isLive).length;
+  const nLive = reportData.filter(r => r.isLive).length;
+  const nAbs  = reportData.filter(r => r.absent).length;
   const plannedStr = Math.floor(plannedTotal/60) + 'h' + String(plannedTotal%60).padStart(2,'0');
+
   document.getElementById('report-summary').innerHTML =
     'Durata netta: <b>' + plannedStr + '</b> · Soglia 90%: <b>' + Math.round(soglia) + ' min</b><br>' +
     '<span style="color:var(--success)">● ' + nOk + ' idonei</span> · ' +
     '<span style="color:var(--error)">● ' + nNo + ' non idonei</span> · ' +
+    '<span style="color:#2196f3">● ' + nLive + ' in aula</span> · ' +
     '<span style="color:#bdbdbd">● ' + nAbs + ' assenti</span>';
 
+  // 6. Render lista
   const list = document.getElementById('report-list');
   if (!reportData.length) { list.innerHTML = '<div class="report-loading">Nessun partecipante</div>'; return; }
   list.innerHTML = reportData.map(r => {
-    const dotCls = r.absent ? 'grey' : r.ecmOk ? 'green' : 'red';
-    const pctColor = r.absent ? '#bdbdbd' : r.ecmOk ? 'var(--success)' : 'var(--error)';
+    let dotCls, pctCls = '', timeCls = '', pctColor;
+    if (r.absent) {
+      dotCls = 'grey'; pctColor = '#bdbdbd';
+    } else if (r.isLive) {
+      dotCls = 'live'; pctColor = '#2196f3';
+      pctCls = ' live'; timeCls = ' live';
+    } else {
+      dotCls = r.ecmOk ? 'green' : 'red';
+      pctColor = r.ecmOk ? 'var(--success)' : 'var(--error)';
+    }
     const timeStr = Math.floor(r.totalNet/60) + ':' + String(Math.round(r.totalNet%60)).padStart(2,'0');
     return '<div class="report-item">' +
       '<div class="report-dot ' + dotCls + '"></div>' +
       '<div class="r-name">' + r.cognome + ' ' + r.nome + '</div>' +
-      '<div class="r-time">' + (r.absent ? '—' : timeStr) + '</div>' +
-      '<div class="r-pct" style="color:' + pctColor + '">' + (r.absent ? 'A' : r.pct + '%') + '</div>' +
+      '<div class="r-time' + timeCls + '">' + (r.absent ? '—' : timeStr) + '</div>' +
+      '<div class="r-pct' + pctCls + '" style="color:' + pctColor + '">' + (r.absent ? 'A' : r.pct + '%') + '</div>' +
     '</div>';
   }).join('');
+
+  // 7. Popup mancate rilevazioni (solo al primo caricamento del modal)
+  if (primoCaricamentoReport && mancateRilevazioni.length > 0) {
+    apriMissing();
+  }
+  primoCaricamentoReport = false;
+}
+
+// --- MANCATE RILEVAZIONI ---
+
+function apriMissing() {
+  if (!mancateRilevazioni.length) return;
+  document.getElementById('missing-info').innerHTML =
+    'Rilevate <b>' + mancateRilevazioni.length + '</b> scansioni mancanti in giorni passati. ' +
+    'Puoi registrarle automaticamente all\'orario schedulato del programma.';
+  renderMissingList();
+  document.getElementById('missing-overlay').classList.add('active');
+}
+
+function chiudiMissing() {
+  document.getElementById('missing-overlay').classList.remove('active');
+}
+
+function renderMissingList() {
+  const list = document.getElementById('missing-list');
+  if (!mancateRilevazioni.length) {
+    list.innerHTML = '<div style="text-align:center;color:var(--text2);padding:20px;font-size:14px">Nessuna mancata rilevazione</div>';
+    return;
+  }
+  list.innerHTML = mancateRilevazioni.map((m, i) => {
+    return '<div class="missing-item">' +
+      '<div class="info">' +
+        '<div class="m-name">' + m.cognome + ' ' + m.nome + '</div>' +
+        '<div class="m-det">' +
+          '<span class="m-tipo">' + m.tipo + '</span>' +
+          'Giorno ' + m.giorno + ' · ' + m.data + ' · ora: <b>' + m.oraProposta + '</b>' +
+        '</div>' +
+      '</div>' +
+      '<button class="btn btn-primary btn-reg" onclick="registraMissing(' + i + ')">Registra</button>' +
+    '</div>';
+  }).join('');
+}
+
+function registraMissing(index) {
+  const m = mancateRilevazioni[index];
+  if (!m) return;
+  if (!confirm('Registrare ' + m.tipo + ' per ' + m.cognome + ' ' + m.nome + '\nil ' + m.data + ' alle ' + m.oraProposta + '?')) return;
+
+  const payload = {
+    idPgt: currentProject,
+    cf: m.cf,
+    tipo: m.tipo,
+    backfill: true,
+    dataOra: m.data + ' ' + m.oraProposta + ':00'
+  };
+  fetch(GAS_ENDPOINT, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain' },
+    body: JSON.stringify(payload),
+    redirect: 'follow'
+  })
+  .then(r => r.json())
+  .then(result => {
+    if (result.ok) {
+      toast('Rilevazione registrata', 'success');
+      mancateRilevazioni.splice(index, 1);
+      renderMissingList();
+      if (mancateRilevazioni.length === 0) chiudiMissing();
+      refreshReport();
+    } else {
+      toast('Errore: ' + (result.error || 'sconosciuto'), 'error');
+    }
+  })
+  .catch(err => toast('Errore rete: ' + err.message, 'error'));
+}
+
+function registraTutteMissing() {
+  if (!mancateRilevazioni.length) return;
+  if (!confirm('Registrare automaticamente tutte le ' + mancateRilevazioni.length + ' rilevazioni mancanti agli orari schedulati?')) return;
+
+  const items = mancateRilevazioni.slice();
+  let completed = 0, errors = 0;
+
+  items.forEach(m => {
+    const payload = {
+      idPgt: currentProject,
+      cf: m.cf,
+      tipo: m.tipo,
+      backfill: true,
+      dataOra: m.data + ' ' + m.oraProposta + ':00'
+    };
+    fetch(GAS_ENDPOINT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify(payload),
+      redirect: 'follow'
+    })
+    .then(r => r.json())
+    .then(result => { if (result.ok) completed++; else errors++; })
+    .catch(() => errors++)
+    .finally(() => {
+      if (completed + errors === items.length) {
+        if (errors > 0) toast(completed + ' registrate, ' + errors + ' errori', 'warning');
+        else toast('Tutte le ' + completed + ' rilevazioni registrate', 'success');
+        mancateRilevazioni = [];
+        chiudiMissing();
+        refreshReport();
+      }
+    });
+  });
 }
 
 // --- TOAST ---
