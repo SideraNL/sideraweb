@@ -65,10 +65,13 @@
 
   <!-- Event header (populated on load) -->
   <div class="evt-head" id="evt-head">
-    <div style="display:flex;align-items:center;gap:12px">
+    <div style="display:flex;align-items:center;gap:14px">
       <img src="img/sidera_logo.jpg" style="height:36px;background:#fff;border-radius:6px;padding:2px 4px;object-fit:contain" onerror="this.style.display='none'" alt="Sidera">
-      <div>
-        <h1 id="evt-titolo">Caricamento...</h1>
+      <div style="flex:1;min-width:0">
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:4px">
+          <span id="evt-idpgt" style="background:#fbbf24;color:#1565c0;font-weight:900;font-size:1.25rem;padding:3px 12px;border-radius:6px;letter-spacing:.5px;line-height:1.2">—</span>
+          <h1 id="evt-titolo" style="margin:0;flex:1;min-width:200px">Caricamento...</h1>
+        </div>
         <div class="meta" id="evt-meta"></div>
       </div>
     </div>
@@ -562,6 +565,7 @@ async function init() {
     const ev = d.evento || {};
     const head = document.getElementById('evt-head');
     head.style.display = 'block';
+    document.getElementById('evt-idpgt').textContent = 'IDPGT ' + idPgt;
     document.getElementById('evt-titolo').textContent = ev.titolo || ('Progetto ' + idPgt);
     const metaParts = [
       ev.date   ? '📅 ' + ev.date   : '',
@@ -1016,6 +1020,7 @@ async function loadUnsub(token) {
 
     const head = document.getElementById('evt-head');
     head.style.display = 'block';
+    document.getElementById('evt-idpgt').textContent = (d.idpgt ? 'IDPGT ' + d.idpgt : '—');
     document.getElementById('evt-titolo').textContent = (d.evento && d.evento.titolo) || 'Annulla Iscrizione';
     document.getElementById('evt-meta').textContent = '';
   } catch (e) {
