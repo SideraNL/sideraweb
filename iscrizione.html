@@ -880,7 +880,9 @@ function populateProfessionSelect() {
       selProf.appendChild(o);
     });
   } else {
-    // ECM: solo professioni ECM (escludi NON ECM / farmaceutica / biomedicale) + ALTRO
+    // ECM: SOLO professioni accreditate dal config (escludi NON ECM / farmaceutica / biomedicale).
+    // NON aggiungere "ALTRO — Altra professione": chi non trova la propria professione deve
+    // tornare indietro e iscriversi come NON ECM.
     const ecmProfs = cfgProfessioni.filter(p => {
       const upper = (p || '').toUpperCase();
       return !upper.includes('ALTRO NON ECM') && !upper.includes('FARMACEUTICA') && !upper.includes('BIOMEDICALE');
@@ -896,9 +898,6 @@ function populateProfessionSelect() {
       if (isFull) o.disabled = true;
       selProf.appendChild(o);
     });
-    const oAlt = document.createElement('option');
-    oAlt.value = 'ALTRO'; oAlt.textContent = 'ALTRO — Altra professione';
-    selProf.appendChild(oAlt);
   }
 }
 
