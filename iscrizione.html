@@ -159,6 +159,13 @@
     <div id="s-otp" class="step">
       <div class="pbar"><div class="fill" style="width:14%"></div></div>
       <div class="step-title">📧 Verifica Email</div>
+
+      <!-- Avviso professioni con posti esauriti (popolato dinamicamente) -->
+      <div id="avviso-posti" style="display:none;background:#fff8e1;border:1px solid #ffc107;border-radius:8px;padding:14px 16px;margin-bottom:16px">
+        <div style="font-weight:700;color:#e65100;font-size:.9rem;margin-bottom:8px">⚠️ Avviso sulla disponibilità dei posti</div>
+        <div id="avviso-posti-testo" style="font-size:.84rem;color:#444;line-height:1.5"></div>
+      </div>
+
       <div id="otp-1">
         <label class="f-label">La tua email personale</label>
         <input type="email" id="u-email" class="form-control mb-2" placeholder="nome.cognome@email.com"
@@ -689,6 +696,9 @@ async function init() {
     // NB: la select sponsor è ora nello step Consensi (sotto la radio RECLUTATO).
     // Viene popolata dinamicamente in goFromProf quando serve.
 
+    // Avviso sulla disponibilità dei posti (professioni ECM chiuse e/o NON ECM esaurito)
+    buildClosedWarning();
+
     if (!d.isOpen) {
       document.getElementById('s-closed-reason').textContent = d.reason || 'Le iscrizioni sono chiuse.';
       showStep('s-closed');
@@ -1119,6 +1129,53 @@ function updateAvantiBtnA() {
     if (cfgSponsor.length > 0 && !sponsor) ok = false;
   }
   btn.disabled = !ok;
+}
+
+// Costruisce l'avviso sulla disponibilità dei posti mostrato nello step Verifica Email.
+// Elenca le professioni ECM chiuse (deduplicate per base) e indica se le iscrizioni NON ECM sono esaurite.
+// Non mostra nulla se tutto è disponibile.
+function buildClosedWarning() {
+  const box = document.getElementById('avviso-posti');
+  const testo = document.getElementById('avviso-posti-testo');
+  if (!box || !testo) return;
+
+  // Raccogli base professions ECM chiuse (stesso filtro applicato alla select ECM)
+  const closedBases = [];
+  const seen = {};
+  cfgProfessioni.forEach(function(p) {
+    const upper = (p || '').toUpperCase();
+    if (upper.indexOf('ALTRO NON ECM') >= 0 || upper.indexOf('FARMACEUTICA') >= 0 || upper.indexOf('BIOMEDICALE') >= 0) return;
+    const base = p.split(' - ')[0].trim();
+    if (!base || seen[base]) return;
+    seen[base] = true;
+    const max = cfgQuote[base] || 0;
+    const cur = (cfgCounts.byProfession && cfgCounts.byProfession[base]) || 0;
+    if (max > 0 && cur >= max) closedBases.push(base);
+  });
+
+  // NON ECM chiuso?
+  const maxNonEcm = cfgQuote['__NON_ECM__'] || 0;
+  const nonEcmClosed = maxNonEcm > 0 && cfgCounts.nonEcmTotal >= maxNonEcm;
+
+  if (closedBases.length === 0 && !nonEcmClosed) {
+    box.style.display = 'none';
+    return;
+  }
+
+  let html = '';
+  if (closedBases.length > 0) {
+    html += '<p style="margin:0 0 6px">Si informa che le iscrizioni per le seguenti professioni accreditate ECM risultano al momento esaurite:</p>';
+    html += '<ul style="margin:0 0 10px 18px;padding:0">';
+    closedBases.forEach(function(b){ html += '<li><strong>' + b + '</strong></li>'; });
+    html += '</ul>';
+  }
+  if (nonEcmClosed) {
+    html += '<p style="margin:' + (closedBases.length ? '6px' : '0') + ' 0 10px">Si informa inoltre che le iscrizioni senza crediti ECM risultano al momento esaurite.</p>';
+  }
+  html += '<p style="margin:0;font-style:italic;color:#666">Si invita pertanto a verificare la disponibilità di posti per la propria categoria professionale prima di proseguire con la registrazione.</p>';
+
+  testo.innerHTML = html;
+  box.style.display = 'block';
 }
 
 // Abilita il bottone "CONFERMA ISCRIZIONE" dello Step B solo quando i consensi privacy sono spuntati.
