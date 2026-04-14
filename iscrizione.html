@@ -392,14 +392,7 @@
             <option>PRIVO DI OCCUPAZIONE</option>
           </select>
         </div>
-        <!-- Sponsor (se presenti nel progetto) -->
-        <div id="blk-sponsor" class="mb-3" style="display:none">
-          <label class="f-label">Dichiarazione di Invito</label>
-          <div style="font-size:.8rem;color:#666;margin-bottom:6px">Se sei stato invitato da uno degli sponsor del corso, selezionalo</div>
-          <select id="f-sponsor" class="form-select">
-            <option value="">— Nessuno / Non applicabile —</option>
-          </select>
-        </div>
+        <!-- NB: lo sponsor ora viene chiesto nello step Consensi, solo se l'utente dichiara RECLUTATO -->
         <!-- Albo (per professioni che lo richiedono) -->
         <div id="blk-albo" class="mb-3" style="display:none">
           <div class="step-title" style="font-size:.92rem;margin-bottom:12px">Dati Albo Professionale</div>
@@ -444,12 +437,22 @@
           Il sottoscritto dichiara, di non aver assolto a più di un terzo del proprio obbligo formativo mediante reclutamento. Ai sensi dell'art. 80 dell'Accordo S/R del 2 febbraio 2017 si intende reclutato il professionista sanitario che, per la partecipazione ad eventi formativi, beneficia di vantaggi economici e non economici, diretti ed indiretti, da parte di imprese commerciali operanti in ambito sanitario.
         </div>
         <div class="chk-row">
-          <input type="radio" name="f-reclutamento" id="f-non-reclutato" value="NON RECLUTATO" onchange="updateSubmitBtn()">
+          <input type="radio" name="f-reclutamento" id="f-non-reclutato" value="NON RECLUTATO" onchange="onReclutamentoChange()">
           <label for="f-non-reclutato">NON RECLUTATO</label>
         </div>
         <div class="chk-row">
-          <input type="radio" name="f-reclutamento" id="f-reclutato" value="RECLUTATO" onchange="updateSubmitBtn()">
+          <input type="radio" name="f-reclutamento" id="f-reclutato" value="RECLUTATO" onchange="onReclutamentoChange()">
           <label for="f-reclutato">RECLUTATO</label>
+        </div>
+
+        <!-- Sponsor — visibile solo se RECLUTATO -->
+        <div id="blk-sponsor-reclutato" style="display:none;margin:4px 0 14px 0;padding:12px 14px;background:#fff8e1;border:1px solid #ffe082;border-radius:8px">
+          <label class="f-label" style="color:#e65100">Sponsor di riferimento *</label>
+          <div style="font-size:.78rem;color:#666;margin-bottom:8px">Seleziona lo sponsor che ti ha reclutato per questo corso</div>
+          <select id="f-sponsor" class="form-select" onchange="updateSubmitBtn()">
+            <option value="">— Seleziona lo sponsor —</option>
+          </select>
+          <div id="blk-no-sponsor" style="display:none;font-size:.8rem;color:#c62828;margin-top:6px">⚠️ Il corso non ha sponsor configurati. Se sei stato reclutato, contatta <a href="mailto:direzione@sideraweb.it">direzione@sideraweb.it</a>.</div>
         </div>
 
         <!-- 3. Informativa ECM -->
@@ -675,14 +678,8 @@ async function init() {
       }
     }
 
-    const selSpon = document.getElementById('f-sponsor');
-    cfgSponsor.forEach(s => {
-      const o = document.createElement('option');
-      o.value = s; o.textContent = s; selSpon.appendChild(o);
-    });
-    if (cfgSponsor.length > 0) {
-      document.getElementById('blk-sponsor').style.display = 'block';
-    }
+    // NB: la select sponsor è ora nello step Consensi (sotto la radio RECLUTATO).
+    // Viene popolata dinamicamente in goFromProf quando serve.
 
     if (!d.isOpen) {
       document.getElementById('s-closed-reason').textContent = d.reason || 'Le iscrizioni sono chiuse.';
@@ -1029,9 +1026,42 @@ function goFromProf() {
     if (el) el.checked = false;
   });
   document.querySelectorAll('input[name="f-reclutamento"]').forEach(function(r){ r.checked = false; });
+
+  // Popola la select sponsor nel consensi step (solo per ECM)
+  if (isECM) {
+    const selSpon = document.getElementById('f-sponsor');
+    selSpon.innerHTML = '<option value="">— Seleziona lo sponsor —</option>';
+    cfgSponsor.forEach(function(s){
+      const o = document.createElement('option');
+      o.value = s; o.textContent = s;
+      selSpon.appendChild(o);
+    });
+    // Se il progetto non ha sponsor configurati, mostra disclaimer
+    document.getElementById('blk-no-sponsor').style.display = cfgSponsor.length === 0 ? 'block' : 'none';
+  }
+  // Nascondi il blocco sponsor finché l'utente non sceglie RECLUTATO
+  document.getElementById('blk-sponsor-reclutato').style.display = 'none';
+  const selSponReset = document.getElementById('f-sponsor');
+  if (selSponReset) selSponReset.value = '';
+
   updateSubmitBtn();
 
   showStep('s-consensi');
+}
+
+// Gestisce il cambio della radio reclutamento: mostra/nasconde la select sponsor
+function onReclutamentoChange() {
+  const rec = document.querySelector('input[name="f-reclutamento"]:checked');
+  const block = document.getElementById('blk-sponsor-reclutato');
+  if (rec && rec.value === 'RECLUTATO') {
+    block.style.display = 'block';
+  } else {
+    block.style.display = 'none';
+    // Svuota la selezione sponsor quando l'utente torna a NON RECLUTATO
+    const selSpon = document.getElementById('f-sponsor');
+    if (selSpon) selSpon.value = '';
+  }
+  updateSubmitBtn();
 }
 
 // Abilita il bottone CONFERMA ISCRIZIONE solo quando TUTTI i consensi richiesti sono spuntati.
@@ -1047,7 +1077,13 @@ function updateSubmitBtn() {
     if (!document.getElementById('f-regole-sidera').checked) allOk = false;
     if (!document.getElementById('f-informativa-ecm').checked) allOk = false;
     const rec = document.querySelector('input[name="f-reclutamento"]:checked');
-    if (!rec) allOk = false;
+    if (!rec) {
+      allOk = false;
+    } else if (rec.value === 'RECLUTATO') {
+      // Se reclutato, deve aver selezionato uno sponsor (se presenti nel progetto)
+      const sponsor = (document.getElementById('f-sponsor').value || '').trim();
+      if (cfgSponsor.length > 0 && !sponsor) allOk = false;
+    }
   }
   btn.disabled = !allOk;
 }
@@ -1077,6 +1113,12 @@ async function doSubmit(btn) {
       showMsg('msg-submit', 'Devi indicare se sei reclutato o meno.', 'err'); return;
     }
     reclutamento = rec.value;
+    if (reclutamento === 'RECLUTATO' && cfgSponsor.length > 0) {
+      const sponsor = (document.getElementById('f-sponsor').value || '').trim();
+      if (!sponsor) {
+        showMsg('msg-submit', 'Se sei reclutato devi selezionare lo sponsor di riferimento.', 'err'); return;
+      }
+    }
   }
 
   const cognome = tipoIscrizione === 'ECM'
