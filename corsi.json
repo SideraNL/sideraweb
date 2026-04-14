@@ -125,7 +125,25 @@
     "luogo": "NAPOLI",
     "data": "10/06/2026",
     "titolo": "RE-THINK TRD - RETE DI ESPERIENZA, TERAPIA E HUMAN INNOVATION NELLA DEPRESSIONE RESISTENTE",
-    "ssId": "1P747k22Mdwiewy2COZZcNNLYuzVFbZ-TULtV_VIeJQY"
+    "ssId": "1P747k22Mdwiewy2COZZcNNLYuzVFbZ-TULtV_VIeJQY",
+    "orari": [
+      {
+        "giorno": "1",
+        "data": "10/06/2026",
+        "ora_in": "09:30",
+        "ora_out": "16:00",
+        "pause": [
+          {
+            "in": "11:00",
+            "out": "11:30"
+          },
+          {
+            "in": "13:00",
+            "out": "14:00"
+          }
+        ]
+      }
+    ]
   },
   {
     "idPgt": "1328",
