@@ -155,16 +155,20 @@
       </div>
     </div>
 
+    <!-- ── STEP 0: AVVISO POSTI ESAURITI (visibile solo se necessario) ─────── -->
+    <div id="s-avviso" class="step">
+      <div class="pbar"><div class="fill" style="width:6%"></div></div>
+      <div class="step-title">⚠️ Avviso sulla disponibilità dei posti</div>
+      <div id="avviso-posti" style="background:#fff8e1;border:1px solid #ffc107;border-radius:8px;padding:16px 18px;margin-bottom:16px">
+        <div id="avviso-posti-testo" style="font-size:.88rem;color:#444;line-height:1.6"></div>
+      </div>
+      <button class="btn-prim" onclick="showStep('s-otp')">Prosegui →</button>
+    </div>
+
     <!-- ── STEP 1: OTP ─────────────────────────────────────────────────────── -->
     <div id="s-otp" class="step">
       <div class="pbar"><div class="fill" style="width:14%"></div></div>
       <div class="step-title">📧 Verifica Email</div>
-
-      <!-- Avviso professioni con posti esauriti (popolato dinamicamente) -->
-      <div id="avviso-posti" style="display:none;background:#fff8e1;border:1px solid #ffc107;border-radius:8px;padding:14px 16px;margin-bottom:16px">
-        <div style="font-weight:700;color:#e65100;font-size:.9rem;margin-bottom:8px">⚠️ Avviso sulla disponibilità dei posti</div>
-        <div id="avviso-posti-testo" style="font-size:.84rem;color:#444;line-height:1.5"></div>
-      </div>
 
       <div id="otp-1">
         <label class="f-label">La tua email personale</label>
@@ -696,16 +700,15 @@ async function init() {
     // NB: la select sponsor è ora nello step Consensi (sotto la radio RECLUTATO).
     // Viene popolata dinamicamente in goFromProf quando serve.
 
-    // Avviso sulla disponibilità dei posti (professioni ECM chiuse e/o NON ECM esaurito)
-    buildClosedWarning();
-
     if (!d.isOpen) {
       document.getElementById('s-closed-reason').textContent = d.reason || 'Le iscrizioni sono chiuse.';
       showStep('s-closed');
       return;
     }
 
-    showStep('s-otp');
+    // Se ci sono posti esauriti da segnalare, mostra prima lo step avviso; altrimenti vai direttamente all'OTP
+    const hasWarning = buildClosedWarning();
+    showStep(hasWarning ? 's-avviso' : 's-otp');
   } catch (e) {
     document.getElementById('s-error-msg').textContent = 'Errore di connessione: ' + e.message;
     showStep('s-error');
@@ -1131,13 +1134,12 @@ function updateAvantiBtnA() {
   btn.disabled = !ok;
 }
 
-// Costruisce l'avviso sulla disponibilità dei posti mostrato nello step Verifica Email.
+// Costruisce l'avviso sulla disponibilità dei posti mostrato in uno step dedicato preliminare.
 // Elenca le professioni ECM chiuse (deduplicate per base) e indica se le iscrizioni NON ECM sono esaurite.
-// Non mostra nulla se tutto è disponibile.
+// Ritorna true se c'è almeno un elemento da segnalare (→ mostrare lo step s-avviso), false altrimenti.
 function buildClosedWarning() {
-  const box = document.getElementById('avviso-posti');
   const testo = document.getElementById('avviso-posti-testo');
-  if (!box || !testo) return;
+  if (!testo) return false;
 
   // Raccogli base professions ECM chiuse (stesso filtro applicato alla select ECM)
   const closedBases = [];
@@ -1157,10 +1159,7 @@ function buildClosedWarning() {
   const maxNonEcm = cfgQuote['__NON_ECM__'] || 0;
   const nonEcmClosed = maxNonEcm > 0 && cfgCounts.nonEcmTotal >= maxNonEcm;
 
-  if (closedBases.length === 0 && !nonEcmClosed) {
-    box.style.display = 'none';
-    return;
-  }
+  if (closedBases.length === 0 && !nonEcmClosed) return false;
 
   let html = '';
   if (closedBases.length > 0) {
@@ -1175,7 +1174,7 @@ function buildClosedWarning() {
   html += '<p style="margin:0;font-style:italic;color:#666">Si invita pertanto a verificare la disponibilità di posti per la propria categoria professionale prima di proseguire con la registrazione.</p>';
 
   testo.innerHTML = html;
-  box.style.display = 'block';
+  return true;
 }
 
 // Abilita il bottone "CONFERMA ISCRIZIONE" dello Step B solo quando i consensi privacy sono spuntati.
