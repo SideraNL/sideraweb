@@ -1169,9 +1169,8 @@ function buildClosedWarning() {
     html += '</ul>';
   }
   if (nonEcmClosed) {
-    html += '<p style="margin:' + (closedBases.length ? '6px' : '0') + ' 0 10px">Si informa inoltre che le iscrizioni senza crediti ECM risultano al momento esaurite.</p>';
+    html += '<p style="margin:' + (closedBases.length ? '6px' : '0') + ' 0 0">Si informa che le iscrizioni <strong>senza crediti ECM</strong> risultano al momento esaurite.</p>';
   }
-  html += '<p style="margin:0;font-style:italic;color:#666">Si invita pertanto a verificare la disponibilità di posti per la propria categoria professionale prima di proseguire con la registrazione.</p>';
 
   testo.innerHTML = html;
   return true;
