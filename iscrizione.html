@@ -57,6 +57,15 @@
     .spin { display: inline-block; width: 1rem; height: 1rem; border: 2px solid currentColor; border-radius: 50%; border-right-color: transparent; animation: spin .7s linear infinite; vertical-align: middle; margin-left: 6px; display: none; }
     @keyframes spin { to { transform: rotate(360deg); } }
     .rie-box { background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 8px; padding: 14px; margin-bottom: 16px; font-size: .85rem; }
+    .legal-box { max-height: 140px; overflow-y: auto; background: #fafafa; border: 1px solid #dee2e6; border-radius: 8px; padding: 12px 14px; font-size: .78rem; color: #444; line-height: 1.5; margin-bottom: 8px; }
+    .legal-box strong { color: #222; }
+    .legal-box a { color: #0d47a1; font-weight: 600; }
+    .chk-row { display: flex; align-items: flex-start; gap: 10px; padding: 10px 12px; background: #f0f7ff; border: 1px solid #b6d4fe; border-radius: 8px; margin-bottom: 12px; }
+    .chk-row:hover { background: #e3f0ff; }
+    .chk-row input[type="checkbox"], .chk-row input[type="radio"] { margin-top: 3px; flex-shrink: 0; }
+    .chk-row label { font-size: .85rem; color: #333; cursor: pointer; flex: 1; margin: 0; line-height: 1.4; }
+    .section-label { font-size: .9rem; font-weight: 700; color: #1565c0; margin: 16px 0 6px; display: block; }
+    .section-label small { font-size: .75rem; font-weight: 400; color: #666; }
     @media (max-width: 480px) { .card-main { margin: 0; border-radius: 0; min-height: 100vh; } }
   </style>
 </head>
@@ -409,31 +418,100 @@
       <div class="pbar"><div class="fill" style="width:92%"></div></div>
       <div class="step-title">📝 Consensi e Conferma</div>
 
-      <!-- Solo ECM -->
-      <div id="blk-consenso-ecm" style="display:none">
-        <div class="form-check mb-3">
-          <input class="form-check-input" type="checkbox" id="f-consenso-ecm">
-          <label class="form-check-label" for="f-consenso-ecm" style="font-size:.86rem">
-            <strong>Consenso ECM *</strong> — Autorizzo il trattamento dei miei dati personali ai fini del riconoscimento dei crediti ECM e la comunicazione al Co.Ge.A.P.S. e agli enti accreditatori, ai sensi del D.Lgs. 196/2003 e GDPR 2016/679.
-          </label>
+      <!-- ============ Solo ECM: Regole Sidera + Reclutamento + Informativa ECM ============ -->
+      <div id="blk-ecm-consensi" style="display:none">
+
+        <!-- 1. Regole Sidera -->
+        <label class="section-label">Regole Sidera <small>(scorri per accettare)</small></label>
+        <div class="legal-box">
+          <p style="margin:0 0 10px"><strong>Il sottoscritto dichiara</strong> di conoscere e accettare le regole di gestione di Sidera dell'evento ECM qui brevemente sintetizzate:</p>
+          1) presenza minima del 90% per gli eventi residenziali e del 100% per gli eventi di FAD sincrona<br><br>
+          2) percentuale minima di risposte corrette per il superamento del Test ECM del 75%<br><br>
+          3) l'attestazione ECM è rilasciata solo in caso di superamento del test ECM, compilazione del questionario di customer satisfaction e frequenza superiore al minimo richiesto<br><br>
+          4) non si rilasciano attestati di partecipazione parziali<br><br>
+          5) il termine di compilazione dei questionari ECM e/o di segnalazioni a direzione@sideraweb.it è di 3 giorni solari dal termine dell'evento. E' ammesso un solo tentativo di compilazione<br><br>
+          6) per i webinar il link di connessione è personale e non cedibile e viene utilizzato per la rilevazione della presenza<br><br>
+          <b>7) Gli attestati sono inviati per email entro 30 giorni dall'evento. E' possibile chiederne copia entro 90 giorni dall'evento. Non saranno accolte richieste successive a questo termine.</b>
         </div>
-        <div class="form-check mb-3">
-          <input class="form-check-input" type="checkbox" id="f-dichiarazione-invito" checked>
-          <label class="form-check-label" for="f-dichiarazione-invito" style="font-size:.86rem">
-            <strong>Dichiarazione *</strong> — Dichiaro di non essere dipendente dello sponsor del corso e di non avere conflitti di interesse che possano influenzare i miei giudizi professionali.
-          </label>
+        <div class="chk-row">
+          <input type="checkbox" id="f-regole-sidera" onchange="updateSubmitBtn()">
+          <label for="f-regole-sidera">Acconsento e accetto le regole di gestione Sidera</label>
+        </div>
+
+        <!-- 2. Dichiarazione di reclutamento -->
+        <label class="section-label">Dichiarazione di reclutamento discente</label>
+        <div class="legal-box">
+          Il sottoscritto dichiara, di non aver assolto a più di un terzo del proprio obbligo formativo mediante reclutamento. Ai sensi dell'art. 80 dell'Accordo S/R del 2 febbraio 2017 si intende reclutato il professionista sanitario che, per la partecipazione ad eventi formativi, beneficia di vantaggi economici e non economici, diretti ed indiretti, da parte di imprese commerciali operanti in ambito sanitario.
+        </div>
+        <div class="chk-row">
+          <input type="radio" name="f-reclutamento" id="f-non-reclutato" value="NON RECLUTATO" onchange="updateSubmitBtn()">
+          <label for="f-non-reclutato">NON RECLUTATO</label>
+        </div>
+        <div class="chk-row">
+          <input type="radio" name="f-reclutamento" id="f-reclutato" value="RECLUTATO" onchange="updateSubmitBtn()">
+          <label for="f-reclutato">RECLUTATO</label>
+        </div>
+
+        <!-- 3. Informativa ECM -->
+        <label class="section-label">Informativa ECM <small>(scorri per accettare)</small></label>
+        <div class="legal-box">
+          In base alla normativa ECM è possibile acquisire al massimo un terzo dei crediti formativi, ricondotti al triennio in corso, mediante reclutamento diretto da parte dello sponsor.<br><br>
+          Se ritiene che l'influenza dello sponsor sia stata condizionante dei contenuti del convegno può inviare un feedback alla email: feedback@agenas.it<br><br>
+          A campione Sidera invierà per email la richiesta di compilazione del questionario delle ricadute organizzative.
+        </div>
+        <div class="chk-row">
+          <input type="checkbox" id="f-informativa-ecm" onchange="updateSubmitBtn()">
+          <label for="f-informativa-ecm">Acconsento e accetto</label>
         </div>
       </div>
 
-      <div class="form-check mb-4">
-        <input class="form-check-input" type="checkbox" id="f-privacy" checked>
-        <label class="form-check-label" for="f-privacy" style="font-size:.86rem">
-          <strong>Privacy *</strong> — Ho letto e accetto l'<a href="https://www.sideraweb.com/privacy.html" target="_blank" style="color:#1565c0">Informativa sulla Privacy</a> (GDPR art. 13) e acconsento al trattamento dei miei dati per la gestione dell'iscrizione al corso.
-        </label>
+      <!-- ============ Privacy (entrambi ECM e NON ECM, testi diversi) ============ -->
+      <label class="section-label">Informativa Privacy</label>
+      <p style="font-size:.82rem;color:#666;margin:0 0 8px">Per procedere è necessario leggere e accettare entrambe le sezioni seguenti.</p>
+
+      <!-- ① Trattamento base -->
+      <label class="section-label" style="margin-top:6px;font-size:.82rem">① Informativa sul trattamento dei dati personali <small>(scorri per accettare)</small></label>
+      <!-- Testo per ECM -->
+      <div class="legal-box" id="legal-privacy-ecm" style="display:none">
+        I dati identificativi e professionali sono trattati ai sensi del Regolamento UE 679/2016 (GDPR), in formato elettronico e/o cartaceo, per le finalità connesse all'accreditamento ECM di questo evento e di altri eventi accreditati ECM per i quali viene effettuata richiesta di iscrizione. La base giuridica del trattamento è l'esecuzione del contratto (art. 6.1.b GDPR) e l'adempimento di obblighi legali in materia ECM (art. 6.1.c GDPR).<br><br>
+        <strong>Tempi di conservazione:</strong> I dati saranno conservati per <strong>5 anni</strong> dalla data dell'evento, periodo necessario per gli adempimenti ECM e obblighi fiscali. Trascorso tale termine, i dati operativi saranno cancellati dai sistemi attivi. Una copia di archivio potrà essere conservata fino a un massimo di <strong>10 anni totali</strong> dalla data dell'evento, esclusivamente per adempimenti legali (obblighi ECM, fiscali e contabili), con accesso limitato e finalità strettamente legale. Al termine del periodo di archivio i dati saranno definitivamente cancellati.<br><br>
+        <strong>Diritti dell'interessato:</strong> Ai sensi degli artt. 15-22 GDPR, è possibile esercitare i diritti di accesso, rettifica, cancellazione, limitazione del trattamento e portabilità dei dati scrivendo a: <a href="mailto:direzione@sideraweb.it">direzione@sideraweb.it</a>. La richiesta sarà evasa entro 30 giorni. Si precisa che il diritto di cancellazione potrebbe essere limitato per il periodo in cui la conservazione è necessaria ad adempimenti legali.<br><br>
+        Responsabile del trattamento: Sidera S.r.l.<br><br>
+        <strong>Verifica Albo professionale:</strong> Per la verifica dell'iscrizione all'albo, potranno essere consultati i pubblici registri degli Ordini professionali (FNOMCEO, FNOPI, CNOP), come previsto dalla normativa ECM vigente.<br><br>
+        Ai sensi dell'art. 14 del Regolamento 679/2016/UE, si informa che l'Agenzia Nazionale per i Servizi Sanitari Regionali (AGE.NA.S), in qualità di Titolare del trattamento, tratta i dati personali forniti e liberamente comunicati.<br><br>
+        L'Informativa Nazionale Partecipanti corsi ECM è disponibile al seguente link: <a href="https://ecm.agenas.it/privacy-policy" target="_blank">CLICCA QUI</a><br><br>
+        <strong>Cancellazione iscrizione all'evento e diritto di cancellazione dei dati (art. 17 GDPR):</strong> L'email di conferma iscrizione contiene un link per annullare la propria iscrizione all'evento, disponibile fino al giorno precedente l'evento per ragioni organizzative (termine operativo di servizio, art. 6.1.b GDPR). Tale diritto contrattuale è <em>distinto e indipendente</em> dal diritto di cancellazione dei propri dati personali ai sensi dell'<strong>art. 17 GDPR</strong>, il quale può essere esercitato <strong>in qualsiasi momento</strong> — anche nelle 24 ore precedenti l'evento — scrivendo a <a href="mailto:direzione@sideraweb.it">direzione@sideraweb.it</a>. La richiesta sarà evasa entro 30 giorni, fatte salve le limitazioni previste dalla legge per il periodo di conservazione obbligatoria (normativa ECM, obblighi fiscali e contabili).
+      </div>
+      <!-- Testo per NON ECM -->
+      <div class="legal-box" id="legal-privacy-necm" style="display:none">
+        I dati identificativi personali sono trattati ai sensi del Regolamento UE 679/2016 (GDPR), in formato elettronico e/o cartaceo, per le finalità connesse alla partecipazione a questo evento. La base giuridica del trattamento è l'esecuzione del contratto (art. 6.1.b GDPR).<br><br>
+        <strong>Tempi di conservazione:</strong> I dati saranno conservati per <strong>2 anni</strong> dalla data dell'evento. Una copia di archivio potrà essere conservata fino a un massimo di <strong>10 anni totali</strong> esclusivamente per adempimenti legali (obblighi fiscali e contabili), con accesso limitato. Al termine del periodo di archivio i dati saranno definitivamente cancellati.<br><br>
+        <strong>Diritti dell'interessato:</strong> Ai sensi degli artt. 15-22 GDPR, è possibile esercitare i diritti di accesso, rettifica, cancellazione, limitazione del trattamento e portabilità dei dati scrivendo a: <a href="mailto:direzione@sideraweb.it">direzione@sideraweb.it</a>. La richiesta sarà evasa entro 30 giorni.<br><br>
+        Responsabile del trattamento: Sidera S.r.l.<br><br>
+        <strong>Cancellazione iscrizione all'evento e diritto di cancellazione dei dati (art. 17 GDPR):</strong> L'email di conferma iscrizione contiene un link per annullare la propria iscrizione all'evento, disponibile fino al giorno precedente l'evento per ragioni organizzative (termine operativo di servizio). Tale diritto contrattuale è <em>distinto e indipendente</em> dal diritto di cancellazione dei propri dati personali ai sensi dell'<strong>art. 17 GDPR</strong>, il quale può essere esercitato <strong>in qualsiasi momento</strong> — anche nelle 24 ore precedenti l'evento — scrivendo a <a href="mailto:direzione@sideraweb.it">direzione@sideraweb.it</a>. La richiesta sarà evasa entro 30 giorni.
+      </div>
+      <div class="chk-row">
+        <input type="checkbox" id="f-privacy-base" onchange="updateSubmitBtn()">
+        <label for="f-privacy-base"><span id="f-privacy-base-lbl">Ho letto l'informativa e prendo atto del trattamento dei miei dati</span></label>
+      </div>
+
+      <!-- ② Trasferimenti extra-UE -->
+      <label class="section-label" style="margin-top:12px;font-size:.82rem">② Trasferimenti dati extra-UE (obbligatori per il servizio)</label>
+      <!-- Notice per ECM -->
+      <div class="priv-notice" id="privacy-transfer-ecm" style="display:none;background:#e8f5e9;border-color:#4caf50">
+        🌍 Per l'elaborazione OCR della tessera sanitaria, i dati vengono trasmessi temporaneamente a <strong>Google LLC</strong> (USA) tramite Google Vision API. Per gli eventi in modalità webinar, i dati di iscrizione (nome, cognome, email) vengono trasmessi a <strong>Zoom Video Communications, Inc.</strong> (USA). Entrambi i trasferimenti avvengono nel rispetto delle garanzie dell'art. 46 GDPR (Clausole Contrattuali Standard) e sono tecnicamente necessari per l'erogazione del servizio. I dati non vengono utilizzati per finalità diverse da quelle indicate.
+      </div>
+      <!-- Notice per NON ECM -->
+      <div class="priv-notice" id="privacy-transfer-necm" style="display:none;background:#e8f5e9;border-color:#4caf50">
+        🌍 Per gli eventi in modalità webinar, i dati di iscrizione (nome, cognome, email) vengono trasmessi a <strong>Zoom Video Communications, Inc.</strong> (USA) ai fini della registrazione all'evento, nel rispetto delle garanzie previste dall'art. 46 GDPR (Clausole Contrattuali Standard).
+      </div>
+      <div class="chk-row">
+        <input type="checkbox" id="f-privacy-transfer" onchange="updateSubmitBtn()">
+        <label for="f-privacy-transfer"><span id="f-privacy-transfer-lbl">Prendo atto del trasferimento dei miei dati extra-UE ai sensi dell'art. 46 GDPR</span></label>
       </div>
 
       <!-- Riepilogo -->
-      <div class="rie-box">
+      <div class="rie-box" style="margin-top:16px">
         <strong style="display:block;margin-bottom:8px;color:#1565c0">📋 Riepilogo</strong>
         <div class="row g-1 small">
           <div class="col-6"><span style="color:#888">Tipo:</span> <strong id="rie-tipo">-</strong></div>
@@ -443,7 +521,7 @@
         </div>
       </div>
 
-      <button class="btn-prim" id="btn-submit" onclick="doSubmit(this)">
+      <button class="btn-prim" id="btn-submit" onclick="doSubmit(this)" disabled>
         ✅ CONFERMA ISCRIZIONE <span class="spin"></span>
       </button>
       <div class="msg" id="msg-submit" style="margin-top:10px"></div>
@@ -928,8 +1006,50 @@ function goFromProf() {
   document.getElementById('rie-nome').textContent  = cognome + ' ' + nome;
   document.getElementById('rie-prof').textContent  = prof;
 
-  document.getElementById('blk-consenso-ecm').style.display = tipoIscrizione === 'ECM' ? 'block' : 'none';
+  // Mostra/nascondi blocco ECM dei consensi
+  document.getElementById('blk-ecm-consensi').style.display = tipoIscrizione === 'ECM' ? 'block' : 'none';
+
+  // Seleziona i blocchi privacy corretti per ECM vs NON ECM
+  const isECM = tipoIscrizione === 'ECM';
+  document.getElementById('legal-privacy-ecm').style.display  = isECM ? 'block' : 'none';
+  document.getElementById('legal-privacy-necm').style.display = isECM ? 'none'  : 'block';
+  document.getElementById('privacy-transfer-ecm').style.display  = isECM ? 'block' : 'none';
+  document.getElementById('privacy-transfer-necm').style.display = isECM ? 'none'  : 'block';
+  // Aggiorna etichette dei check in base al flow
+  document.getElementById('f-privacy-base-lbl').textContent = isECM
+    ? 'Ho letto l\'informativa e prendo atto del trattamento dei miei dati ai fini ECM (art. 6.1.b-c GDPR)'
+    : 'Ho letto l\'informativa e prendo atto del trattamento dei miei dati (art. 6.1.b GDPR)';
+  document.getElementById('f-privacy-transfer-lbl').textContent = isECM
+    ? 'Prendo atto del trasferimento temporaneo dei miei dati a Google LLC e Zoom (USA) ai sensi dell\'art. 46 GDPR'
+    : 'Prendo atto del possibile trasferimento dei miei dati a Zoom (USA) per eventi webinar, ai sensi dell\'art. 46 GDPR';
+
+  // Reset stato checkbox / radio consensi e bottone
+  ['f-regole-sidera','f-informativa-ecm','f-privacy-base','f-privacy-transfer'].forEach(function(id){
+    const el = document.getElementById(id);
+    if (el) el.checked = false;
+  });
+  document.querySelectorAll('input[name="f-reclutamento"]').forEach(function(r){ r.checked = false; });
+  updateSubmitBtn();
+
   showStep('s-consensi');
+}
+
+// Abilita il bottone CONFERMA ISCRIZIONE solo quando TUTTI i consensi richiesti sono spuntati.
+function updateSubmitBtn() {
+  const btn = document.getElementById('btn-submit');
+  if (!btn) return;
+  let allOk = true;
+  // Privacy base + trasferimento extra-UE (obbligatori per ECM e NON ECM)
+  if (!document.getElementById('f-privacy-base').checked) allOk = false;
+  if (!document.getElementById('f-privacy-transfer').checked) allOk = false;
+  // Solo ECM: regole Sidera, informativa ECM, dichiarazione reclutamento
+  if (tipoIscrizione === 'ECM') {
+    if (!document.getElementById('f-regole-sidera').checked) allOk = false;
+    if (!document.getElementById('f-informativa-ecm').checked) allOk = false;
+    const rec = document.querySelector('input[name="f-reclutamento"]:checked');
+    if (!rec) allOk = false;
+  }
+  btn.disabled = !allOk;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -937,16 +1057,26 @@ function goFromProf() {
 // ─────────────────────────────────────────────────────────────────────────────
 async function doSubmit(btn) {
   hideMsg('msg-submit');
-  if (tipoIscrizione === 'ECM') {
-    if (!document.getElementById('f-consenso-ecm').checked) {
-      showMsg('msg-submit', 'Il consenso ECM è obbligatorio.', 'err'); return;
-    }
-    if (!document.getElementById('f-dichiarazione-invito').checked) {
-      showMsg('msg-submit', 'La dichiarazione di invito è obbligatoria.', 'err'); return;
-    }
+  // Safety-net validation (il bottone dovrebbe essere già disabled in caso di mancanze)
+  if (!document.getElementById('f-privacy-base').checked) {
+    showMsg('msg-submit', 'Devi accettare l\'informativa privacy (sezione ①).', 'err'); return;
   }
-  if (!document.getElementById('f-privacy').checked) {
-    showMsg('msg-submit', 'L\'accettazione della privacy policy è obbligatoria.', 'err'); return;
+  if (!document.getElementById('f-privacy-transfer').checked) {
+    showMsg('msg-submit', 'Devi accettare il trasferimento dati extra-UE (sezione ②).', 'err'); return;
+  }
+  let reclutamento = '';
+  if (tipoIscrizione === 'ECM') {
+    if (!document.getElementById('f-regole-sidera').checked) {
+      showMsg('msg-submit', 'Devi accettare le regole di gestione Sidera.', 'err'); return;
+    }
+    if (!document.getElementById('f-informativa-ecm').checked) {
+      showMsg('msg-submit', 'Devi accettare l\'informativa ECM.', 'err'); return;
+    }
+    const rec = document.querySelector('input[name="f-reclutamento"]:checked');
+    if (!rec) {
+      showMsg('msg-submit', 'Devi indicare se sei reclutato o meno.', 'err'); return;
+    }
+    reclutamento = rec.value;
   }
 
   const cognome = tipoIscrizione === 'ECM'
@@ -970,8 +1100,11 @@ async function doSubmit(btn) {
     formData.NatoA              = ocrData.luogoNascita || '';
     formData.NatoIl             = ocrData.dataNascita  || '';
     formData.Occupazione        = document.getElementById('f-occupazione').value;
-    formData.Sponsor            = document.getElementById('f-sponsor').value;
-    formData.DichiarazioneInvito= 'Sì';
+    // Se NON RECLUTATO → sponsor vuoto; se RECLUTATO → sponsor dal prof step
+    formData.Sponsor            = reclutamento === 'RECLUTATO'
+      ? (document.getElementById('f-sponsor').value || '')
+      : '';
+    formData.DichiarazioneInvito= reclutamento;
     formData.ConsensoECM        = 'Sì';
     formData.Albo               = document.getElementById('f-albo').value.trim();
     formData.NumIscrizione      = document.getElementById('f-num-iscrizione').value.trim();
