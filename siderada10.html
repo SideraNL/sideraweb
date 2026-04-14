@@ -428,7 +428,7 @@
     <img src="img/sidera_logo.jpg" alt="Sidera" style="border-radius:6px" onerror="this.style.display='none'">
     <div style="flex:1">
       <div class="title">SideraDA10</div>
-      <div class="ver">Scanner Presenze ECM — v1.8</div>
+      <div class="ver">Scanner Presenze ECM — v1.9</div>
     </div>
     <button class="logout-btn" onclick="logout()" title="Esci" id="btn-logout" style="display:none">
       <span class="material-icons">logout</span>
@@ -953,35 +953,125 @@ function registra(tipo) {
   document.querySelectorAll('.decision .btn').forEach(b => b.disabled = true);
   document.getElementById('spinner').classList.add('active');
 
-  fetch(GAS_ENDPOINT, {
+  _postScan({ idPgt: currentProject, cf: cf, tipo: tipo, pin: authPin })
+    .then(result => {
+      document.getElementById('spinner').classList.remove('active');
+      document.querySelectorAll('.decision .btn').forEach(b => b.disabled = false);
+      if (_handleAuthFail(result)) return;
+
+      if (result.ok) {
+        _onScanRegistrata(cf, tipo, result.dataOra);
+        return;
+      }
+
+      // Gestione code di errore
+      if (result.code === 'missing_in') {
+        _gestisciMissingIn(cf, tipo);
+        return;
+      }
+      if (result.code === 'duplicate_in' || result.code === 'duplicate_out') {
+        const found = paxList.find(p => p.cf === cf);
+        const nome = found ? found.cognome + ' ' + found.nome : cf;
+        toast(nome + ' — ' + (result.error || 'Già registrato'), 'warning');
+        return;
+      }
+
+      toast('Errore: ' + (result.error || 'sconosciuto'), 'error');
+    })
+    .catch(err => {
+      document.getElementById('spinner').classList.remove('active');
+      document.querySelectorAll('.decision .btn').forEach(b => b.disabled = false);
+      toast('Errore di rete: ' + err.message, 'error');
+    });
+}
+
+// Helper POST scansione
+function _postScan(payload) {
+  return fetch(GAS_ENDPOINT, {
     method: 'POST',
     headers: { 'Content-Type': 'text/plain' },
-    body: JSON.stringify({ idPgt: currentProject, cf: cf, tipo: tipo, pin: authPin }),
+    body: JSON.stringify(payload),
     redirect: 'follow'
-  })
-  .then(r => r.json())
-  .then(result => {
-    document.getElementById('spinner').classList.remove('active');
-    document.querySelectorAll('.decision .btn').forEach(b => b.disabled = false);
-    if (_handleAuthFail(result)) return;
-    if (result.ok) {
-      const label = tipo === 'IN' ? 'INGRESSO' : 'USCITA';
-      const found = paxList.find(p => p.cf === cf);
-      const nome = found ? ' — ' + found.cognome + ' ' + found.nome : '';
-      const logs = JSON.parse(sessionStorage.getItem('siderada10_log') || '[]');
-      logs.unshift({ cf, tipo, dataOra: result.dataOra, nome: nome.replace(' — ', '') });
-      sessionStorage.setItem('siderada10_log', JSON.stringify(logs));
-      alert(cf + nome + ' — ' + label + ' registrato ✓');
-      location.reload();
-    } else {
-      toast('Errore: ' + (result.error || 'sconosciuto'), 'error');
-    }
-  })
-  .catch(err => {
-    document.getElementById('spinner').classList.remove('active');
-    document.querySelectorAll('.decision .btn').forEach(b => b.disabled = false);
-    toast('Errore di rete: ' + err.message, 'error');
-  });
+  }).then(r => r.json());
+}
+
+// Callback successo scansione live
+function _onScanRegistrata(cf, tipo, dataOra) {
+  const label = tipo === 'IN' ? 'INGRESSO' : 'USCITA';
+  const found = paxList.find(p => p.cf === cf);
+  const nome = found ? ' — ' + found.cognome + ' ' + found.nome : '';
+  const logs = JSON.parse(sessionStorage.getItem('siderada10_log') || '[]');
+  logs.unshift({ cf, tipo, dataOra: dataOra, nome: nome.replace(' — ', '') });
+  sessionStorage.setItem('siderada10_log', JSON.stringify(logs));
+  alert(cf + nome + ' — ' + label + ' registrato ✓');
+  location.reload();
+}
+
+// Gestione warning "manca IN" quando l'operatore prova a registrare OUT
+function _gestisciMissingIn(cf, tipoRichiesto) {
+  const found = paxList.find(p => p.cf === cf);
+  const nome = found ? found.cognome + ' ' + found.nome : cf;
+
+  // Trova l'ora_in del giorno di oggi dal programma
+  const todayStr = _todayStr();
+  const giornoOggi = currentOrari.find(g => g.data === todayStr);
+  if (!giornoOggi) {
+    toast('Oggi non è un giorno previsto dal programma del corso', 'error');
+    return;
+  }
+  const oraInProposta = giornoOggi.ora_in; // es. "09:00"
+
+  const msg = '⚠ MANCA LA RILEVAZIONE DI INGRESSO\n\n' +
+              nome + '\n\n' +
+              'Vuoi registrare l\'INGRESSO mancante alle ' + oraInProposta +
+              ' (orario di inizio lezione) e poi procedere con l\'USCITA?';
+
+  if (!confirm(msg)) {
+    toast('Operazione annullata', 'warning');
+    return;
+  }
+
+  document.querySelectorAll('.decision .btn').forEach(b => b.disabled = true);
+  document.getElementById('spinner').classList.add('active');
+
+  // Step 1: POST backfill IN all'ora schedulata
+  const backfillPayload = {
+    idPgt: currentProject,
+    cf: cf,
+    tipo: 'IN',
+    backfill: true,
+    dataOra: todayStr + ' ' + oraInProposta + ':00',
+    pin: authPin
+  };
+
+  _postScan(backfillPayload)
+    .then(result => {
+      if (_handleAuthFail(result)) return;
+      if (!result.ok) {
+        document.getElementById('spinner').classList.remove('active');
+        document.querySelectorAll('.decision .btn').forEach(b => b.disabled = false);
+        toast('Errore backfill IN: ' + (result.error || 'sconosciuto'), 'error');
+        return;
+      }
+      // Step 2: POST OUT (ora che c'è l'IN, la validazione passa)
+      return _postScan({ idPgt: currentProject, cf: cf, tipo: 'OUT', pin: authPin });
+    })
+    .then(result2 => {
+      if (!result2) return; // errore step 1 già gestito
+      document.getElementById('spinner').classList.remove('active');
+      document.querySelectorAll('.decision .btn').forEach(b => b.disabled = false);
+      if (_handleAuthFail(result2)) return;
+      if (result2.ok) {
+        _onScanRegistrata(cf, 'OUT', result2.dataOra);
+      } else {
+        toast('Errore registrazione OUT: ' + (result2.error || 'sconosciuto'), 'error');
+      }
+    })
+    .catch(err => {
+      document.getElementById('spinner').classList.remove('active');
+      document.querySelectorAll('.decision .btn').forEach(b => b.disabled = false);
+      toast('Errore di rete: ' + err.message, 'error');
+    });
 }
 
 // --- LOG SESSIONE ---
