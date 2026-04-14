@@ -406,69 +406,73 @@
       <div class="msg" id="msg-prof" style="margin-top:10px"></div>
     </div>
 
-    <!-- ── STEP 7: CONSENSI + SUBMIT ──────────────────────────────────────── -->
-    <div id="s-consensi" class="step">
-      <div class="pbar"><div class="fill" style="width:92%"></div></div>
-      <div class="step-title">📝 Consensi e Conferma</div>
+    <!-- ── STEP 7A: CONSENSI ECM (solo flow ECM) ──────────────────────────── -->
+    <div id="s-consensi-a" class="step">
+      <div class="pbar"><div class="fill" style="width:88%"></div></div>
+      <div class="step-title">📝 Consensi ECM</div>
 
-      <!-- ============ Solo ECM: Regole Sidera + Reclutamento + Informativa ECM ============ -->
-      <div id="blk-ecm-consensi" style="display:none">
-
-        <!-- 1. Regole Sidera -->
-        <label class="section-label">Regole Sidera <small>(scorri per accettare)</small></label>
-        <div class="legal-box">
-          <p style="margin:0 0 10px"><strong>Il sottoscritto dichiara</strong> di conoscere e accettare le regole di gestione di Sidera dell'evento ECM qui brevemente sintetizzate:</p>
-          1) presenza minima del 90% per gli eventi residenziali e del 100% per gli eventi di FAD sincrona<br><br>
-          2) percentuale minima di risposte corrette per il superamento del Test ECM del 75%<br><br>
-          3) l'attestazione ECM è rilasciata solo in caso di superamento del test ECM, compilazione del questionario di customer satisfaction e frequenza superiore al minimo richiesto<br><br>
-          4) non si rilasciano attestati di partecipazione parziali<br><br>
-          5) il termine di compilazione dei questionari ECM e/o di segnalazioni a direzione@sideraweb.it è di 3 giorni solari dal termine dell'evento. E' ammesso un solo tentativo di compilazione<br><br>
-          6) per i webinar il link di connessione è personale e non cedibile e viene utilizzato per la rilevazione della presenza<br><br>
-          <b>7) Gli attestati sono inviati per email entro 30 giorni dall'evento. E' possibile chiederne copia entro 90 giorni dall'evento. Non saranno accolte richieste successive a questo termine.</b>
-        </div>
-        <div class="chk-row">
-          <input type="checkbox" id="f-regole-sidera" onchange="updateSubmitBtn()">
-          <label for="f-regole-sidera">Acconsento e accetto le regole di gestione Sidera</label>
-        </div>
-
-        <!-- 2. Dichiarazione di reclutamento -->
-        <label class="section-label">Dichiarazione di reclutamento discente</label>
-        <div class="legal-box">
-          Il sottoscritto dichiara, di non aver assolto a più di un terzo del proprio obbligo formativo mediante reclutamento. Ai sensi dell'art. 80 dell'Accordo S/R del 2 febbraio 2017 si intende reclutato il professionista sanitario che, per la partecipazione ad eventi formativi, beneficia di vantaggi economici e non economici, diretti ed indiretti, da parte di imprese commerciali operanti in ambito sanitario.
-        </div>
-        <div class="chk-row">
-          <input type="radio" name="f-reclutamento" id="f-non-reclutato" value="NON RECLUTATO" onchange="onReclutamentoChange()">
-          <label for="f-non-reclutato">NON RECLUTATO</label>
-        </div>
-        <div class="chk-row">
-          <input type="radio" name="f-reclutamento" id="f-reclutato" value="RECLUTATO" onchange="onReclutamentoChange()">
-          <label for="f-reclutato">RECLUTATO</label>
-        </div>
-
-        <!-- Sponsor — visibile solo se RECLUTATO -->
-        <div id="blk-sponsor-reclutato" style="display:none;margin:4px 0 14px 0;padding:12px 14px;background:#fff8e1;border:1px solid #ffe082;border-radius:8px">
-          <label class="f-label" style="color:#e65100">Sponsor di riferimento *</label>
-          <div style="font-size:.78rem;color:#666;margin-bottom:8px">Seleziona lo sponsor che ti ha reclutato per questo corso</div>
-          <select id="f-sponsor" class="form-select" onchange="updateSubmitBtn()">
-            <option value="">— Seleziona lo sponsor —</option>
-          </select>
-          <div id="blk-no-sponsor" style="display:none;font-size:.8rem;color:#c62828;margin-top:6px">⚠️ Il corso non ha sponsor configurati. Se sei stato reclutato, contatta <a href="mailto:direzione@sideraweb.it">direzione@sideraweb.it</a>.</div>
-        </div>
-
-        <!-- 3. Informativa ECM -->
-        <label class="section-label">Informativa ECM <small>(scorri per accettare)</small></label>
-        <div class="legal-box">
-          In base alla normativa ECM è possibile acquisire al massimo un terzo dei crediti formativi, ricondotti al triennio in corso, mediante reclutamento diretto da parte dello sponsor.<br><br>
-          Se ritiene che l'influenza dello sponsor sia stata condizionante dei contenuti del convegno può inviare un feedback alla email: feedback@agenas.it<br><br>
-          A campione Sidera invierà per email la richiesta di compilazione del questionario delle ricadute organizzative.
-        </div>
-        <div class="chk-row">
-          <input type="checkbox" id="f-informativa-ecm" onchange="updateSubmitBtn()">
-          <label for="f-informativa-ecm">Acconsento e accetto</label>
-        </div>
+      <!-- 1. Regole Sidera -->
+      <label class="section-label">Regole Sidera <small>(scorri per accettare)</small></label>
+      <div class="legal-box">
+        <p style="margin:0 0 10px"><strong>Il sottoscritto dichiara</strong> di conoscere e accettare le regole di gestione di Sidera dell'evento ECM qui brevemente sintetizzate:</p>
+        1) presenza minima del 90% per gli eventi residenziali e del 100% per gli eventi di FAD sincrona<br><br>
+        2) percentuale minima di risposte corrette per il superamento del Test ECM del 75%<br><br>
+        3) l'attestazione ECM è rilasciata solo in caso di superamento del test ECM, compilazione del questionario di customer satisfaction e frequenza superiore al minimo richiesto<br><br>
+        4) non si rilasciano attestati di partecipazione parziali<br><br>
+        5) il termine di compilazione dei questionari ECM e/o di segnalazioni a direzione@sideraweb.it è di 3 giorni solari dal termine dell'evento. E' ammesso un solo tentativo di compilazione<br><br>
+        6) per i webinar il link di connessione è personale e non cedibile e viene utilizzato per la rilevazione della presenza<br><br>
+        <b>7) Gli attestati sono inviati per email entro 30 giorni dall'evento. E' possibile chiederne copia entro 90 giorni dall'evento. Non saranno accolte richieste successive a questo termine.</b>
+      </div>
+      <div class="chk-row">
+        <input type="checkbox" id="f-regole-sidera" onchange="updateAvantiBtnA()">
+        <label for="f-regole-sidera">Acconsento e accetto le regole di gestione Sidera</label>
       </div>
 
-      <!-- ============ Privacy (entrambi ECM e NON ECM, testi diversi) ============ -->
+      <!-- 2. Dichiarazione di reclutamento -->
+      <label class="section-label">Dichiarazione di reclutamento discente</label>
+      <div class="legal-box">
+        Il sottoscritto dichiara, di non aver assolto a più di un terzo del proprio obbligo formativo mediante reclutamento. Ai sensi dell'art. 80 dell'Accordo S/R del 2 febbraio 2017 si intende reclutato il professionista sanitario che, per la partecipazione ad eventi formativi, beneficia di vantaggi economici e non economici, diretti ed indiretti, da parte di imprese commerciali operanti in ambito sanitario.
+      </div>
+      <div class="chk-row">
+        <input type="radio" name="f-reclutamento" id="f-non-reclutato" value="NON RECLUTATO" onchange="onReclutamentoChange()">
+        <label for="f-non-reclutato">NON RECLUTATO</label>
+      </div>
+      <div class="chk-row">
+        <input type="radio" name="f-reclutamento" id="f-reclutato" value="RECLUTATO" onchange="onReclutamentoChange()">
+        <label for="f-reclutato">RECLUTATO</label>
+      </div>
+
+      <!-- Sponsor — visibile solo se RECLUTATO -->
+      <div id="blk-sponsor-reclutato" style="display:none;margin:4px 0 14px 0;padding:12px 14px;background:#fff8e1;border:1px solid #ffe082;border-radius:8px">
+        <label class="f-label" style="color:#e65100">Sponsor di riferimento *</label>
+        <div style="font-size:.78rem;color:#666;margin-bottom:8px">Seleziona lo sponsor che ti ha reclutato per questo corso</div>
+        <select id="f-sponsor" class="form-select" onchange="updateAvantiBtnA()">
+          <option value="">— Seleziona lo sponsor —</option>
+        </select>
+        <div id="blk-no-sponsor" style="display:none;font-size:.8rem;color:#c62828;margin-top:6px">⚠️ Il corso non ha sponsor configurati. Se sei stato reclutato, contatta <a href="mailto:direzione@sideraweb.it">direzione@sideraweb.it</a>.</div>
+      </div>
+
+      <!-- 3. Informativa ECM -->
+      <label class="section-label">Informativa ECM <small>(scorri per accettare)</small></label>
+      <div class="legal-box">
+        In base alla normativa ECM è possibile acquisire al massimo un terzo dei crediti formativi, ricondotti al triennio in corso, mediante reclutamento diretto da parte dello sponsor.<br><br>
+        Se ritiene che l'influenza dello sponsor sia stata condizionante dei contenuti del convegno può inviare un feedback alla email: feedback@agenas.it<br><br>
+        A campione Sidera invierà per email la richiesta di compilazione del questionario delle ricadute organizzative.
+      </div>
+      <div class="chk-row">
+        <input type="checkbox" id="f-informativa-ecm" onchange="updateAvantiBtnA()">
+        <label for="f-informativa-ecm">Acconsento e accetto</label>
+      </div>
+
+      <button class="btn-prim" id="btn-consensi-a" onclick="goFromConsensiA()" disabled>Avanti →</button>
+      <div class="msg" id="msg-consensi-a" style="margin-top:10px"></div>
+    </div>
+
+    <!-- ── STEP 7B: PRIVACY + RIEPILOGO + SUBMIT (entrambi ECM e NON ECM) ─── -->
+    <div id="s-consensi-b" class="step">
+      <div class="pbar"><div class="fill" style="width:96%"></div></div>
+      <div class="step-title">🔒 Privacy e Conferma</div>
+
       <label class="section-label">Informativa Privacy</label>
       <p style="font-size:.82rem;color:#666;margin:0 0 8px">Per procedere è necessario leggere e accettare entrambe le sezioni seguenti.</p>
 
@@ -524,9 +528,13 @@
         </div>
       </div>
 
-      <button class="btn-prim" id="btn-submit" onclick="doSubmit(this)" disabled>
-        ✅ CONFERMA ISCRIZIONE <span class="spin"></span>
-      </button>
+      <!-- Bottoni: Indietro (solo ECM) + Conferma -->
+      <div style="display:flex;gap:10px;margin-top:8px">
+        <button class="btn-sec" id="btn-indietro-b" onclick="backFromConsensiB()" style="display:none">← Indietro</button>
+        <button class="btn-prim" id="btn-submit" onclick="doSubmit(this)" disabled style="flex:1">
+          ✅ CONFERMA ISCRIZIONE <span class="spin"></span>
+        </button>
+      </div>
       <div class="msg" id="msg-submit" style="margin-top:10px"></div>
     </div>
 
@@ -1003,10 +1011,7 @@ function goFromProf() {
   document.getElementById('rie-nome').textContent  = cognome + ' ' + nome;
   document.getElementById('rie-prof').textContent  = prof;
 
-  // Mostra/nascondi blocco ECM dei consensi
-  document.getElementById('blk-ecm-consensi').style.display = tipoIscrizione === 'ECM' ? 'block' : 'none';
-
-  // Seleziona i blocchi privacy corretti per ECM vs NON ECM
+  // Seleziona i blocchi privacy corretti per ECM vs NON ECM (lo Step B è condiviso)
   const isECM = tipoIscrizione === 'ECM';
   document.getElementById('legal-privacy-ecm').style.display  = isECM ? 'block' : 'none';
   document.getElementById('legal-privacy-necm').style.display = isECM ? 'none'  : 'block';
@@ -1020,14 +1025,14 @@ function goFromProf() {
     ? 'Prendo atto del trasferimento temporaneo dei miei dati a Google LLC e Zoom (USA) ai sensi dell\'art. 46 GDPR'
     : 'Prendo atto del possibile trasferimento dei miei dati a Zoom (USA) per eventi webinar, ai sensi dell\'art. 46 GDPR';
 
-  // Reset stato checkbox / radio consensi e bottone
+  // Reset stato di TUTTI i consensi (Step A + Step B)
   ['f-regole-sidera','f-informativa-ecm','f-privacy-base','f-privacy-transfer'].forEach(function(id){
     const el = document.getElementById(id);
     if (el) el.checked = false;
   });
   document.querySelectorAll('input[name="f-reclutamento"]').forEach(function(r){ r.checked = false; });
 
-  // Popola la select sponsor nel consensi step (solo per ECM)
+  // Popola e resetta la select sponsor (solo ECM)
   if (isECM) {
     const selSpon = document.getElementById('f-sponsor');
     selSpon.innerHTML = '<option value="">— Seleziona lo sponsor —</option>';
@@ -1036,17 +1041,25 @@ function goFromProf() {
       o.value = s; o.textContent = s;
       selSpon.appendChild(o);
     });
-    // Se il progetto non ha sponsor configurati, mostra disclaimer
     document.getElementById('blk-no-sponsor').style.display = cfgSponsor.length === 0 ? 'block' : 'none';
   }
-  // Nascondi il blocco sponsor finché l'utente non sceglie RECLUTATO
   document.getElementById('blk-sponsor-reclutato').style.display = 'none';
   const selSponReset = document.getElementById('f-sponsor');
   if (selSponReset) selSponReset.value = '';
 
+  // Reset dei bottoni Avanti / Conferma
+  updateAvantiBtnA();
   updateSubmitBtn();
 
-  showStep('s-consensi');
+  // Il bottone Indietro nello Step B si mostra solo per il flow ECM
+  document.getElementById('btn-indietro-b').style.display = isECM ? 'inline-block' : 'none';
+
+  // Flow ECM → parte dallo Step A (consensi ECM); flow NON ECM → salta direttamente allo Step B (privacy)
+  if (isECM) {
+    showStep('s-consensi-a');
+  } else {
+    showStep('s-consensi-b');
+  }
 }
 
 // Gestisce il cambio della radio reclutamento: mostra/nasconde la select sponsor
@@ -1061,31 +1074,61 @@ function onReclutamentoChange() {
     const selSpon = document.getElementById('f-sponsor');
     if (selSpon) selSpon.value = '';
   }
-  updateSubmitBtn();
+  updateAvantiBtnA();
 }
 
-// Abilita il bottone CONFERMA ISCRIZIONE solo quando TUTTI i consensi richiesti sono spuntati.
+// Avanti dallo Step A (Consensi ECM) allo Step B (Privacy + Conferma).
+// Safety-net: il bottone è già gated da updateAvantiBtnA, ma ri-controlliamo per sicurezza.
+function goFromConsensiA() {
+  hideMsg('msg-consensi-a');
+  if (!document.getElementById('f-regole-sidera').checked) {
+    showMsg('msg-consensi-a', 'Accetta le regole di gestione Sidera.', 'err'); return;
+  }
+  const rec = document.querySelector('input[name="f-reclutamento"]:checked');
+  if (!rec) {
+    showMsg('msg-consensi-a', 'Indica se sei reclutato o meno.', 'err'); return;
+  }
+  if (rec.value === 'RECLUTATO' && cfgSponsor.length > 0) {
+    const sp = (document.getElementById('f-sponsor').value || '').trim();
+    if (!sp) { showMsg('msg-consensi-a', 'Seleziona lo sponsor di riferimento.', 'err'); return; }
+  }
+  if (!document.getElementById('f-informativa-ecm').checked) {
+    showMsg('msg-consensi-a', 'Accetta l\'informativa ECM.', 'err'); return;
+  }
+  showStep('s-consensi-b');
+}
+
+// Indietro dallo Step B (Privacy) allo Step A (Consensi ECM)
+function backFromConsensiB() {
+  hideMsg('msg-submit');
+  showStep('s-consensi-a');
+}
+
+// Abilita il bottone "Avanti →" dello Step A solo quando tutti i consensi ECM sono soddisfatti.
+function updateAvantiBtnA() {
+  const btn = document.getElementById('btn-consensi-a');
+  if (!btn) return;
+  let ok = true;
+  if (!document.getElementById('f-regole-sidera').checked) ok = false;
+  if (!document.getElementById('f-informativa-ecm').checked) ok = false;
+  const rec = document.querySelector('input[name="f-reclutamento"]:checked');
+  if (!rec) {
+    ok = false;
+  } else if (rec.value === 'RECLUTATO') {
+    const sponsor = (document.getElementById('f-sponsor').value || '').trim();
+    if (cfgSponsor.length > 0 && !sponsor) ok = false;
+  }
+  btn.disabled = !ok;
+}
+
+// Abilita il bottone "CONFERMA ISCRIZIONE" dello Step B solo quando i consensi privacy sono spuntati.
 function updateSubmitBtn() {
   const btn = document.getElementById('btn-submit');
   if (!btn) return;
-  let allOk = true;
-  // Privacy base + trasferimento extra-UE (obbligatori per ECM e NON ECM)
-  if (!document.getElementById('f-privacy-base').checked) allOk = false;
-  if (!document.getElementById('f-privacy-transfer').checked) allOk = false;
-  // Solo ECM: regole Sidera, informativa ECM, dichiarazione reclutamento
-  if (tipoIscrizione === 'ECM') {
-    if (!document.getElementById('f-regole-sidera').checked) allOk = false;
-    if (!document.getElementById('f-informativa-ecm').checked) allOk = false;
-    const rec = document.querySelector('input[name="f-reclutamento"]:checked');
-    if (!rec) {
-      allOk = false;
-    } else if (rec.value === 'RECLUTATO') {
-      // Se reclutato, deve aver selezionato uno sponsor (se presenti nel progetto)
-      const sponsor = (document.getElementById('f-sponsor').value || '').trim();
-      if (cfgSponsor.length > 0 && !sponsor) allOk = false;
-    }
-  }
-  btn.disabled = !allOk;
+  let ok = true;
+  if (!document.getElementById('f-privacy-base').checked) ok = false;
+  if (!document.getElementById('f-privacy-transfer').checked) ok = false;
+  btn.disabled = !ok;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
