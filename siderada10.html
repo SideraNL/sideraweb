@@ -338,6 +338,65 @@
     }
     .missing-footer .btn { flex: 1; }
 
+    /* --- Login overlay --- */
+    .login-overlay {
+      display: none; position: fixed; inset: 0;
+      background: linear-gradient(135deg, #004aad 0%, #002a66 100%);
+      z-index: 300;
+      justify-content: center; align-items: center;
+      padding: 20px;
+    }
+    .login-overlay.active { display: flex; }
+    .login-panel {
+      width: 100%; max-width: 360px;
+      background: var(--card); border-radius: var(--radius);
+      box-shadow: 0 12px 40px rgba(0,0,0,.35);
+      padding: 28px 24px; text-align: center;
+    }
+    .login-panel .login-logo {
+      font-size: 22px; font-weight: 700; color: var(--primary);
+      margin-bottom: 6px;
+    }
+    .login-panel .login-sub {
+      font-size: 12px; color: var(--text2); margin-bottom: 22px;
+    }
+    .login-panel .login-icon {
+      font-size: 44px; color: var(--primary); margin-bottom: 10px;
+    }
+    .login-panel input.login-pin {
+      width: 100%; padding: 14px 16px;
+      border: 2px solid #e0e0e0; border-radius: 10px;
+      font-size: 22px; font-family: inherit; font-weight: 700;
+      text-align: center; letter-spacing: 8px;
+      margin-bottom: 14px;
+      -webkit-text-security: disc;
+      -moz-text-security: disc;
+      text-security: disc;
+    }
+    .login-panel input.login-pin:focus {
+      outline: none; border-color: var(--primary);
+    }
+    .login-panel .login-err {
+      display: none; color: var(--error); font-size: 13px;
+      margin-top: -6px; margin-bottom: 12px;
+    }
+    .login-panel .login-err.show { display: block; }
+    .login-panel .btn-login {
+      width: 100%; padding: 14px;
+      background: var(--primary); color: #fff;
+      border: none; border-radius: 10px;
+      font-size: 16px; font-weight: 700; font-family: inherit;
+      cursor: pointer; transition: opacity .2s;
+    }
+    .login-panel .btn-login:active { opacity: .8; }
+    .login-panel .btn-login:disabled { opacity: .4; }
+    .logout-btn {
+      background: none; border: none; cursor: pointer;
+      color: #fff; opacity: .7; padding: 4px 8px;
+      display: flex; align-items: center;
+    }
+    .logout-btn:active { opacity: 1; }
+
     /* --- Responsive --- */
     @media (max-width: 500px) {
       .header { border-radius: 0; }
@@ -347,13 +406,33 @@
 </head>
 <body>
 
+  <!-- Login overlay -->
+  <div class="login-overlay" id="login-overlay">
+    <div class="login-panel">
+      <div class="login-icon material-icons">lock</div>
+      <div class="login-logo">SideraDA10</div>
+      <div class="login-sub">Inserisci PIN di accesso</div>
+      <input type="tel" inputmode="numeric" pattern="[0-9]*" maxlength="6"
+             class="login-pin" id="login-pin" placeholder="● ● ● ● ● ●"
+             onkeydown="if(event.key==='Enter')verificaPin()" autocomplete="off">
+      <div class="login-err" id="login-err">PIN non valido</div>
+      <button class="btn-login" onclick="verificaPin()">
+        <span class="material-icons" style="vertical-align:middle;font-size:18px">login</span>
+        Accedi
+      </button>
+    </div>
+  </div>
+
   <!-- Header -->
   <div class="header">
     <img src="img/sidera_logo.jpg" alt="Sidera" style="border-radius:6px" onerror="this.style.display='none'">
-    <div>
+    <div style="flex:1">
       <div class="title">SideraDA10</div>
-      <div class="ver">Scanner Presenze ECM — v1.7</div>
+      <div class="ver">Scanner Presenze ECM — v1.8</div>
     </div>
+    <button class="logout-btn" onclick="logout()" title="Esci" id="btn-logout" style="display:none">
+      <span class="material-icons">logout</span>
+    </button>
   </div>
 
   <!-- Project setup -->
@@ -510,6 +589,7 @@
    ======================================================== */
 
 const GAS_ENDPOINT = "https://script.google.com/macros/s/AKfycbzxDPL5nOTryyxaWDfs43dVPFYD4vFhIoQPd5umPGSJYj8OUs4bHvfSYecuMDYbJaF7/exec";
+const INACTIVITY_MS = 8 * 60 * 60 * 1000; // 8 ore
 
 let currentProject = null;
 let currentSsId    = null;
@@ -520,6 +600,131 @@ let eventiData     = [];      // corsi.json con ssId
 let html5QrCode    = null;
 let scannerAttivo  = false;
 let logEntries     = [];
+let authPin        = null;    // PIN di sessione (null = non autenticato)
+let inactivityTimer = null;
+
+// --- AUTH / LOGIN ---
+
+function _getStoredAuth() {
+  try {
+    const raw = localStorage.getItem('siderada10_auth');
+    if (!raw) return null;
+    return JSON.parse(raw);
+  } catch (e) { return null; }
+}
+
+function _saveAuth(pin) {
+  localStorage.setItem('siderada10_auth', JSON.stringify({
+    pin: pin, lastActivity: Date.now()
+  }));
+}
+
+function _touchActivity() {
+  if (!authPin) return;
+  const a = _getStoredAuth();
+  if (a) {
+    a.lastActivity = Date.now();
+    localStorage.setItem('siderada10_auth', JSON.stringify(a));
+  }
+}
+
+function _isAuthExpired() {
+  const a = _getStoredAuth();
+  if (!a || !a.pin) return true;
+  return (Date.now() - (a.lastActivity || 0)) > INACTIVITY_MS;
+}
+
+function mostraLogin() {
+  authPin = null;
+  document.getElementById('login-overlay').classList.add('active');
+  document.getElementById('btn-logout').style.display = 'none';
+  document.getElementById('login-err').classList.remove('show');
+  document.getElementById('login-pin').value = '';
+  setTimeout(() => document.getElementById('login-pin').focus(), 200);
+}
+
+function nascondiLogin() {
+  document.getElementById('login-overlay').classList.remove('active');
+  document.getElementById('btn-logout').style.display = 'flex';
+}
+
+function verificaPin() {
+  const pin = (document.getElementById('login-pin').value || '').trim();
+  const err = document.getElementById('login-err');
+  if (!pin) { err.textContent = 'Inserisci il PIN'; err.classList.add('show'); return; }
+
+  const btn = document.querySelector('.btn-login');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="material-icons" style="vertical-align:middle;font-size:18px">hourglass_empty</span> Verifica…';
+
+  fetch(GAS_ENDPOINT + '?action=auth&pin=' + encodeURIComponent(pin), { redirect: 'follow' })
+    .then(r => r.json())
+    .then(result => {
+      btn.disabled = false;
+      btn.innerHTML = '<span class="material-icons" style="vertical-align:middle;font-size:18px">login</span> Accedi';
+      if (result.ok && result.auth) {
+        authPin = pin;
+        _saveAuth(pin);
+        err.classList.remove('show');
+        nascondiLogin();
+        avviaTimerInattivita();
+        // Auto-ripristina progetto se salvato
+        autoRestoreProgetto();
+      } else {
+        err.textContent = 'PIN non valido';
+        err.classList.add('show');
+        document.getElementById('login-pin').value = '';
+        document.getElementById('login-pin').focus();
+      }
+    })
+    .catch(ex => {
+      btn.disabled = false;
+      btn.innerHTML = '<span class="material-icons" style="vertical-align:middle;font-size:18px">login</span> Accedi';
+      err.textContent = 'Errore rete: ' + ex.message;
+      err.classList.add('show');
+    });
+}
+
+function logout() {
+  localStorage.removeItem('siderada10_auth');
+  sessionStorage.clear();
+  if (inactivityTimer) clearInterval(inactivityTimer);
+  location.reload();
+}
+
+function avviaTimerInattivita() {
+  if (inactivityTimer) clearInterval(inactivityTimer);
+  // Check ogni minuto se sono passate 8h di inattività
+  inactivityTimer = setInterval(() => {
+    if (_isAuthExpired()) {
+      clearInterval(inactivityTimer);
+      inactivityTimer = null;
+      toast('Sessione scaduta per inattività', 'warning');
+      setTimeout(() => { authPin = null; localStorage.removeItem('siderada10_auth'); location.reload(); }, 1200);
+    }
+  }, 60000);
+}
+
+// Intercetta interazioni per aggiornare lastActivity
+['click','keydown','touchstart'].forEach(evt => {
+  document.addEventListener(evt, _touchActivity, { passive: true, capture: true });
+});
+
+// Check auth all'avvio della pagina
+(function initAuth() {
+  const a = _getStoredAuth();
+  if (a && a.pin && !_isAuthExpired()) {
+    authPin = a.pin;
+    _touchActivity();
+    nascondiLogin();
+    avviaTimerInattivita();
+    // Ripristina progetto salvato (setTimeout per garantire che il DOM e tutte le funzioni siano pronte)
+    setTimeout(autoRestoreProgetto, 0);
+  } else {
+    if (a) localStorage.removeItem('siderada10_auth');
+    mostraLogin();
+  }
+})();
 
 // --- CARICA EVENTI DA corsi.json ---
 
@@ -593,15 +798,18 @@ function setProgetto(ssId) {
 }
 
 function caricaPax(ssId) {
+  if (!authPin) { mostraLogin(); return; }
   document.getElementById('spinner').classList.add('active');
   document.querySelectorAll('.scanner-wrap').forEach(el => el.classList.add('active'));
   document.getElementById('btn-scan').disabled = true;
 
-  const url = GAS_ENDPOINT + '?action=pax&ssId=' + encodeURIComponent(ssId);
+  const url = GAS_ENDPOINT + '?action=pax&ssId=' + encodeURIComponent(ssId) +
+              '&pin=' + encodeURIComponent(authPin);
   fetch(url, { redirect: 'follow' })
     .then(r => r.json())
     .then(result => {
       document.getElementById('spinner').classList.remove('active');
+      if (_handleAuthFail(result)) return;
       if (result.ok) {
         paxList = result.pax || [];
         paxLoaded = true;
@@ -621,15 +829,28 @@ function caricaPax(ssId) {
     });
 }
 
-// Auto-ripristina progetto al caricamento pagina
-(function autoRestore() {
+// Auto-ripristina progetto (chiamato dopo login riuscito o se auth già valida)
+function autoRestoreProgetto() {
   const savedId   = sessionStorage.getItem('siderada10_progetto');
   const savedSsId = sessionStorage.getItem('siderada10_ssid');
   if (savedId && savedSsId) {
     document.getElementById('input-idpgt').value = savedId;
     setProgetto(savedSsId);
   }
-})();
+}
+
+// Helper: detecta response con auth fallita e forza logout
+function _handleAuthFail(result) {
+  if (result && result.auth === false) {
+    toast('Sessione scaduta — reinserisci il PIN', 'warning');
+    setTimeout(() => {
+      localStorage.removeItem('siderada10_auth');
+      location.reload();
+    }, 1200);
+    return true;
+  }
+  return false;
+}
 
 function resetProgetto() {
   currentProject = null;
@@ -727,6 +948,7 @@ function annulla() {
 function registra(tipo) {
   const cf = document.getElementById('cf-display').textContent;
   if (!cf || !currentProject) return;
+  if (!authPin) { mostraLogin(); return; }
 
   document.querySelectorAll('.decision .btn').forEach(b => b.disabled = true);
   document.getElementById('spinner').classList.add('active');
@@ -734,13 +956,14 @@ function registra(tipo) {
   fetch(GAS_ENDPOINT, {
     method: 'POST',
     headers: { 'Content-Type': 'text/plain' },
-    body: JSON.stringify({ idPgt: currentProject, cf: cf, tipo: tipo }),
+    body: JSON.stringify({ idPgt: currentProject, cf: cf, tipo: tipo, pin: authPin }),
     redirect: 'follow'
   })
   .then(r => r.json())
   .then(result => {
     document.getElementById('spinner').classList.remove('active');
     document.querySelectorAll('.decision .btn').forEach(b => b.disabled = false);
+    if (_handleAuthFail(result)) return;
     if (result.ok) {
       const label = tipo === 'IN' ? 'INGRESSO' : 'USCITA';
       const found = paxList.find(p => p.cf === cf);
@@ -892,9 +1115,13 @@ function apriReport() {
 
 function refreshReport() {
   if (!currentProject) return;
-  fetch(GAS_ENDPOINT + '?action=scans&idPgt=' + encodeURIComponent(currentProject), { redirect: 'follow' })
+  if (!authPin) { chiudiReport(); mostraLogin(); return; }
+  const url = GAS_ENDPOINT + '?action=scans&idPgt=' + encodeURIComponent(currentProject) +
+              '&pin=' + encodeURIComponent(authPin);
+  fetch(url, { redirect: 'follow' })
     .then(r => r.json())
     .then(result => {
+      if (_handleAuthFail(result)) { chiudiReport(); return; }
       if (!result.ok) { document.getElementById('report-list').innerHTML = '<div class="report-loading">Errore: ' + (result.error||'') + '</div>'; return; }
       renderReport(result.scans || []);
     })
@@ -1104,6 +1331,7 @@ function renderMissingList() {
 function registraMissing(index) {
   const m = mancateRilevazioni[index];
   if (!m) return;
+  if (!authPin) { mostraLogin(); return; }
   if (!confirm('Registrare ' + m.tipo + ' per ' + m.cognome + ' ' + m.nome + '\nil ' + m.data + ' alle ' + m.oraProposta + '?')) return;
 
   const payload = {
@@ -1111,7 +1339,8 @@ function registraMissing(index) {
     cf: m.cf,
     tipo: m.tipo,
     backfill: true,
-    dataOra: m.data + ' ' + m.oraProposta + ':00'
+    dataOra: m.data + ' ' + m.oraProposta + ':00',
+    pin: authPin
   };
   fetch(GAS_ENDPOINT, {
     method: 'POST',
@@ -1121,6 +1350,7 @@ function registraMissing(index) {
   })
   .then(r => r.json())
   .then(result => {
+    if (_handleAuthFail(result)) return;
     if (result.ok) {
       toast('Rilevazione registrata', 'success');
       mancateRilevazioni.splice(index, 1);
@@ -1136,10 +1366,11 @@ function registraMissing(index) {
 
 function registraTutteMissing() {
   if (!mancateRilevazioni.length) return;
+  if (!authPin) { mostraLogin(); return; }
   if (!confirm('Registrare automaticamente tutte le ' + mancateRilevazioni.length + ' rilevazioni mancanti agli orari schedulati?')) return;
 
   const items = mancateRilevazioni.slice();
-  let completed = 0, errors = 0;
+  let completed = 0, errors = 0, authFailed = false;
 
   items.forEach(m => {
     const payload = {
@@ -1147,7 +1378,8 @@ function registraTutteMissing() {
       cf: m.cf,
       tipo: m.tipo,
       backfill: true,
-      dataOra: m.data + ' ' + m.oraProposta + ':00'
+      dataOra: m.data + ' ' + m.oraProposta + ':00',
+      pin: authPin
     };
     fetch(GAS_ENDPOINT, {
       method: 'POST',
@@ -1156,10 +1388,14 @@ function registraTutteMissing() {
       redirect: 'follow'
     })
     .then(r => r.json())
-    .then(result => { if (result.ok) completed++; else errors++; })
+    .then(result => {
+      if (result && result.auth === false) { authFailed = true; errors++; return; }
+      if (result.ok) completed++; else errors++;
+    })
     .catch(() => errors++)
     .finally(() => {
       if (completed + errors === items.length) {
+        if (authFailed) { _handleAuthFail({ auth: false }); return; }
         if (errors > 0) toast(completed + ' registrate, ' + errors + ' errori', 'warning');
         else toast('Tutte le ' + completed + ' rilevazioni registrate', 'success');
         mancateRilevazioni = [];
