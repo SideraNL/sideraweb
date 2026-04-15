@@ -73,7 +73,7 @@
 <div class="card-main">
 
   <!-- Event header (populated on load) -->
-  <div class="evt-head" id="evt-head">
+  <div class="evt-head" id="evt-head" style="position:relative">
     <div style="display:flex;align-items:center;gap:14px">
       <img src="img/sidera_logo.jpg" style="height:36px;background:#fff;border-radius:6px;padding:2px 4px;object-fit:contain" onerror="this.style.display='none'" alt="Sidera">
       <div style="flex:1;min-width:0">
@@ -84,6 +84,8 @@
         <div class="meta" id="evt-meta"></div>
       </div>
     </div>
+    <!-- Badge tipologia iscrizione (ECM / NON ECM) — aggiornato dinamicamente in selChoice() -->
+    <span id="evt-badge-tipo" style="display:none;position:absolute;bottom:8px;right:12px;font-weight:900;font-size:0.85rem;padding:4px 12px;border-radius:14px;letter-spacing:0.6px;text-transform:uppercase;box-shadow:0 1px 3px rgba(0,0,0,0.15)"></span>
   </div>
 
   <div class="step-body">
@@ -587,6 +589,23 @@ let imgBase64 = '';
 let unsubToken = '';
 
 // ─────────────────────────────────────────────────────────────────────────────
+// HELPER quota — semantica unificata per i limiti iscrizioni
+//   - raw undefined/null/'' → nessun limite (illimitato)
+//   - raw === 0            → bloccato, iscrizioni NON ammesse
+//   - raw > 0              → limite N, full se current >= N
+// Restituisce { hasLimit, max, full }
+// ─────────────────────────────────────────────────────────────────────────────
+function _quotaStatus(raw, currentCount) {
+  if (raw === undefined || raw === null || raw === '' || raw === '-') {
+    return { hasLimit: false, max: Infinity, full: false };
+  }
+  const max = parseInt(raw, 10);
+  if (isNaN(max)) return { hasLimit: false, max: Infinity, full: false };
+  if (max === 0)  return { hasLimit: true, max: 0, full: true };
+  return { hasLimit: true, max, full: (currentCount || 0) >= max };
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // UTILITY
 // ─────────────────────────────────────────────────────────────────────────────
 function showStep(id) {
@@ -683,9 +702,10 @@ async function init() {
     // NB: la select f-professione viene popolata DINAMICAMENTE in populateProfessionSelect()
     // quando l'utente arriva allo step professione, in base al tipoIscrizione scelto.
 
-    // Se i posti NON ECM sono esauriti, disabilita la choice box SENZA CREDITI ECM
-    const maxNonEcm = cfgQuote['__NON_ECM__'] || 0;
-    if (maxNonEcm > 0 && cfgCounts.nonEcmTotal >= maxNonEcm) {
+    // Se le iscrizioni NON ECM sono bloccate (quota = 0) o esaurite (counts >= quota),
+    // disabilita la choice box SENZA CREDITI ECM
+    const nonEcmQuota = _quotaStatus(cfgQuote['__NON_ECM__'], cfgCounts.nonEcmTotal);
+    if (nonEcmQuota.full) {
       const box = document.getElementById('choice-noecm');
       if (box) {
         box.style.opacity = '0.45';
@@ -693,7 +713,9 @@ async function init() {
         box.style.pointerEvents = 'none';
         box.setAttribute('aria-disabled', 'true');
         const p = box.querySelector('p');
-        if (p) p.innerHTML = '<strong style="color:#c62828;">⛔ Posti esauriti</strong>';
+        if (p) p.innerHTML = nonEcmQuota.max === 0
+          ? '<strong style="color:#c62828;">⛔ Iscrizioni non ammesse</strong>'
+          : '<strong style="color:#c62828;">⛔ Posti esauriti</strong>';
       }
     }
 
@@ -780,6 +802,26 @@ function selChoice(tipo) {
   document.getElementById('choice-noecm').classList.toggle('sel', tipo === 'NON_ECM');
   document.getElementById('btn-choice').disabled = false;
   hideMsg('msg-choice');
+  updateBadgeTipo();
+}
+
+// Aggiorna il badge ECM/NON ECM nell'header in base a tipoIscrizione
+function updateBadgeTipo() {
+  const badge = document.getElementById('evt-badge-tipo');
+  if (!badge) return;
+  if (tipoIscrizione === 'ECM') {
+    badge.textContent = '✓ ECM';
+    badge.style.background = '#16a34a';
+    badge.style.color = '#fff';
+    badge.style.display = 'inline-block';
+  } else if (tipoIscrizione === 'NON_ECM') {
+    badge.textContent = 'NON ECM';
+    badge.style.background = '#f59e0b';
+    badge.style.color = '#fff';
+    badge.style.display = 'inline-block';
+  } else {
+    badge.style.display = 'none';
+  }
 }
 
 function goFromChoice() {
@@ -965,13 +1007,13 @@ function populateProfessionSelect() {
       'ALTRO NON ECM',
       'DIPENDENTE / COLLABORATORE DI AZIENDA FARMACEUTICA O BIOMEDICALE'
     ];
-    const maxNonEcm = cfgQuote['__NON_ECM__'] || 0;
-    const nonEcmFull = maxNonEcm > 0 && cfgCounts.nonEcmTotal >= maxNonEcm;
+    const nonEcmQuota = _quotaStatus(cfgQuote['__NON_ECM__'], cfgCounts.nonEcmTotal);
+    const suffix = nonEcmQuota.max === 0 ? ' — iscrizioni non ammesse' : ' — posti esauriti';
     opts.forEach(p => {
       const o = document.createElement('option');
       o.value = p;
-      o.textContent = nonEcmFull ? (p + ' — posti esauriti') : p;
-      if (nonEcmFull) o.disabled = true;
+      o.textContent = nonEcmQuota.full ? (p + suffix) : p;
+      if (nonEcmQuota.full) o.disabled = true;
       selProf.appendChild(o);
     });
   } else {
@@ -986,11 +1028,11 @@ function populateProfessionSelect() {
       const o = document.createElement('option');
       o.value = p;
       const baseProf = p.split(' - ')[0].trim();
-      const max = cfgQuote[baseProf] || 0;
       const current = (cfgCounts.byProfession && cfgCounts.byProfession[baseProf]) || 0;
-      const isFull = max > 0 && current >= max;
-      o.textContent = isFull ? (p + ' — posti esauriti') : p;
-      if (isFull) o.disabled = true;
+      const quota = _quotaStatus(cfgQuote[baseProf], current);
+      const suffix = quota.max === 0 ? ' — iscrizioni non ammesse' : ' — posti esauriti';
+      o.textContent = quota.full ? (p + suffix) : p;
+      if (quota.full) o.disabled = true;
       selProf.appendChild(o);
     });
   }
@@ -1150,26 +1192,38 @@ function buildClosedWarning() {
     const base = p.split(' - ')[0].trim();
     if (!base || seen[base]) return;
     seen[base] = true;
-    const max = cfgQuote[base] || 0;
     const cur = (cfgCounts.byProfession && cfgCounts.byProfession[base]) || 0;
-    if (max > 0 && cur >= max) closedBases.push(base);
+    const quota = _quotaStatus(cfgQuote[base], cur);
+    if (quota.full) closedBases.push({ base, blocked: quota.max === 0 });
   });
 
   // NON ECM chiuso?
-  const maxNonEcm = cfgQuote['__NON_ECM__'] || 0;
-  const nonEcmClosed = maxNonEcm > 0 && cfgCounts.nonEcmTotal >= maxNonEcm;
+  const nonEcmQuota = _quotaStatus(cfgQuote['__NON_ECM__'], cfgCounts.nonEcmTotal);
+  const nonEcmClosed = nonEcmQuota.full;
+  const nonEcmBlocked = nonEcmQuota.max === 0;
 
   if (closedBases.length === 0 && !nonEcmClosed) return false;
 
   let html = '';
   if (closedBases.length > 0) {
-    html += '<p style="margin:0 0 6px">Si informa che le iscrizioni per le seguenti professioni accreditate ECM risultano al momento esaurite:</p>';
+    const anyBlocked = closedBases.some(function(b){ return b.blocked; });
+    const anyFull    = closedBases.some(function(b){ return !b.blocked; });
+    const prefix = (anyBlocked && anyFull)
+      ? 'Si informa che le iscrizioni per le seguenti professioni accreditate ECM non sono disponibili:'
+      : (anyBlocked
+          ? 'Si informa che le iscrizioni per le seguenti professioni accreditate ECM <strong>non sono ammesse</strong>:'
+          : 'Si informa che le iscrizioni per le seguenti professioni accreditate ECM risultano al momento <strong>esaurite</strong>:');
+    html += '<p style="margin:0 0 6px">' + prefix + '</p>';
     html += '<ul style="margin:0 0 10px 18px;padding:0">';
-    closedBases.forEach(function(b){ html += '<li><strong>' + b + '</strong></li>'; });
+    closedBases.forEach(function(b){
+      const stato = b.blocked ? ' <em style="color:#c62828">(non ammesse)</em>' : ' <em style="color:#c62828">(esaurite)</em>';
+      html += '<li><strong>' + b.base + '</strong>' + stato + '</li>';
+    });
     html += '</ul>';
   }
   if (nonEcmClosed) {
-    html += '<p style="margin:' + (closedBases.length ? '6px' : '0') + ' 0 0">Si informa che le iscrizioni <strong>senza crediti ECM</strong> risultano al momento esaurite.</p>';
+    const motivo = nonEcmBlocked ? 'non sono ammesse per questo evento' : 'risultano al momento esaurite';
+    html += '<p style="margin:' + (closedBases.length ? '6px' : '0') + ' 0 0">Si informa che le iscrizioni <strong>senza crediti ECM</strong> ' + motivo + '.</p>';
   }
 
   testo.innerHTML = html;
