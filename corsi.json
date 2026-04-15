@@ -25,7 +25,16 @@
     "luogo": "VIGEVANO",
     "data": "22/04/2026",
     "titolo": "RUOLO DELLE TERAPIE FAST LAI ED EVIDENZE DI REAL WORLD",
-    "ssId": "1nssA_B4uh76_Byetm-elrujF-wqKq_jd4718H61JHrU"
+    "ssId": "1nssA_B4uh76_Byetm-elrujF-wqKq_jd4718H61JHrU",
+    "orari": [
+      {
+        "giorno": "1",
+        "data": "22/04/2026",
+        "ora_in": "17:00",
+        "ora_out": "21:00",
+        "pause": []
+      }
+    ]
   },
   {
     "idPgt": "1335",
