@@ -88,6 +88,11 @@
     <span id="evt-badge-tipo" style="display:none;position:absolute;bottom:8px;right:12px;font-weight:900;font-size:0.85rem;padding:4px 12px;border-radius:14px;letter-spacing:0.6px;text-transform:uppercase;box-shadow:0 1px 3px rgba(0,0,0,0.15)"></span>
   </div>
 
+  <!-- Banner "solo ECM" — visibile su tutti gli step quando nonEcmEnabled === false -->
+  <div id="only-ecm-top-banner" style="display:none;background:linear-gradient(135deg,#dc2626 0%,#ea580c 100%);color:#fff;padding:14px 20px;text-align:center;font-weight:900;font-size:1.02rem;letter-spacing:0.6px;text-transform:uppercase;box-shadow:inset 0 1px 0 rgba(255,255,255,0.15),0 2px 6px rgba(220,38,38,0.25);border-top:2px solid #fbbf24;border-bottom:2px solid #fbbf24">
+    🎓 Evento riservato alle iscrizioni con ECM
+  </div>
+
   <div class="step-body">
 
     <!-- LOADING -->
@@ -710,11 +715,14 @@ async function init() {
     // quando l'utente arriva allo step professione, in base al tipoIscrizione scelto.
 
     if (!cfgNonEcmEnabled) {
-      // NON ECM completamente disabilitato: nascondi la choice box e mostra messaggio informativo
+      // NON ECM completamente disabilitato: nascondi la choice box e mostra messaggi informativi
       const box = document.getElementById('choice-noecm');
       if (box) box.style.display = 'none';
       const notice = document.getElementById('only-ecm-notice');
       if (notice) notice.style.display = 'block';
+      // Banner persistente in alto su tutti gli step
+      const topBanner = document.getElementById('only-ecm-top-banner');
+      if (topBanner) topBanner.style.display = 'block';
     } else {
       // Se le iscrizioni NON ECM sono bloccate (quota = 0) o esaurite (counts >= quota),
       // disabilita la choice box SENZA CREDITI ECM
