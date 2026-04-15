@@ -105,7 +105,16 @@
     "luogo": "PRESEZZO",
     "data": "27/05/2026",
     "titolo": "RUOLO DELLE TERAPIE FAST LAI ED EVIDENZE DI REAL WORLD",
-    "ssId": "1WA1FXWlUup0piBceNH_H3x3UcvaGctxqgViCF-VSW7U"
+    "ssId": "1WA1FXWlUup0piBceNH_H3x3UcvaGctxqgViCF-VSW7U",
+    "orari": [
+      {
+        "giorno": "1",
+        "data": "27/05/2026",
+        "ora_in": "17:00",
+        "ora_out": "21:00",
+        "pause": []
+      }
+    ]
   },
   {
     "idPgt": "1332",
