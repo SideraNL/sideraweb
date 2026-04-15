@@ -324,6 +324,12 @@
         ESTRAI DATI DAL DOCUMENTO <span class="spin"></span>
       </button>
       <div class="msg" id="msg-ocr" style="margin-top:10px"></div>
+      <!-- Fallback: inserimento manuale se non si ha la tessera -->
+      <div style="margin-top:16px;padding-top:14px;border-top:1px dashed #cbd5e1;text-align:center">
+        <div style="font-size:.82rem;color:#64748b;margin-bottom:6px">Non hai la tessera o il documento con te?</div>
+        <button type="button" class="btn-sec" style="font-size:.85rem;padding:8px 16px" onclick="showManualEntry()">✏️ Inserisci i dati a mano</button>
+        <div style="font-size:.72rem;color:#94a3b8;margin-top:4px">Il codice fiscale sarà validato algoritmicamente contro i dati inseriti.</div>
+      </div>
     </div>
 
     <!-- ── STEP 4: REVISIONE DATI OCR (solo ECM) ──────────────────────────── -->
@@ -360,7 +366,53 @@
           Se il problema persiste, scrivi a <a href="mailto:direzione@sideraweb.it" style="color:#0d47a1">direzione@sideraweb.it</a>
           allegando la foto del retro del documento.
         </div>
-        <button class="btn-sec mt-3" onclick="showStep('s-ocr')">← Riprova</button>
+        <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
+          <button class="btn-sec" onclick="showStep('s-ocr')">← Riprova foto</button>
+          <button class="btn-prim" onclick="showManualEntry()" style="flex:1">✏️ Inserisci i dati a mano</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── STEP 4-bis: INSERIMENTO MANUALE (fallback OCR, con validazione algoritmica CF) ── -->
+    <div id="s-manual" class="step">
+      <div class="pbar"><div class="fill" style="width:50%"></div></div>
+      <div class="step-title">✏️ Inserimento Manuale Dati</div>
+      <div class="msg msg-warn" style="display:block;margin-bottom:14px;font-size:.85rem">
+        Inserisci i dati <strong>esattamente</strong> come appaiono sul documento ufficiale.<br>
+        Il Codice Fiscale sarà <strong>validato algoritmicamente</strong> contro i dati che inserisci: qualsiasi incongruenza verrà segnalata con un messaggio specifico.
+      </div>
+      <div class="row g-2">
+        <div class="col-6">
+          <label class="f-label">Cognome *</label>
+          <input type="text" id="m-cognome" class="form-control" placeholder="ROSSI" style="text-transform:uppercase" oninput="this.value=this.value.toUpperCase()" maxlength="40">
+        </div>
+        <div class="col-6">
+          <label class="f-label">Nome *</label>
+          <input type="text" id="m-nome" class="form-control" placeholder="MARIO" style="text-transform:uppercase" oninput="this.value=this.value.toUpperCase()" maxlength="40">
+        </div>
+        <div class="col-6">
+          <label class="f-label">Sesso *</label>
+          <select id="m-sesso" class="form-control">
+            <option value="">— seleziona —</option>
+            <option value="M">M — Maschio</option>
+            <option value="F">F — Femmina</option>
+          </select>
+        </div>
+        <div class="col-6">
+          <label class="f-label">Data di Nascita *</label>
+          <input type="text" id="m-datanascita" class="form-control" placeholder="gg/mm/aaaa" inputmode="numeric" maxlength="10">
+        </div>
+        <div class="col-12">
+          <label class="f-label">Codice Fiscale *</label>
+          <input type="text" id="m-cf" class="form-control" placeholder="RSSMRA80A01H501U" style="text-transform:uppercase;font-family:monospace;letter-spacing:2px" oninput="this.value=this.value.toUpperCase()" maxlength="16">
+        </div>
+      </div>
+      <div class="msg" id="msg-manual" style="margin-top:12px"></div>
+      <div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap">
+        <button type="button" class="btn-sec" onclick="showStep('s-ocr')">← Torna alla foto</button>
+        <button type="button" class="btn-prim" id="btn-manual-go" onclick="goFromManual(this)" style="flex:1">
+          Valida e prosegui → <span class="spin"></span>
+        </button>
       </div>
     </div>
 
@@ -967,6 +1019,86 @@ async function confirmOcr(btn) {
     goToAna(); // Non bloccare per errori di rete
   }
   spin(btn, false);
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// INSERIMENTO MANUALE (fallback OCR) — con validazione algoritmica server-side
+// ─────────────────────────────────────────────────────────────────────────────
+
+function showManualEntry() {
+  // Reset form a ogni apertura (per non lasciare dati residui da tentativi precedenti)
+  document.getElementById('m-cognome').value = '';
+  document.getElementById('m-nome').value = '';
+  document.getElementById('m-sesso').value = '';
+  document.getElementById('m-datanascita').value = '';
+  document.getElementById('m-cf').value = '';
+  hideMsg('msg-manual');
+  showStep('s-manual');
+  // Focus sul primo campo
+  setTimeout(() => { const el = document.getElementById('m-cognome'); if (el) el.focus(); }, 100);
+}
+
+async function goFromManual(btn) {
+  const cognome = (document.getElementById('m-cognome').value || '').trim();
+  const nome    = (document.getElementById('m-nome').value || '').trim();
+  const sesso   = (document.getElementById('m-sesso').value || '').trim();
+  const dataNascita = (document.getElementById('m-datanascita').value || '').trim();
+  const cf      = (document.getElementById('m-cf').value || '').trim().toUpperCase();
+
+  // Pre-check client-side rapidi (prima di scomodare il server)
+  hideMsg('msg-manual');
+  if (!cognome)      { showMsg('msg-manual', '⚠️ Cognome obbligatorio.', 'err'); return; }
+  if (!nome)         { showMsg('msg-manual', '⚠️ Nome obbligatorio.', 'err'); return; }
+  if (!sesso)        { showMsg('msg-manual', '⚠️ Seleziona il sesso.', 'err'); return; }
+  if (!dataNascita)  { showMsg('msg-manual', '⚠️ Data di nascita obbligatoria.', 'err'); return; }
+  if (!/^\d{2}\/\d{2}\/\d{4}$/.test(dataNascita)) {
+    showMsg('msg-manual', '⚠️ Formato data errato. Usa <strong>gg/mm/aaaa</strong> (es. 15/03/1980).', 'err');
+    return;
+  }
+  if (!cf)           { showMsg('msg-manual', '⚠️ Codice fiscale obbligatorio.', 'err'); return; }
+  if (cf.length !== 16) {
+    showMsg('msg-manual', '⚠️ Il codice fiscale deve essere di <strong>16 caratteri</strong> (inseriti: ' + cf.length + ').', 'err');
+    return;
+  }
+  if (!/^[A-Z0-9]{16}$/.test(cf)) {
+    showMsg('msg-manual', '⚠️ Il codice fiscale contiene caratteri non validi. Usa solo lettere A-Z e cifre 0-9.', 'err');
+    return;
+  }
+
+  spin(btn, true);
+  try {
+    const d = await gasPost('validateManual', { cognome, nome, sesso, dataNascita, cf });
+    spin(btn, false);
+    if (!d.ok) {
+      showMsg('msg-manual', '❌ ' + (d.error || 'Dati non validi.'), 'err');
+      return;
+    }
+    // Validazione OK → popola ocrData come fa il flusso OCR e passa alla revisione
+    ocrData = {
+      ok: true, success: true, complete: true,
+      cf: d.cf, nome: d.nome, cognome: d.cognome,
+      dataNascita: d.dataNascita, luogoNascita: d.luogoNascita,
+      codiceCatastale: d.codiceCatastale,
+      isOmocodia: d.isOmocodia || false,
+      dataCongruente: true, dataAutoCorretta: false,
+      tipoDocumento: 'MANUAL'
+    };
+    // Popola step revisione (riusa s-ocr-rev per coerenza)
+    document.getElementById('d-cognome').textContent      = d.cognome      || '-';
+    document.getElementById('d-nome').textContent         = d.nome         || '-';
+    document.getElementById('d-datanascita').textContent  = d.dataNascita  || '-';
+    document.getElementById('d-luogonascita').textContent = d.luogoNascita || '-';
+    document.getElementById('d-cf').textContent           = d.cf           || '-';
+    // Nascondi eventuali warning OCR-specifici dal run precedente
+    document.getElementById('msg-omo').style.display = 'none';
+    document.getElementById('msg-datafix').style.display = 'none';
+    document.getElementById('ocr-ok').style.display   = 'block';
+    document.getElementById('ocr-fail').style.display = 'none';
+    showStep('s-ocr-rev');
+  } catch (e) {
+    spin(btn, false);
+    showMsg('msg-manual', '❌ Errore di connessione: ' + e.message, 'err');
+  }
 }
 
 function goToAna() {
