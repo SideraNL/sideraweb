@@ -826,6 +826,13 @@ async function reqOtp() {
   try {
     const d = await gasPost('sendOtp', { email, idpgt: idPgt });
     if (d.ok) {
+      // ── Dev bypass: email in whitelist server → salta completamente lo step OTP
+      if (d.devBypass) {
+        emailVerificata = email;
+        spin(btn, false);
+        showStep('s-choice');
+        return;
+      }
       document.getElementById('otp-email-shown').textContent = email;
       document.getElementById('otp-1').style.display = 'none';
       document.getElementById('otp-2').style.display = 'block';
