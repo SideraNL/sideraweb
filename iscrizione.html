@@ -245,15 +245,15 @@
     <!-- ── STEP 3: OCR TESSERA (solo ECM) ─────────────────────────────────── -->
     <div id="s-ocr" class="step">
       <div class="pbar"><div class="fill" style="width:42%"></div></div>
-      <div class="step-title">📄 Scansione <span style="background:#f59e0b;color:#fff;border-radius:5px;padding:2px 10px;font-weight:800;letter-spacing:0.8px;font-size:.9em">TESSERA SANITARIA o CARTA DI IDENTITÀ</span></div>
+      <div class="step-title">📄 Scansione <span style="background:#f59e0b;color:#fff;border-radius:5px;padding:2px 10px;font-weight:800;letter-spacing:1px;font-size:.95em">TESSERA SANITARIA</span></div>
       <div class="priv-notice">
         🔒 La foto sarà utilizzata <strong>esclusivamente</strong> per estrarre i dati anagrafici ai fini ECM mediante <strong>Google Vision API</strong> (Google LLC, USA). L'immagine <strong>non verrà salvata</strong> ed è eliminata immediatamente dopo l'elaborazione. Il trasferimento avviene in modo cifrato e Google tratta i dati come sub-responsabile ai sensi del <strong>GDPR</strong>.
       </div>
       <div class="msg msg-warn" style="display:block;margin-bottom:4px">
-        📸 Fotografa il <strong>RETRO</strong> della <strong>Tessera Sanitaria</strong> o della <strong>Carta d'Identità Elettronica (CIE)</strong> — deve essere visibile il <strong>Codice Fiscale a 16 caratteri</strong>. Inquadra tutto il documento su una superficie piana con buona luce.
+        📸 Fotografa il <strong>RETRO</strong> della <strong>Tessera Sanitaria</strong> dove è visibile il <strong>Codice Fiscale a 16 caratteri</strong>. Inquadra tutta la tessera su una superficie piana con buona luce.
       </div>
       <details class="tessera-esempio">
-        <summary>📖 Vedi come fotografare il documento</summary>
+        <summary>📖 Vedi come fotografare la tessera</summary>
         <div class="svg-wrap">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 328" width="100%" style="display:block;">
             <rect width="520" height="328" rx="14" ry="14" fill="#cde8f5"/>
@@ -305,7 +305,7 @@
             <text x="220" y="309" text-anchor="middle" fill="#e65100" font-size="9" font-family="Arial,sans-serif" font-weight="bold">⬆ Il campo 6 contiene il Codice Fiscale (16 caratteri) — assicurati che sia leggibile</text>
           </svg>
         </div>
-        <p class="svg-caption">📸 Fotografa il <strong>retro</strong> della Tessera Sanitaria o della Carta d'Identità su una superficie piana con buona illuminazione</p>
+        <p class="svg-caption">📸 Fotografa il <strong>retro</strong> su una superficie piana con buona illuminazione, inquadrando tutta la tessera</p>
       </details>
       <div class="upload-zone" id="upload-zone" onclick="document.getElementById('u-img').click()">
         <input type="file" id="u-img" accept="image/*" onchange="onFileSelect(this)">
@@ -326,7 +326,7 @@
       <div class="msg" id="msg-ocr" style="margin-top:10px"></div>
       <!-- Fallback: inserimento manuale se non si ha la tessera -->
       <div style="margin-top:16px;padding-top:14px;border-top:1px dashed #cbd5e1;text-align:center">
-        <div style="font-size:.82rem;color:#64748b;margin-bottom:6px">Non hai la tessera o il documento con te?</div>
+        <div style="font-size:.82rem;color:#64748b;margin-bottom:6px">Non hai la tessera sanitaria con te?</div>
         <button type="button" class="btn-sec" style="font-size:.85rem;padding:8px 16px" onclick="showManualEntry()">✏️ Inserisci i dati a mano</button>
         <div style="font-size:.72rem;color:#94a3b8;margin-top:4px">Il codice fiscale sarà validato algoritmicamente contro i dati inseriti.</div>
       </div>
@@ -335,7 +335,7 @@
     <!-- ── STEP 4: REVISIONE DATI OCR (solo ECM) ──────────────────────────── -->
     <div id="s-ocr-rev" class="step">
       <div class="pbar"><div class="fill" style="width:55%"></div></div>
-      <div class="step-title">📋 Dati Estratti dal Documento</div>
+      <div class="step-title">📋 Dati Estratti dalla Tessera</div>
       <div class="msg" id="msg-omo" style="margin-bottom:12px"></div>
       <div class="msg" id="msg-datafix" style="margin-bottom:12px"></div>
       <div id="ocr-ok">
@@ -347,7 +347,7 @@
           <div class="col-12"><div class="data-card"><div class="dl">Codice Fiscale</div><div class="dv" id="d-cf" style="font-family:monospace;letter-spacing:2px;font-size:1.05rem">-</div></div></div>
         </div>
         <div class="msg msg-info" style="display:block;margin-bottom:14px">
-          Verifica che i dati corrispondano al tuo documento (Tessera Sanitaria o Carta d'Identità). I dati errati compromettono l'attribuzione dei crediti ECM.
+          Verifica che i dati corrispondano alla tua Tessera Sanitaria. I dati errati compromettono l'attribuzione dei crediti ECM.
         </div>
         <div style="display:flex;gap:10px">
           <button class="btn-sec" onclick="showStep('s-ocr')">← Riprova</button>
@@ -360,11 +360,11 @@
         <div class="msg msg-err" style="display:block">
           <strong>⚠️ Estrazione incompleta</strong><br>
           Non sono stati acquisiti tutti i dati necessari per l'iscrizione ECM.<br>
-          Riprova con una foto più nitida del <strong>retro della Tessera Sanitaria</strong> o della <strong>Carta d'Identità Elettronica</strong>.
+          Riprova con una foto più nitida del <strong>retro della Tessera Sanitaria</strong>.
         </div>
         <div style="background:#fff3cd;border:1px solid #ffecb5;border-radius:8px;padding:10px 14px;font-size:.82rem;margin-top:10px;color:#664d03">
           Se il problema persiste, scrivi a <a href="mailto:direzione@sideraweb.it" style="color:#0d47a1">direzione@sideraweb.it</a>
-          allegando la foto del retro del documento.
+          allegando la foto del retro della tessera.
         </div>
         <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
           <button class="btn-sec" onclick="showStep('s-ocr')">← Riprova foto</button>
@@ -378,7 +378,7 @@
       <div class="pbar"><div class="fill" style="width:50%"></div></div>
       <div class="step-title">✏️ Inserimento Manuale Dati</div>
       <div class="msg msg-warn" style="display:block;margin-bottom:14px;font-size:.85rem">
-        Inserisci i dati <strong>esattamente</strong> come appaiono sul documento ufficiale.<br>
+        Inserisci i dati <strong>esattamente</strong> come appaiono sulla tua Tessera Sanitaria.<br>
         Il Codice Fiscale sarà <strong>validato algoritmicamente</strong> contro i dati che inserisci: qualsiasi incongruenza verrà segnalata con un messaggio specifico.
       </div>
       <div class="row g-2">
@@ -429,7 +429,7 @@
           <div class="col-6"><label class="f-label">Luogo di Nascita</label><input type="text" id="f-luogonascita" class="form-control" readonly style="background:#f8f9fa"></div>
           <div class="col-12"><label class="f-label">Codice Fiscale</label><input type="text" id="f-cf" class="form-control" readonly style="background:#f8f9fa;font-family:monospace;letter-spacing:2px"></div>
         </div>
-        <div class="msg msg-info" style="display:block;margin-top:10px;font-size:.82rem">I dati anagrafici sono stati acquisiti dal documento (Tessera Sanitaria o Carta d'Identità) e non possono essere modificati.</div>
+        <div class="msg msg-info" style="display:block;margin-top:10px;font-size:.82rem">I dati anagrafici sono stati acquisiti dalla Tessera Sanitaria e non possono essere modificati.</div>
       </div>
       <!-- Non-ECM: editabile -->
       <div id="ana-noecm" style="display:none">
