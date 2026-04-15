@@ -130,7 +130,16 @@
     "luogo": "TORINO",
     "data": "28/05/2026",
     "titolo": "RUOLO DELLE TERAPIE FAST LAI ED EVIDENZE DI REAL WORLD",
-    "ssId": "1r1htbXXWE7q-4oekLCFei5nU_UWuw69MRlzn7sreLJk"
+    "ssId": "1r1htbXXWE7q-4oekLCFei5nU_UWuw69MRlzn7sreLJk",
+    "orari": [
+      {
+        "giorno": "1",
+        "data": "28/05/2026",
+        "ora_in": "17:00",
+        "ora_out": "21:00",
+        "pause": []
+      }
+    ]
   },
   {
     "idPgt": "1337",
