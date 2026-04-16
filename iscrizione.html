@@ -5,67 +5,201 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Iscrizione Corso ECM — Sidera</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>S</text></svg>">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <style>
-    body { background: #f0f4f8; font-family: 'Segoe UI', Tahoma, sans-serif; }
-    .card-main { max-width: 660px; margin: 28px auto 40px; background: #fff; border-radius: 14px; box-shadow: 0 4px 24px rgba(0,0,0,.1); overflow: hidden; }
-    .evt-head { background: #1565c0; color: #fff; padding: 16px 24px; display: none; }
-    .evt-head h1 { font-size: 1.05rem; margin: 0 0 5px; font-weight: 600; line-height: 1.3; }
-    .evt-head .meta { font-size: .82rem; opacity: .88; }
+    :root {
+      --blue:       #1a56db;
+      --blue-dark:  #1241a8;
+      --blue-light: #e8f0fe;
+      --gray-50:    #f8fafc;
+      --gray-100:   #f1f5f9;
+      --gray-200:   #e2e8f0;
+      --gray-500:   #64748b;
+      --gray-700:   #334155;
+      --gray-900:   #0f172a;
+      --green:      #16a34a;
+      --red:        #dc2626;
+      --orange:     #d97706;
+    }
+
+    body { background: var(--gray-100); font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; font-size: 14px; color: var(--gray-900); }
+
+    /* ── Card principale ── */
+    .card-main { max-width: 660px; margin: 28px auto 40px; background: #fff; border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,.08), 0 1px 3px rgba(0,0,0,.06); overflow: hidden; }
+
+    /* ── Header evento ── */
+    .evt-head { background: var(--blue); color: #fff; padding: 16px 24px; display: none; }
+    .evt-head h1 { font-size: 1rem; margin: 0 0 5px; font-weight: 600; line-height: 1.35; }
+    .evt-head .meta { font-size: .8rem; opacity: .85; }
+
+    /* ── Banner "Solo ECM" — sobrio, no gradiente ── */
+    #only-ecm-top-banner {
+      display: none;
+      background: #fef2f2;
+      color: #991b1b;
+      border-top: 3px solid var(--red);
+      padding: 11px 20px;
+      text-align: center;
+      font-weight: 700;
+      font-size: .88rem;
+      letter-spacing: .3px;
+    }
+
+    /* ── Step ── */
     .step-body { padding: 24px; }
     .step { display: none; }
     .step.active { display: block; }
-    .step-title { font-size: 1.05rem; font-weight: 700; color: #1565c0; margin-bottom: 16px; padding-bottom: 8px; border-bottom: 2px solid #e3f0ff; }
-    label.f-label { font-size: .85rem; font-weight: 600; color: #333; margin-bottom: 4px; display: block; }
-    .form-control, .form-select { font-size: .9rem; border-color: #ced4da; }
-    .form-control:focus, .form-select:focus { border-color: #1565c0; box-shadow: 0 0 0 .2rem rgba(21,101,192,.15); }
-    .msg { border-radius: 8px; padding: 10px 14px; font-size: .87rem; margin-top: 10px; display: none; }
-    .msg-ok   { background: #d1e7dd; color: #0f5132; border: 1px solid #badbcc; }
-    .msg-err  { background: #f8d7da; color: #842029; border: 1px solid #f5c2c7; }
-    .msg-info { background: #cfe2ff; color: #084298; border: 1px solid #b6d4fe; }
-    .msg-warn { background: #fff3cd; color: #664d03; border: 1px solid #ffecb5; }
-    .btn-prim { background: #1565c0; color: #fff; border: none; border-radius: 8px; padding: 11px 0; font-weight: 600; font-size: .9rem; cursor: pointer; width: 100%; transition: background .2s; }
-    .btn-prim:hover:not(:disabled) { background: #0d47a1; }
-    .btn-prim:disabled { opacity: .55; cursor: not-allowed; }
-    .btn-prim.danger { background: #c62828; }
-    .btn-prim.danger:hover:not(:disabled) { background: #b71c1c; }
-    .btn-sec { background: #e9ecef; color: #444; border: none; border-radius: 8px; padding: 10px 20px; font-size: .88rem; cursor: pointer; transition: background .2s; }
-    .btn-sec:hover { background: #dee2e6; }
-    .choice-box { border: 2px solid #dee2e6; border-radius: 12px; padding: 18px 14px; cursor: pointer; text-align: center; transition: all .2s; height: 100%; }
-    .choice-box:hover { border-color: #1565c0; background: #f0f7ff; }
-    .choice-box.sel { border-color: #1565c0; background: #e3f0ff; }
-    .choice-box .icon { font-size: 2rem; }
-    .choice-box h3 { font-size: .95rem; font-weight: 700; margin: 8px 0 4px; color: #1565c0; }
-    .choice-box p { font-size: .8rem; color: #666; margin: 0; }
-    .upload-zone { border: 2px dashed #adb5bd; border-radius: 10px; padding: 26px 16px; text-align: center; cursor: pointer; transition: all .2s; background: #f8f9fa; }
-    .upload-zone:hover { border-color: #1565c0; background: #f0f7ff; }
+    .step-title { font-size: 1rem; font-weight: 600; color: var(--blue); margin-bottom: 16px; padding-bottom: 10px; border-bottom: 1px solid var(--gray-200); display: flex; align-items: center; gap: 8px; }
+
+    /* ── Label ── */
+    label.f-label { font-size: 13px; font-weight: 500; color: var(--gray-700); margin-bottom: 5px; display: block; letter-spacing: 0; }
+
+    /* ── Input ── */
+    .form-control, .form-select {
+      font-size: 14px;
+      font-family: inherit;
+      background: var(--gray-50);
+      border: 1px solid var(--gray-200);
+      border-radius: 8px;
+      padding: 9px 13px;
+      color: var(--gray-900);
+      transition: border-color .15s, box-shadow .15s;
+    }
+    .form-control:focus, .form-select:focus {
+      background: #fff;
+      border-color: var(--blue);
+      box-shadow: 0 0 0 3px rgba(26,86,219,.10);
+      outline: none;
+    }
+    .form-control::placeholder { color: var(--gray-500); opacity: 1; }
+
+    /* ── Messaggi (status bar) ── */
+    .msg { border-radius: 8px; padding: 10px 14px; font-size: 13px; margin-top: 10px; display: none; border: 1px solid transparent; }
+    .msg-ok   { background: #f0fdf4; color: #15803d; border-color: rgba(22,163,74,.20); }
+    .msg-err  { background: #fef2f2; color: #b91c1c; border-color: rgba(220,38,38,.20); }
+    .msg-info { background: var(--blue-light); color: var(--blue); border-color: rgba(26,86,219,.18); }
+    .msg-warn { background: #fffbeb; color: #92400e; border-color: rgba(217,119,6,.20); }
+
+    /* ── Box informativo (istruzioni OTP, avvisi) — leggero ── */
+    .info-box {
+      background: var(--blue-light);
+      border: 1px solid rgba(26,86,219,.18);
+      border-radius: 8px;
+      padding: 13px 16px;
+      font-size: 13px;
+      color: #1e3a8a;
+      margin-bottom: 14px;
+    }
+    .info-box strong { color: var(--blue); }
+    .info-box ol { margin: 8px 0 0 18px; padding: 0; }
+    .info-box li { margin-bottom: 3px; }
+
+    /* Sub-nota dentro un info-box */
+    .info-note {
+      margin-top: 10px;
+      background: #fffbeb;
+      border: 1px solid rgba(217,119,6,.25);
+      border-radius: 6px;
+      padding: 7px 11px;
+      font-size: 12px;
+      color: #78350f;
+      line-height: 1.5;
+    }
+
+    /* ── Bottone primario ── */
+    .btn-prim {
+      background: var(--blue);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 11px 0;
+      font-weight: 600;
+      font-size: 14px;
+      font-family: inherit;
+      cursor: pointer;
+      width: 100%;
+      transition: background .15s;
+      letter-spacing: .1px;
+    }
+    .btn-prim:hover:not(:disabled) { background: var(--blue-dark); }
+    .btn-prim:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+    .btn-prim:disabled { opacity: .5; cursor: not-allowed; }
+    .btn-prim.danger { background: var(--red); }
+    .btn-prim.danger:hover:not(:disabled) { background: #b91c1c; }
+
+    /* ── Bottone secondario ── */
+    .btn-sec {
+      background: var(--gray-100);
+      color: var(--gray-700);
+      border: 1px solid var(--gray-200);
+      border-radius: 8px;
+      padding: 10px 20px;
+      font-size: 13px;
+      font-family: inherit;
+      cursor: pointer;
+      transition: background .15s;
+    }
+    .btn-sec:hover { background: var(--gray-200); }
+    .btn-sec:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+
+    /* ── Choice box (ECM / non ECM) ── */
+    .choice-box { border: 1px solid var(--gray-200); border-radius: 10px; padding: 18px 14px; cursor: pointer; text-align: center; transition: border-color .15s, background .15s; height: 100%; background: var(--gray-50); }
+    .choice-box:hover { border-color: var(--blue); background: var(--blue-light); }
+    .choice-box.sel  { border-color: var(--blue); background: var(--blue-light); box-shadow: 0 0 0 3px rgba(26,86,219,.10); }
+    .choice-box .icon { font-size: 1.8rem; }
+    .choice-box h3 { font-size: .9rem; font-weight: 700; margin: 8px 0 4px; color: var(--blue); }
+    .choice-box p { font-size: .78rem; color: var(--gray-500); margin: 0; }
+
+    /* ── Upload zone ── */
+    .upload-zone { border: 2px dashed var(--gray-200); border-radius: 10px; padding: 26px 16px; text-align: center; cursor: pointer; transition: border-color .15s, background .15s; background: var(--gray-50); }
+    .upload-zone:hover { border-color: var(--blue); background: var(--blue-light); }
     #u-img { display: none; }
-    #preview-img { max-width: 100%; max-height: 220px; border-radius: 8px; border: 1px solid #dee2e6; display: none; margin: 10px auto; }
-    .data-card { background: #f8f9fa; border: 1px solid #e9ecef; border-radius: 8px; padding: 12px 14px; }
-    .data-card .dl { font-size: .72rem; color: #888; text-transform: uppercase; letter-spacing: .5px; }
-    .data-card .dv { font-size: .98rem; font-weight: 600; color: #222; margin-top: 2px; }
-    .priv-notice { background: #f0f7ff; border: 1px solid #b6d4fe; border-radius: 8px; padding: 10px 14px; font-size: .8rem; color: #333; margin-bottom: 14px; }
+    #preview-img { max-width: 100%; max-height: 220px; border-radius: 8px; border: 1px solid var(--gray-200); display: none; margin: 10px auto; }
+
+    /* ── Data card (riepilogo dati) ── */
+    .data-card { background: var(--gray-50); border: 1px solid var(--gray-200); border-radius: 8px; padding: 12px 14px; }
+    .data-card .dl { font-size: 11px; color: var(--gray-500); text-transform: uppercase; letter-spacing: .5px; font-weight: 600; }
+    .data-card .dv { font-size: 14px; font-weight: 600; color: var(--gray-900); margin-top: 2px; }
+
+    /* ── Privacy notice ── */
+    .priv-notice { background: var(--blue-light); border: 1px solid rgba(26,86,219,.18); border-radius: 8px; padding: 10px 14px; font-size: 12px; color: #1e3a8a; margin-bottom: 14px; line-height: 1.5; }
+
+    /* ── Tessera esempio ── */
     .tessera-esempio { margin: 12px 0 16px; }
-    .tessera-esempio summary { cursor: pointer; color: #0d47a1; font-size: .85rem; font-weight: 600; padding: 8px 14px; background: #e3f2fd; border-radius: 6px; border: 1px solid #90caf9; list-style: none; user-select: none; }
+    .tessera-esempio summary { cursor: pointer; color: var(--blue); font-size: 13px; font-weight: 600; padding: 8px 14px; background: var(--blue-light); border-radius: 6px; border: 1px solid rgba(26,86,219,.2); list-style: none; user-select: none; }
     .tessera-esempio summary::-webkit-details-marker { display: none; }
-    .tessera-esempio summary::before { content: "▶ "; font-size: .75rem; }
+    .tessera-esempio summary::before { content: "▶ "; font-size: .7rem; }
     .tessera-esempio[open] summary::before { content: "▼ "; }
-    .tessera-esempio .svg-wrap { margin-top: 10px; border-radius: 8px; overflow: hidden; border: 1px solid #bbdefb; }
-    .tessera-esempio .svg-caption { font-size: .78rem; color: #555; margin-top: 8px; text-align: center; }
-    .pbar { height: 4px; background: #e9ecef; border-radius: 2px; margin-bottom: 20px; }
-    .pbar .fill { height: 100%; border-radius: 2px; background: #1565c0; transition: width .35s; }
+    .tessera-esempio .svg-wrap { margin-top: 10px; border-radius: 8px; overflow: hidden; border: 1px solid var(--gray-200); }
+    .tessera-esempio .svg-caption { font-size: 12px; color: var(--gray-500); margin-top: 8px; text-align: center; }
+
+    /* ── Progress bar ── */
+    .pbar { height: 3px; background: var(--gray-200); margin-bottom: 22px; }
+    .pbar .fill { height: 100%; background: var(--blue); transition: width .35s ease; }
+
+    /* ── Spinner ── */
     .spin { display: inline-block; width: 1rem; height: 1rem; border: 2px solid currentColor; border-radius: 50%; border-right-color: transparent; animation: spin .7s linear infinite; vertical-align: middle; margin-left: 6px; display: none; }
     @keyframes spin { to { transform: rotate(360deg); } }
-    .rie-box { background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 8px; padding: 14px; margin-bottom: 16px; font-size: .85rem; }
-    .legal-box { max-height: 140px; overflow-y: auto; background: #fafafa; border: 1px solid #dee2e6; border-radius: 8px; padding: 12px 14px; font-size: .78rem; color: #444; line-height: 1.5; margin-bottom: 8px; }
-    .legal-box strong { color: #222; }
-    .legal-box a { color: #0d47a1; font-weight: 600; }
-    .chk-row { display: flex; align-items: flex-start; gap: 10px; padding: 10px 12px; background: #f0f7ff; border: 1px solid #b6d4fe; border-radius: 8px; margin-bottom: 12px; }
-    .chk-row:hover { background: #e3f0ff; }
-    .chk-row input[type="checkbox"], .chk-row input[type="radio"] { margin-top: 3px; flex-shrink: 0; }
-    .chk-row label { font-size: .85rem; color: #333; cursor: pointer; flex: 1; margin: 0; line-height: 1.4; }
-    .section-label { font-size: .9rem; font-weight: 700; color: #1565c0; margin: 16px 0 6px; display: block; }
-    .section-label small { font-size: .75rem; font-weight: 400; color: #666; }
+
+    /* ── Riepilogo box ── */
+    .rie-box { background: var(--gray-50); border: 1px solid var(--gray-200); border-radius: 8px; padding: 14px; margin-bottom: 16px; font-size: 13px; }
+
+    /* ── Legal box ── */
+    .legal-box { max-height: 140px; overflow-y: auto; background: var(--gray-50); border: 1px solid var(--gray-200); border-radius: 8px; padding: 12px 14px; font-size: 12px; color: #444; line-height: 1.6; margin-bottom: 8px; }
+    .legal-box strong { color: var(--gray-900); }
+    .legal-box a { color: var(--blue); font-weight: 600; }
+
+    /* ── Checkbox row ── */
+    .chk-row { display: flex; align-items: flex-start; gap: 10px; padding: 10px 12px; background: var(--gray-50); border: 1px solid var(--gray-200); border-radius: 8px; margin-bottom: 10px; transition: background .15s; }
+    .chk-row:hover { background: var(--blue-light); border-color: rgba(26,86,219,.2); }
+    .chk-row input[type="checkbox"], .chk-row input[type="radio"] { margin-top: 3px; flex-shrink: 0; accent-color: var(--blue); }
+    .chk-row label { font-size: 13px; color: var(--gray-700); cursor: pointer; flex: 1; margin: 0; line-height: 1.45; }
+
+    /* ── Section label ── */
+    .section-label { font-size: 13px; font-weight: 600; color: var(--blue); margin: 16px 0 6px; display: block; }
+    .section-label small { font-size: 12px; font-weight: 400; color: var(--gray-500); }
+
     @media (max-width: 480px) { .card-main { margin: 0; border-radius: 0; min-height: 100vh; } }
   </style>
 </head>
@@ -89,7 +223,7 @@
   </div>
 
   <!-- Banner "solo ECM" — visibile su tutti gli step quando nonEcmEnabled === false -->
-  <div id="only-ecm-top-banner" style="display:none;background:linear-gradient(135deg,#dc2626 0%,#ea580c 100%);color:#fff;padding:14px 20px;text-align:center;font-weight:900;font-size:1.02rem;letter-spacing:0.6px;text-transform:uppercase;box-shadow:inset 0 1px 0 rgba(255,255,255,0.15),0 2px 6px rgba(220,38,38,0.25);border-top:2px solid #fbbf24;border-bottom:2px solid #fbbf24">
+  <div id="only-ecm-top-banner">
     🎓 Evento riservato alle iscrizioni con ECM
   </div>
 
@@ -181,14 +315,14 @@
         <label class="f-label">La tua email personale</label>
         <input type="email" id="u-email" class="form-control mb-2" placeholder="nome.cognome@email.com"
                onkeydown="if(event.key==='Enter')reqOtp()">
-        <div class="msg msg-info" style="display:block;margin-bottom:14px">
+        <div class="info-box">
           <strong>📧 Come funziona la verifica:</strong>
-          <ol style="margin:6px 0 0 16px;padding:0;font-size:.84rem">
+          <ol>
             <li>Clicca "Richiedi Codice OTP"</li>
             <li>Riceverai un'email con un <strong>codice di 4 cifre</strong></li>
             <li>Se non la ricevi entro 2 minuti, controlla lo <strong>Spam</strong></li>
           </ol>
-          <div style="margin-top:8px;font-size:.82rem;background:#fff8e1;border:1px solid #ffe0b2;border-radius:5px;padding:6px 10px">
+          <div class="info-note">
             Si consiglia un'email personale (non aziendale). Le comunicazioni successive — link test ECM e attestati — saranno inviate a questo indirizzo.
           </div>
         </div>
