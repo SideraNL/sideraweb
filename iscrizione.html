@@ -1294,6 +1294,98 @@ function _cfHighlightFields(invalidIds) {
   });
 }
 
+// ── Popola step revisione (usato sia da OCR che da manuale) ───────────────
+
+function _proceedToReview(d) {
+  ocrData = {
+    ok: true, success: true, complete: true,
+    cf: d.cf, nome: d.nome, cognome: d.cognome,
+    dataNascita: d.dataNascita, luogoNascita: d.luogoNascita,
+    codiceCatastale: d.codiceCatastale,
+    isOmocodia: d.isOmocodia || false,
+    dataCongruente: true, dataAutoCorretta: false,
+    tipoDocumento: 'MANUAL'
+  };
+  document.getElementById('d-cognome').textContent      = d.cognome      || '-';
+  document.getElementById('d-nome').textContent         = d.nome         || '-';
+  document.getElementById('d-datanascita').textContent  = d.dataNascita  || '-';
+  document.getElementById('d-luogonascita').textContent = d.luogoNascita || '-';
+  document.getElementById('d-cf').textContent           = d.cf           || '-';
+  if (d.isOmocodia) {
+    showMsg('msg-omo', '<strong>ℹ️ CF omocodia</strong> — Il tuo Codice Fiscale è in forma omocodia e verrà registrato nella forma standard equivalente.', 'info');
+  } else {
+    document.getElementById('msg-omo').style.display = 'none';
+  }
+  document.getElementById('msg-datafix').style.display = 'none';
+  document.getElementById('ocr-ok').style.display   = 'block';
+  document.getElementById('ocr-fail').style.display = 'none';
+  showStep('s-ocr-rev');
+}
+
+// ── Conferma esplicita quando il server modifica il CF ────────────────────
+
+let _pendingManualData = null;
+
+function _showCFConfirmation(cfOriginale, d) {
+  _pendingManualData = d;
+  const mono = 'font-family:monospace;letter-spacing:1.5px;padding:2px 7px;border-radius:4px';
+  let html =
+    '<strong>⚠️ Il codice fiscale è stato ricalcolato automaticamente</strong>' +
+    '<div style="margin:12px 0;display:flex;flex-direction:column;gap:6px;font-size:13px">' +
+      '<div>Hai inserito: <span style="' + mono + ';background:#f1f5f9;color:#64748b">' + cfOriginale + '</span></div>' +
+      '<div>Verrà registrato: <span style="' + mono + ';background:#dbeafe;color:#1e3a8a;font-weight:700">' + d.cf + '</span>' +
+        (d.isOmocodia ? ' <span style="font-size:11px;background:#e0f2fe;color:#0369a1;padding:1px 7px;border-radius:10px;vertical-align:middle;margin-left:4px">omocodia</span>' : '') +
+      '</div>' +
+    '</div>' +
+    '<div style="font-size:13px;margin-bottom:12px">Il codice fiscale registrato è effettivamente il tuo?</div>' +
+    '<div style="display:flex;gap:8px">' +
+      '<button class="btn-sec" onclick="_cfNoBtn()" style="flex:1;padding:8px 0;border-radius:8px;font-size:13px;cursor:pointer">No, non è il mio</button>' +
+      '<button class="btn-prim" onclick="_cfYesBtn()" style="flex:2;padding:8px 0;border-radius:8px;font-size:13px;cursor:pointer">✓ Sì, è corretto — procedi</button>' +
+    '</div>';
+  showMsg('msg-manual', html, 'warn');
+}
+
+function _cfYesBtn() {
+  if (!_pendingManualData) return;
+  const d = _pendingManualData;
+  _pendingManualData = null;
+  hideMsg('msg-manual');
+  _cfHighlightFields(new Set());
+  _proceedToReview(d);
+}
+
+function _cfNoBtn() {
+  if (!_pendingManualData) return;
+  const d = _pendingManualData;
+  const mono = 'font-family:monospace;letter-spacing:1.5px;font-weight:700';
+
+  if (d.isOmocodia) {
+    // Spiega l'omocodia in termini semplici e lascia scegliere
+    let html =
+      '<strong>ℹ️ Il tuo CF è in forma "omocodia"</strong>' +
+      '<p style="margin:10px 0 6px;font-size:13px;line-height:1.6">' +
+        'L\'Agenzia delle Entrate assegna un codice fiscale alternativo (<em>omocodia</em>) quando ' +
+        'due persone generano lo stesso codice. Alcune cifre vengono sostituite con lettere.' +
+      '</p>' +
+      '<p style="font-size:13px;line-height:1.6;margin-bottom:10px">' +
+        'La forma standard <span style="' + mono + ';color:#1a56db">' + d.cf + '</span> ' +
+        'è <strong>fiscalmente identica</strong> alla tua: rappresenta la stessa persona ' +
+        'ed è riconosciuta da tutti i sistemi. Puoi verificarlo sul tuo tesserino sanitario o sull\'app IO.' +
+      '</p>' +
+      '<div style="display:flex;gap:8px">' +
+        '<button class="btn-sec" onclick="showManualEntry()" style="flex:1;padding:8px 0;border-radius:8px;font-size:13px;cursor:pointer">← Torna ai dati</button>' +
+        '<button class="btn-prim" onclick="_cfYesBtn()" style="flex:2;padding:8px 0;border-radius:8px;font-size:13px;cursor:pointer">Ho capito — procedi</button>' +
+      '</div>';
+    showMsg('msg-manual', html, 'info');
+  } else {
+    // Incoerenza reale: rimanda al form
+    _pendingManualData = null;
+    showMsg('msg-manual',
+      '⬅️ Il codice fiscale non corrisponde ai dati inseriti. Torna indietro, verifica i dati e riprova.',
+      'err');
+  }
+}
+
 function showManualEntry() {
   // Reset form a ogni apertura (per non lasciare dati residui da tentativi precedenti)
   document.getElementById('m-cognome').value = '';
@@ -1363,32 +1455,13 @@ async function goFromManual(btn) {
       showMsg('msg-manual', '❌ ' + (d.error || 'Dati non validi.'), 'err');
       return;
     }
-    // Validazione OK → popola ocrData come fa il flusso OCR e passa alla revisione
-    ocrData = {
-      ok: true, success: true, complete: true,
-      cf: d.cf, nome: d.nome, cognome: d.cognome,
-      dataNascita: d.dataNascita, luogoNascita: d.luogoNascita,
-      codiceCatastale: d.codiceCatastale,
-      isOmocodia: d.isOmocodia || false,
-      dataCongruente: true, dataAutoCorretta: false,
-      tipoDocumento: 'MANUAL'
-    };
-    // Popola step revisione (riusa s-ocr-rev per coerenza)
-    document.getElementById('d-cognome').textContent      = d.cognome      || '-';
-    document.getElementById('d-nome').textContent         = d.nome         || '-';
-    document.getElementById('d-datanascita').textContent  = d.dataNascita  || '-';
-    document.getElementById('d-luogonascita').textContent = d.luogoNascita || '-';
-    document.getElementById('d-cf').textContent           = d.cf           || '-';
-    // Omocodia: mostra avviso anche per inserimento manuale
-    if (d.isOmocodia) {
-      showMsg('msg-omo', '<strong>ℹ️ CF omocodia</strong> — Il tuo Codice Fiscale è in forma omocodia e verrà registrato nella forma standard equivalente.', 'info');
-    } else {
-      document.getElementById('msg-omo').style.display = 'none';
+    // Se il server ha modificato il CF rispetto a quanto inserito → conferma esplicita
+    if (d.cf && d.cf !== cf) {
+      _showCFConfirmation(cf, d);
+      return;
     }
-    document.getElementById('msg-datafix').style.display = 'none';
-    document.getElementById('ocr-ok').style.display   = 'block';
-    document.getElementById('ocr-fail').style.display = 'none';
-    showStep('s-ocr-rev');
+    // CF invariato → procedi direttamente alla revisione
+    _proceedToReview(d);
   } catch (e) {
     spin(btn, false);
     showMsg('msg-manual', '❌ Errore di connessione: ' + e.message, 'err');
