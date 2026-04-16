@@ -44,7 +44,8 @@
     .otp-digit { width: 56px; height: 64px; text-align: center; font-size: 1.8rem; font-weight: 700; border: 2px solid #d1d5db; border-radius: 10px; outline: none; transition: border .2s; color: #003366; }
     .otp-digit:focus { border-color: #1565c0; background: #f0f7ff; }
     /* Quiz */
-    .question-block { border: 1.5px solid #e2e8f0; border-radius: 10px; padding: 18px; margin-bottom: 16px; }
+    .question-block { border: 1.5px solid #e2e8f0; border-radius: 10px; padding: 18px; margin-bottom: 16px; display: none; }
+    .question-block.q-active { display: block; }
     .question-num { font-size: .78rem; font-weight: 700; color: #64748b; margin-bottom: 8px; text-transform: uppercase; letter-spacing: .5px; }
     .question-text { font-size: .97rem; font-weight: 600; color: #1e293b; margin-bottom: 14px; line-height: 1.5; }
     .option-wrap { margin-bottom: 8px; }
@@ -53,6 +54,10 @@
     .option-wrap input[type=radio]:checked + .option-label { border-color: #1565c0; background: #eff6ff; color: #1e40af; font-weight: 600; }
     .option-label:hover { border-color: #94a3b8; background: #f8fafc; }
     /* Risultato */
+    .quiz-nav { display: flex; align-items: center; gap: 10px; margin-top: 18px; }
+    .quiz-nav .btn-prim { flex: 1; margin-top: 0; }
+    .quiz-nav .btn-sec { flex: 0 0 auto; padding: 12px 18px; }
+    .quiz-progress { text-align: center; font-size: .82rem; color: #64748b; flex: 0 0 auto; min-width: 80px; }
     .score-box { text-align: center; padding: 24px; border-radius: 12px; margin-bottom: 20px; }
     .score-box.passed { background: #f0fdf4; border: 2px solid #86efac; }
     .score-box.failed { background: #fef2f2; border: 2px solid #fca5a5; }
@@ -141,14 +146,19 @@
 
   <!-- STEP 4 — QUIZ -->
   <div id="s-quiz" class="step">
-    <div class="pbar"><div class="fill" style="width:75%"></div></div>
+    <div class="pbar"><div class="fill" id="quiz-pbar" style="width:0%"></div></div>
     <div class="step-title">📋 Test ECM <span id="quiz-counter" style="font-size:.82rem;font-weight:400;color:#64748b"></span></div>
     <div class="notice info" style="margin-bottom:20px">Rispondi a tutte le domande. Puoi inviare il test <strong>una sola volta</strong>.</div>
     <div id="quiz-questions"></div>
     <div class="msg" id="msg-quiz"></div>
-    <button class="btn-prim" id="btn-quiz" onclick="doSubmitTest(this)" disabled>
-      INVIA RISPOSTE <span class="spin" id="spin-quiz"></span>
-    </button>
+    <div class="quiz-nav">
+      <button class="btn-sec" id="btn-qprev" onclick="quizPrev()" style="display:none">← Indietro</button>
+      <div class="quiz-progress" id="quiz-progress"></div>
+      <button class="btn-prim" id="btn-qnext" onclick="quizNext()" disabled>Avanti →</button>
+      <button class="btn-prim" id="btn-quiz" onclick="doSubmitTest(this)" style="display:none" disabled>
+        INVIA RISPOSTE <span class="spin" id="spin-quiz"></span>
+      </button>
+    </div>
   </div>
 
   <!-- STEP 5 — RISULTATO -->
@@ -315,13 +325,16 @@ function goBack() {
   showStep('s-email');
 }
 
-// ── Step 3 — Quiz ────────────────────────────────────────────────────────────
+// ── Step 3 — Quiz (navigazione a schede) ─────────────────────────────────────
+
+let _currentQ = 0;
 
 function buildQuiz(questions) {
+  _currentQ = 0;
   document.getElementById('quiz-counter').textContent = `(${questions.length} domande)`;
   const container = document.getElementById('quiz-questions');
   container.innerHTML = questions.map((q, qi) => `
-    <div class="question-block" id="qblock-${qi}">
+    <div class="question-block${qi === 0 ? ' q-active' : ''}" id="qblock-${qi}">
       <div class="question-num">Domanda ${qi + 1} di ${questions.length}</div>
       <div class="question-text">${_esc(q.text)}</div>
       ${q.options.map((opt, oi) => `
@@ -332,13 +345,41 @@ function buildQuiz(questions) {
       `).join('')}
     </div>
   `).join('');
+  quizUpdateNav();
 }
 
 function onAnswer() {
-  const total = _quiz.length;
-  const answered = _quiz.filter((_, i) => document.querySelector(`input[name="q${i}"]:checked`)).length;
-  document.getElementById('btn-quiz').disabled = (answered < total);
+  // Abilita il pulsante avanti/invia se la domanda corrente ha risposta
+  quizUpdateNav();
 }
+
+function quizUpdateNav() {
+  const total = _quiz.length;
+  const last = _currentQ === total - 1;
+  const answered = !!document.querySelector(`input[name="q${_currentQ}"]:checked`);
+  // Progress
+  document.getElementById('quiz-progress').textContent = `${_currentQ + 1} / ${total}`;
+  document.getElementById('quiz-pbar').style.width = `${Math.round(((_currentQ + 1) / total) * 100)}%`;
+  // Prev
+  document.getElementById('btn-qprev').style.display = _currentQ > 0 ? '' : 'none';
+  // Next vs Submit
+  document.getElementById('btn-qnext').style.display = last ? 'none' : '';
+  document.getElementById('btn-qnext').disabled = !answered;
+  document.getElementById('btn-quiz').style.display = last ? '' : 'none';
+  document.getElementById('btn-quiz').disabled = !answered;
+}
+
+function quizGoTo(idx) {
+  const blocks = document.querySelectorAll('.question-block');
+  blocks.forEach(b => b.classList.remove('q-active'));
+  _currentQ = Math.max(0, Math.min(idx, _quiz.length - 1));
+  blocks[_currentQ].classList.add('q-active');
+  quizUpdateNav();
+  hideMsg('msg-quiz');
+}
+
+function quizNext() { quizGoTo(_currentQ + 1); }
+function quizPrev() { quizGoTo(_currentQ - 1); }
 
 function _esc(s) {
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
@@ -352,7 +393,8 @@ async function doSubmitTest(btn) {
     const sel = document.querySelector(`input[name="q${i}"]:checked`);
     return { questionText: q.text, selectedOption: sel ? sel.value : '' };
   });
-  if (answers.some(a => !a.selectedOption)) { showMsg('msg-quiz', 'Rispondi a tutte le domande prima di inviare.', 'err'); return; }
+  const missing = answers.findIndex(a => !a.selectedOption);
+  if (missing >= 0) { quizGoTo(missing); showMsg('msg-quiz', `Rispondi alla domanda ${missing + 1} prima di inviare.`, 'err'); return; }
   if (!confirm('Stai per inviare le risposte. Questa operazione è definitiva e non può essere ripetuta.\n\nConfermi?')) return;
   hideMsg('msg-quiz');
   setBusy(btn, 'spin-quiz', true);
