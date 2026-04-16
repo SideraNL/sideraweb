@@ -1048,10 +1048,34 @@ function goFromChoice() {
   if (tipoIscrizione === 'ECM') {
     showStep('s-ocr');
   } else {
-    document.getElementById('ana-ecm').style.display = 'none';
-    document.getElementById('ana-noecm').style.display = 'block';
-    showStep('s-ana');
+    // NON ECM: chiedi conferma esplicita prima di procedere
+    const html =
+      '<strong style="font-size:14px">⚠️ Stai richiedendo un\'iscrizione <u>senza crediti ECM</u></strong>' +
+      '<ul style="margin:10px 0 8px 18px;padding:0;line-height:1.8;font-size:13px">' +
+        '<li><strong>Non riceverai crediti formativi ECM</strong> per questo evento.</li>' +
+        '<li>Questa scelta è <strong>definitiva</strong> e non modificabile dopo la conferma.</li>' +
+        '<li>Se sei un professionista sanitario che necessita di crediti ECM, ' +
+            'torna indietro e seleziona <strong>"Con crediti ECM"</strong>.</li>' +
+      '</ul>' +
+      '<div style="display:flex;gap:8px;margin-top:4px">' +
+        '<button class="btn-sec" onclick="selChoice(\'ECM\');hideMsg(\'msg-choice\')" ' +
+          'style="flex:1;padding:9px 0;border-radius:8px;font-size:13px;cursor:pointer">' +
+          '← Torna indietro' +
+        '</button>' +
+        '<button class="btn-prim" onclick="_confirmNonECM()" ' +
+          'style="flex:2;padding:9px 0;border-radius:8px;font-size:13px;cursor:pointer">' +
+          'Confermo — procedi senza ECM' +
+        '</button>' +
+      '</div>';
+    showMsg('msg-choice', html, 'warn');
   }
+}
+
+function _confirmNonECM() {
+  hideMsg('msg-choice');
+  document.getElementById('ana-ecm').style.display = 'none';
+  document.getElementById('ana-noecm').style.display = 'block';
+  showStep('s-ana');
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
