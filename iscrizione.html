@@ -219,7 +219,7 @@
       </div>
     </div>
     <!-- Badge tipologia iscrizione (ECM / NON ECM) — aggiornato dinamicamente in selChoice() -->
-    <span id="evt-badge-tipo" style="display:none;position:absolute;bottom:8px;right:12px;font-weight:900;font-size:0.85rem;padding:4px 12px;border-radius:14px;letter-spacing:0.6px;text-transform:uppercase;box-shadow:0 1px 3px rgba(0,0,0,0.15)"></span>
+    <span id="evt-badge-tipo" style="display:none;position:absolute;bottom:8px;right:12px;font-weight:600;font-size:.75rem;padding:2px 9px;border-radius:6px;letter-spacing:.3px;background:rgba(255,255,255,.15);color:#bfdbfe;border:1px solid rgba(255,255,255,.2)"></span>
   </div>
 
   <!-- Banner "solo ECM" — visibile su tutti gli step quando nonEcmEnabled === false -->
@@ -379,15 +379,16 @@
     <!-- ── STEP 3: OCR TESSERA (solo ECM) ─────────────────────────────────── -->
     <div id="s-ocr" class="step">
       <div class="pbar"><div class="fill" style="width:42%"></div></div>
-      <div class="step-title">📄 Scansione <span style="background:#f59e0b;color:#fff;border-radius:5px;padding:2px 10px;font-weight:800;letter-spacing:1px;font-size:.95em">TESSERA SANITARIA</span></div>
+      <div class="step-title">📄 Scansione <span style="background:#dbeafe;color:#1e3a8a;border-radius:6px;padding:2px 9px;font-weight:600;font-size:.8em;letter-spacing:.2px;border:1px solid rgba(26,86,219,.2)">RETRO TESSERA SANITARIA</span></div>
       <div class="priv-notice">
         🔒 La foto sarà utilizzata <strong>esclusivamente</strong> per estrarre i dati anagrafici ai fini ECM mediante <strong>Google Vision API</strong> (Google LLC, USA). L'immagine <strong>non verrà salvata</strong> ed è eliminata immediatamente dopo l'elaborazione. Il trasferimento avviene in modo cifrato e Google tratta i dati come sub-responsabile ai sensi del <strong>GDPR</strong>.
       </div>
-      <div class="msg msg-warn" style="display:block;margin-bottom:4px">
-        📸 Fotografa il <strong>RETRO</strong> della <strong>Tessera Sanitaria</strong> dove è visibile il <strong>Codice Fiscale a 16 caratteri</strong>. Inquadra tutta la tessera su una superficie piana con buona luce.
+      <div class="info-box" style="margin-bottom:12px">
+        📸 Fotografa il <strong>RETRO</strong> della <strong>Retro Tessera Sanitaria</strong> dove è visibile il <strong>Codice Fiscale a 16 caratteri</strong>. Inquadra tutta la tessera su una superficie piana con buona luce.
+        <div class="info-note">⚠️ Attenzione: serve il <strong>RETRO</strong>, non il fronte. Il codice fiscale si trova solo sul retro della tessera.</div>
       </div>
       <details class="tessera-esempio">
-        <summary>📖 Vedi come fotografare la tessera</summary>
+        <summary>📖 Vedi come fotografare il retro della tessera</summary>
         <div class="svg-wrap">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 328" width="100%" style="display:block;">
             <rect width="520" height="328" rx="14" ry="14" fill="#cde8f5"/>
@@ -439,7 +440,7 @@
             <text x="220" y="309" text-anchor="middle" fill="#e65100" font-size="9" font-family="Arial,sans-serif" font-weight="bold">⬆ Il campo 6 contiene il Codice Fiscale (16 caratteri) — assicurati che sia leggibile</text>
           </svg>
         </div>
-        <p class="svg-caption">📸 Fotografa il <strong>retro</strong> su una superficie piana con buona illuminazione, inquadrando tutta la tessera</p>
+        <p class="svg-caption">📸 Fotografa il <strong>RETRO</strong> su una superficie piana con buona illuminazione, inquadrando tutta la tessera. Il codice fiscale è sul retro.</p>
       </details>
       <div class="upload-zone" id="upload-zone" onclick="document.getElementById('u-img').click()">
         <input type="file" id="u-img" accept="image/*" onchange="onFileSelect(this)">
@@ -455,7 +456,7 @@
         </div>
       </div>
       <button class="btn-prim mt-3" id="btn-ocr" onclick="doOcr(this)" disabled>
-        ESTRAI DATI DAL DOCUMENTO <span class="spin"></span>
+        Estrai dati dal retro della tessera <span class="spin"></span>
       </button>
       <div class="msg" id="msg-ocr" style="margin-top:10px"></div>
       <!-- Fallback: inserimento manuale se non si ha la tessera -->
@@ -1027,13 +1028,15 @@ function updateBadgeTipo() {
   if (!badge) return;
   if (tipoIscrizione === 'ECM') {
     badge.textContent = '✓ ECM';
-    badge.style.background = '#16a34a';
-    badge.style.color = '#fff';
+    badge.style.background = 'rgba(255,255,255,.15)';
+    badge.style.color = '#bfdbfe';
+    badge.style.border = '1px solid rgba(255,255,255,.2)';
     badge.style.display = 'inline-block';
   } else if (tipoIscrizione === 'NON_ECM') {
-    badge.textContent = 'NON ECM';
-    badge.style.background = '#f59e0b';
-    badge.style.color = '#fff';
+    badge.textContent = 'senza ECM';
+    badge.style.background = 'rgba(255,255,255,.12)';
+    badge.style.color = '#bfdbfe';
+    badge.style.border = '1px solid rgba(255,255,255,.2)';
     badge.style.display = 'inline-block';
   } else {
     badge.style.display = 'none';
