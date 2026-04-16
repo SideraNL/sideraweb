@@ -1169,6 +1169,131 @@ async function confirmOcr(btn) {
 // INSERIMENTO MANUALE (fallback OCR) — con validazione algoritmica server-side
 // ─────────────────────────────────────────────────────────────────────────────
 
+// ── Utilità Codice Fiscale ─────────────────────────────────────────────────
+
+const _CF_MONTHS  = { A:1,B:2,C:3,D:4,E:5,H:6,L:7,M:8,P:9,R:10,S:11,T:12 };
+const _CF_OMO_MAP = { L:0,M:1,N:2,P:3,Q:4,R:5,S:6,T:7,U:8,V:9 };
+const _CF_OMO_POS = [6,7,9,10,12,13,14];
+const _ACCENTS    = { À:'A',Á:'A',Â:'A',Ã:'A',Ä:'A',È:'E',É:'E',Ê:'E',Ë:'E',
+                      Ì:'I',Í:'I',Î:'I',Ï:'I',Ò:'O',Ó:'O',Ô:'O',Ö:'O',
+                      Ù:'U',Ú:'U',Û:'U',Ü:'U' };
+
+function _cfNormStr(s) {
+  return s.toUpperCase()
+    .replace(/[ÀÁÂÃÄ]/g,'A').replace(/[ÈÉÊË]/g,'E')
+    .replace(/[ÌÍÎÏ]/g,'I').replace(/[ÒÓÔÖ]/g,'O')
+    .replace(/[ÙÚÛÜ]/g,'U')
+    .replace(/[^A-Z]/g,'');
+}
+
+function _cfDecodeOmo(cf) {
+  let c = cf.toUpperCase().split(''), omo = false;
+  _CF_OMO_POS.forEach(i => {
+    if (c[i] !== undefined && _CF_OMO_MAP.hasOwnProperty(c[i])) {
+      c[i] = String(_CF_OMO_MAP[c[i]]); omo = true;
+    }
+  });
+  return { cf: c.join(''), isOmo: omo };
+}
+
+function _cfEncodeCognome(cognome) {
+  const s = _cfNormStr(cognome);
+  const cons = s.split('').filter(c => !'AEIOU'.includes(c)).join('');
+  const vow  = s.split('').filter(c =>  'AEIOU'.includes(c)).join('');
+  return (cons + vow + 'XXX').substring(0,3);
+}
+
+function _cfEncodeName(nome) {
+  const s = _cfNormStr(nome);
+  const cons = s.split('').filter(c => !'AEIOU'.includes(c)).join('');
+  const vow  = s.split('').filter(c =>  'AEIOU'.includes(c)).join('');
+  if (cons.length >= 4) return cons[0] + cons[2] + cons[3];
+  return (cons + vow + 'XXX').substring(0,3);
+}
+
+/**
+ * Valida client-side il CF rispetto ai dati inseriti.
+ * Restituisce { errors: [{field, msg}], isOmo }
+ */
+function cfValidateClientSide(cognome, nome, sesso, dataNascita, cf) {
+  const errors = [];
+  const { cf: cfN, isOmo } = _cfDecodeOmo(cf);
+
+  // ── Data e sesso ──────────────────────────────────────────────────────────
+  const monthLetter = cfN[8];
+  const cfMonth = _CF_MONTHS[monthLetter];
+  if (!cfMonth) {
+    errors.push({ field:'cf', msg:'Il codice fiscale ha un mese non valido (posizione 9: "' + monthLetter + '").' });
+    return { errors, isOmo };
+  }
+  const dayRaw  = parseInt(cfN.substring(9,11), 10);
+  const cfSesso = dayRaw > 40 ? 'F' : 'M';
+  const cfDay   = cfSesso === 'F' ? dayRaw - 40 : dayRaw;
+  const cfYear2 = parseInt(cfN.substring(6,8), 10);
+
+  if (sesso && sesso !== cfSesso) {
+    errors.push({ field:'sesso',
+      msg:'Sesso non corrisponde: il CF indica <strong>' + cfSesso + '</strong>, selezionato <strong>' + sesso + '</strong>.' });
+  }
+
+  const parts = (dataNascita || '').split('/');
+  if (parts.length === 3) {
+    const inDay = parseInt(parts[0],10), inMon = parseInt(parts[1],10), inYear = parseInt(parts[2],10);
+    const dateErrs = [];
+    if (inDay  !== cfDay)               dateErrs.push('giorno ' + cfDay);
+    if (inMon  !== cfMonth)             dateErrs.push('mese ' + cfMonth);
+    if ((inYear % 100) !== cfYear2)     dateErrs.push('anno ..' + String(cfYear2).padStart(2,'0'));
+    if (dateErrs.length) {
+      errors.push({ field:'dataNascita',
+        msg:'Data di nascita non corrisponde: dal CF si ricava <strong>' + dateErrs.join(', ') + '</strong>.' });
+    }
+  }
+
+  // ── Cognome ───────────────────────────────────────────────────────────────
+  const cfCog = cfN.substring(0,3);
+  const words = cognome.trim().split(/\s+/);
+  const encFull  = _cfEncodeCognome(words.join(''));
+
+  if (cfCog !== encFull) {
+    let msg = 'Cognome non corrisponde: il CF codifica <strong>' + cfCog + '</strong>';
+    // Dai un suggerimento in base al numero di parole
+    if (words.length > 1) {
+      msg += ' — stai già inserendo più parole, controlla l\'ortografia.';
+    } else {
+      msg += ' — se hai un cognome composto (es. <strong>DE ROSSI</strong>, <strong>DALL\'ACQUA</strong>) inserisci anche la seconda parte.';
+    }
+    errors.push({ field:'cognome', msg });
+  }
+
+  // ── Nome ──────────────────────────────────────────────────────────────────
+  const cfNomeCode = cfN.substring(3,6);
+  const nomeWords  = nome.trim().split(/\s+/);
+  const encNomeFull = _cfEncodeName(nomeWords.join(''));
+
+  if (cfNomeCode !== encNomeFull) {
+    let msg = 'Nome non corrisponde: il CF codifica <strong>' + cfNomeCode + '</strong>';
+    if (nomeWords.length === 1) {
+      // Calcola se con un secondo nome generico le cose migliorano
+      msg += ' — se hai un <strong>doppio nome</strong> (es. <strong>Mario Luigi</strong>), inseriscili entrambi: il CF li codifica insieme.';
+    } else {
+      msg += ' — controlla che tutti i nomi siano corretti.';
+    }
+    errors.push({ field:'nome', msg });
+  }
+
+  return { errors, isOmo };
+}
+
+// ── Highlights campo invalido / valido ────────────────────────────────────
+
+function _cfHighlightFields(invalidIds) {
+  ['m-cognome','m-nome','m-sesso','m-datanascita','m-cf'].forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.classList.toggle('is-invalid', invalidIds.has(id));
+  });
+}
+
 function showManualEntry() {
   // Reset form a ogni apertura (per non lasciare dati residui da tentativi precedenti)
   document.getElementById('m-cognome').value = '';
@@ -1176,6 +1301,7 @@ function showManualEntry() {
   document.getElementById('m-sesso').value = '';
   document.getElementById('m-datanascita').value = '';
   document.getElementById('m-cf').value = '';
+  _cfHighlightFields(new Set());  // rimuovi tutti gli highlight
   hideMsg('msg-manual');
   showStep('s-manual');
   // Focus sul primo campo
@@ -1209,6 +1335,26 @@ async function goFromManual(btn) {
     return;
   }
 
+  // ── Validazione client-side campo per campo ────────────────────────────
+  const cfCheck = cfValidateClientSide(cognome, nome, sesso, dataNascita, cf);
+  if (cfCheck.errors.length > 0) {
+    const fieldMap = { cognome:'m-cognome', nome:'m-nome', sesso:'m-sesso', dataNascita:'m-datanascita', cf:'m-cf' };
+    const invalid = new Set(cfCheck.errors.map(e => fieldMap[e.field]).filter(Boolean));
+    _cfHighlightFields(invalid);
+
+    let html = '<strong>⚠️ I dati inseriti non corrispondono al codice fiscale:</strong>'
+             + '<ul style="margin:8px 0 4px 18px;padding:0;line-height:1.7">';
+    cfCheck.errors.forEach(e => { html += '<li>' + e.msg + '</li>'; });
+    html += '</ul>';
+    if (cfCheck.isOmo) {
+      html += '<div style="margin-top:6px;font-size:12px;color:#64748b">'
+            + 'ℹ️ CF in forma omocodia: decodificato automaticamente per la verifica.</div>';
+    }
+    showMsg('msg-manual', html, 'err');
+    return;
+  }
+  _cfHighlightFields(new Set()); // tutto ok, rimuovi highlight
+
   spin(btn, true);
   try {
     const d = await gasPost('validateManual', { cognome, nome, sesso, dataNascita, cf });
@@ -1233,8 +1379,12 @@ async function goFromManual(btn) {
     document.getElementById('d-datanascita').textContent  = d.dataNascita  || '-';
     document.getElementById('d-luogonascita').textContent = d.luogoNascita || '-';
     document.getElementById('d-cf').textContent           = d.cf           || '-';
-    // Nascondi eventuali warning OCR-specifici dal run precedente
-    document.getElementById('msg-omo').style.display = 'none';
+    // Omocodia: mostra avviso anche per inserimento manuale
+    if (d.isOmocodia) {
+      showMsg('msg-omo', '<strong>ℹ️ CF omocodia</strong> — Il tuo Codice Fiscale è in forma omocodia e verrà registrato nella forma standard equivalente.', 'info');
+    } else {
+      document.getElementById('msg-omo').style.display = 'none';
+    }
     document.getElementById('msg-datafix').style.display = 'none';
     document.getElementById('ocr-ok').style.display   = 'block';
     document.getElementById('ocr-fail').style.display = 'none';
