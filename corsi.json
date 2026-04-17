@@ -1,26 +1,5 @@
 [
   {
-    "idPgt": "1331",
-    "luogo": "LECCE",
-    "data": "16/04/2026",
-    "titolo": "RE-THINK TRD - RETE DI ESPERIENZA, TERAPIA E HUMAN INNOVATION NELLA DEPRESSIONE RESISTENTE",
-    "ssId": "1NNGlbF6k4oEROSj-fGssOEn2VNHZJGfMakJ6WD2aog4",
-    "orari": [
-      {
-        "giorno": "1",
-        "data": "16/04/2026",
-        "ora_in": "09:30",
-        "ora_out": "13:45",
-        "pause": [
-          {
-            "in": "11:00",
-            "out": "11:15"
-          }
-        ]
-      }
-    ]
-  },
-  {
     "idPgt": "1324",
     "luogo": "VIGEVANO",
     "data": "22/04/2026",
@@ -202,7 +181,16 @@
     "luogo": "CAGLIARI",
     "data": "18/06/2026",
     "titolo": "RUOLO DELLE TERAPIE FAST LAI ED EVIDENZE DI REAL WORLD",
-    "ssId": "1T5znVetRc7kOfrCU6GJE3XwA5WcsF3-nu-0Pi280L2g"
+    "ssId": "1T5znVetRc7kOfrCU6GJE3XwA5WcsF3-nu-0Pi280L2g",
+    "orari": [
+      {
+        "giorno": "1",
+        "data": "18/06/2026",
+        "ora_in": "17:00",
+        "ora_out": "21:00",
+        "pause": []
+      }
+    ]
   },
   {
     "idPgt": "1338",
