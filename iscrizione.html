@@ -1689,9 +1689,14 @@ function goFromConsensiA() {
   if (!rec) {
     showMsg('msg-consensi-a', 'Indica se sei reclutato o meno.', 'err'); return;
   }
-  if (rec.value === 'RECLUTATO' && cfgSponsor.length > 0) {
+  if (rec.value === 'RECLUTATO') {
     const sp = (document.getElementById('f-sponsor').value || '').trim();
-    if (!sp) { showMsg('msg-consensi-a', 'Seleziona lo sponsor di riferimento.', 'err'); return; }
+    if (!sp) {
+      const msg = cfgSponsor.length === 0
+        ? 'Il corso non ha sponsor configurati: non puoi dichiarare RECLUTATO. Contatta direzione@sideraweb.it.'
+        : 'Seleziona lo sponsor di riferimento.';
+      showMsg('msg-consensi-a', msg, 'err'); return;
+    }
   }
   if (!document.getElementById('f-informativa-ecm').checked) {
     showMsg('msg-consensi-a', 'Accetta l\'informativa ECM.', 'err'); return;
@@ -1717,7 +1722,7 @@ function updateAvantiBtnA() {
     ok = false;
   } else if (rec.value === 'RECLUTATO') {
     const sponsor = (document.getElementById('f-sponsor').value || '').trim();
-    if (cfgSponsor.length > 0 && !sponsor) ok = false;
+    if (!sponsor) ok = false;
   }
   btn.disabled = !ok;
 }
@@ -1816,10 +1821,13 @@ async function doSubmit(btn) {
       showMsg('msg-submit', 'Devi indicare se sei reclutato o meno.', 'err'); return;
     }
     reclutamento = rec.value;
-    if (reclutamento === 'RECLUTATO' && cfgSponsor.length > 0) {
+    if (reclutamento === 'RECLUTATO') {
       const sponsor = (document.getElementById('f-sponsor').value || '').trim();
       if (!sponsor) {
-        showMsg('msg-submit', 'Se sei reclutato devi selezionare lo sponsor di riferimento.', 'err'); return;
+        const msg = cfgSponsor.length === 0
+          ? 'Il corso non ha sponsor configurati: non puoi dichiarare RECLUTATO. Contatta direzione@sideraweb.it.'
+          : 'Se sei reclutato devi selezionare lo sponsor di riferimento.';
+        showMsg('msg-submit', msg, 'err'); return;
       }
     }
   }
