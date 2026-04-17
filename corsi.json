@@ -226,13 +226,13 @@
   },
   {
     "idPgt": "1348",
-    "luogo": "WERBINAR",
+    "luogo": "WEBINAR",
     "data": "30/06/2026",
-    "titolo": "SCHIZOFRENIA: QUALITA’ DELLA VITA E CONTINUITA’ DELLA CURA",
+    "titolo": "NIGUARDA FOR MENTAL HEALTH",
     "orari": [
       {
         "giorno": "1",
-        "data": "26/06/2026",
+        "data": "30/06/2026",
         "ora_in": "14:00",
         "ora_out": "16:30",
         "pause": []
