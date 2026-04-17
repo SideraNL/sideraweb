@@ -646,9 +646,10 @@
         <input type="radio" name="f-reclutamento" id="f-non-reclutato" value="NON RECLUTATO" onchange="onReclutamentoChange()">
         <label for="f-non-reclutato">NON RECLUTATO</label>
       </div>
-      <div class="chk-row">
+      <div class="chk-row" id="row-f-reclutato">
         <input type="radio" name="f-reclutamento" id="f-reclutato" value="RECLUTATO" onchange="onReclutamentoChange()">
         <label for="f-reclutato">RECLUTATO</label>
+        <span id="hint-no-sponsor" style="display:none;font-size:.78rem;color:#c62828;margin-left:10px">⚠️ Opzione non disponibile: il corso non ha sponsor configurati</span>
       </div>
 
       <!-- Sponsor — visibile solo se RECLUTATO -->
@@ -840,6 +841,27 @@ async function gasPost(action, body) {
   return r.json();
 }
 
+// getEvent con retry automatico: se sponsor arriva vuoto ritenta fino a 2 volte
+// (protezione contro timeout/glitch temporanei del GAS). Se dopo 3 tentativi
+// è ancora vuoto, lascia passare: può essere un progetto legittimamente senza sponsor.
+async function getEventWithRetry(idpgt, maxRetries) {
+  const max = typeof maxRetries === 'number' ? maxRetries : 2;
+  let last = null;
+  for (let i = 0; i <= max; i++) {
+    const d = await gasPost('getEvent', { idpgt });
+    last = d;
+    if (!d.ok) return d;                                  // errore esplicito → esci
+    const spon = (d.sponsor || '').trim();
+    if (spon !== '') return d;                            // sponsor presente → ok
+    if (i < max) {
+      console.warn('[iscrizione] getEvent sponsor vuoto (tentativo ' + (i+1) + '/' + (max+1) + '), retry in 500ms...');
+      await new Promise(r => setTimeout(r, 500 + i * 500));
+    }
+  }
+  console.warn('[iscrizione] getEvent sponsor resta vuoto dopo ' + (max+1) + ' tentativi per idpgt=' + idpgt);
+  return last;
+}
+
 function richiedeAlbo(prof) {
   const p = (prof || '').toUpperCase();
   return p.includes('MEDICO') || p.includes('ODONTOIATRA') ||
@@ -869,7 +891,7 @@ async function init() {
   }
 
   try {
-    const d = await gasPost('getEvent', { idpgt: idPgt });
+    const d = await getEventWithRetry(idPgt);
     if (!d.ok) {
       document.getElementById('s-error-msg').textContent = d.error || 'Progetto non trovato.';
       showStep('s-error');
@@ -1643,6 +1665,21 @@ function goFromProf() {
       selSpon.appendChild(o);
     });
     document.getElementById('blk-no-sponsor').style.display = cfgSponsor.length === 0 ? 'block' : 'none';
+
+    // Se il corso non ha sponsor configurati, disabilita l'opzione RECLUTATO
+    const radioRec   = document.getElementById('f-reclutato');
+    const labelRec   = document.querySelector('label[for="f-reclutato"]');
+    const hintNoSpon = document.getElementById('hint-no-sponsor');
+    if (cfgSponsor.length === 0) {
+      radioRec.disabled = true;
+      radioRec.checked  = false;
+      if (labelRec) { labelRec.style.opacity = '0.5'; labelRec.style.textDecoration = 'line-through'; }
+      if (hintNoSpon) hintNoSpon.style.display = 'inline';
+    } else {
+      radioRec.disabled = false;
+      if (labelRec) { labelRec.style.opacity = ''; labelRec.style.textDecoration = ''; }
+      if (hintNoSpon) hintNoSpon.style.display = 'none';
+    }
   }
   document.getElementById('blk-sponsor-reclutato').style.display = 'none';
   const selSponReset = document.getElementById('f-sponsor');
