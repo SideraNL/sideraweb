@@ -1330,6 +1330,23 @@ function cfValidateClientSide(cognome, nome, sesso, dataNascita, cf) {
   return { errors, isOmo };
 }
 
+// ── Validazione finale cognome/nome vs CF (usata in goFromAna e doSubmit) ─
+// Re-verifica la coerenza dei campi anagrafici con il CF validato a monte.
+// Necessaria perché l'utente può modificare cognome/nome dopo la validazione CF iniziale.
+function _validateNameVsCF(cognome, nome) {
+  // Solo ECM ha CF. NON_ECM non richiede verifica.
+  if (tipoIscrizione !== 'ECM') return { ok: true, errors: [] };
+  const cf = (ocrData && ocrData.cf) ? String(ocrData.cf).toUpperCase() : '';
+  if (cf.length !== 16) {
+    return { ok: false, errors: [{ field:'cf', msg:'Codice fiscale mancante. Torna allo step precedente e reinserisci i dati.' }] };
+  }
+  // Passa sesso/data vuoti: cfValidateClientSide li ignora se falsy,
+  // così verifichiamo SOLO la coerenza di cognome e nome col CF.
+  const r = cfValidateClientSide(cognome, nome, '', '', cf);
+  const nameErrors = r.errors.filter(e => e.field === 'cognome' || e.field === 'nome');
+  return { ok: nameErrors.length === 0, errors: nameErrors };
+}
+
 // ── Highlights campo invalido / valido ────────────────────────────────────
 
 function _cfHighlightFields(invalidIds) {
@@ -1540,6 +1557,20 @@ async function goFromAna(btn) {
   }
   if (!cognome || !nome) {
     showMsg('msg-ana', 'Inserisci Cognome e Nome.', 'err'); return;
+  }
+  // Validazione coerenza cognome/nome vs CF (solo ECM).
+  // Blocca l'avanzamento se l'utente ha modificato i campi in modo incoerente col CF.
+  const cfChk = _validateNameVsCF(cognome, nome);
+  if (!cfChk.ok) {
+    let html = '<strong>⚠️ Cognome e Nome non corrispondono al Codice Fiscale:</strong>'
+             + '<ul style="margin:8px 0 4px 18px;padding:0;line-height:1.7">';
+    cfChk.errors.forEach(e => { html += '<li>' + e.msg + '</li>'; });
+    html += '</ul>'
+          + '<div style="font-size:12px;color:#64748b;margin-top:6px">'
+          + 'Correggi i campi per renderli coerenti con il CF <span style="font-family:monospace;font-weight:700">' + (ocrData.cf || '—') + '</span>, '
+          + 'oppure torna allo step precedente per modificare il CF.</div>';
+    showMsg('msg-ana', html, 'err');
+    return;
   }
   if (tipoIscrizione === 'NON_ECM') {
     spin(btn, true);
@@ -1875,6 +1906,21 @@ async function doSubmit(btn) {
   const nome = tipoIscrizione === 'ECM'
     ? document.getElementById('f-nome').value.trim()
     : document.getElementById('f2-nome').value.trim();
+
+  // Safety-net finale: validazione CF vs cognome/nome (anche se già verificata in goFromAna,
+  // serve a impedire bypass tramite devtools o ritorni a step precedenti senza re-validazione).
+  const cfChk = _validateNameVsCF(cognome, nome);
+  if (!cfChk.ok) {
+    let html = '<strong>⚠️ Cognome e Nome non corrispondono al Codice Fiscale:</strong>'
+             + '<ul style="margin:8px 0 4px 18px;padding:0;line-height:1.7">';
+    cfChk.errors.forEach(e => { html += '<li>' + e.msg + '</li>'; });
+    html += '</ul>'
+          + '<div style="font-size:12px;color:#64748b;margin-top:6px">'
+          + 'Torna allo step <strong>Anagrafica</strong> per correggere, oppure reinserisci il CF.</div>';
+    showMsg('msg-submit', html, 'err');
+    spin(btn, false);
+    return;
+  }
 
   const formData = {
     IDPGT: idPgt,
