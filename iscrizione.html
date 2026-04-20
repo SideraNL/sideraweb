@@ -535,7 +535,10 @@
         </div>
         <div class="col-6">
           <label class="f-label">Data di Nascita *</label>
-          <input type="text" id="m-datanascita" class="form-control" placeholder="gg/mm/aaaa" inputmode="numeric" maxlength="10">
+          <input type="text" id="m-datanascita" class="form-control" placeholder="gg/mm/aaaa"
+                 inputmode="numeric" maxlength="10"
+                 oninput="_autoFormatDataNascita(this)"
+                 onkeydown="_autoFormatDataNascitaKey(event)">
         </div>
         <div class="col-12">
           <label class="f-label">Codice Fiscale *</label>
@@ -1446,6 +1449,33 @@ function _cfNoBtn() {
     showMsg('msg-manual',
       '⬅️ Il codice fiscale non corrisponde ai dati inseriti. Torna indietro, verifica i dati e riprova.',
       'err');
+  }
+}
+
+// Auto-format della data di nascita: accetta solo cifre e inserisce "/" dopo
+// giorno e mese (gg/mm/aaaa). Gestisce anche il backspace in modo naturale:
+// se il cursore è subito dopo uno "/", cancella la cifra che lo precede.
+function _autoFormatDataNascita(el) {
+  const digits = (el.value || '').replace(/\D/g, '').slice(0, 8);
+  let out = digits;
+  if (digits.length >= 5)      out = digits.slice(0, 2) + '/' + digits.slice(2, 4) + '/' + digits.slice(4);
+  else if (digits.length >= 3) out = digits.slice(0, 2) + '/' + digits.slice(2);
+  el.value = out;
+}
+
+function _autoFormatDataNascitaKey(ev) {
+  // Se l'utente preme Backspace e il carattere precedente è "/", togliamo anche
+  // la cifra prima dello slash per evitare che resti bloccato sul separatore.
+  if (ev.key !== 'Backspace') return;
+  const el = ev.target;
+  const pos = el.selectionStart;
+  if (pos !== el.selectionEnd) return; // c'è una selezione: lascia fare al default
+  if (pos > 0 && el.value.charAt(pos - 1) === '/') {
+    ev.preventDefault();
+    el.value = el.value.slice(0, pos - 2) + el.value.slice(pos);
+    _autoFormatDataNascita(el);
+    const newPos = Math.max(0, pos - 2);
+    el.setSelectionRange(newPos, newPos);
   }
 }
 
