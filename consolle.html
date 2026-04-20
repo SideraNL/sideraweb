@@ -184,7 +184,20 @@ window.onload = async () => {
   loading(true);
   try {
     META = await gasGet({action:'info', corso});
-    if (!META.ok) { loading(false); document.querySelector('.main-container').innerHTML = '<h4 class="text-danger text-center mt-4">Corso non trovato</h4>'; return; }
+    if (!META.ok) {
+      loading(false);
+      if (META.chiuso) {
+        document.querySelector('.main-container').innerHTML =
+          '<div style="max-width:560px;margin:60px auto;padding:40px 30px;background:#fff;border-radius:10px;box-shadow:0 2px 12px rgba(0,0,0,.08);text-align:center">' +
+          '<div style="font-size:48px;margin-bottom:12px">⏱️</div>' +
+          '<h3 style="color:#b91c1c;margin:0 0 10px 0">Termini di risposta scaduti</h3>' +
+          '<p style="color:#475569;margin:0">L\'accesso al modulo per il corso <b>' + corso + '</b> non è più disponibile.</p>' +
+          '</div>';
+        return;
+      }
+      document.querySelector('.main-container').innerHTML = '<h4 class="text-danger text-center mt-4">Corso non trovato</h4>';
+      return;
+    }
     document.getElementById('d-corso').innerText = corso;
     document.getElementById('d-titolo').innerText = META.titolo;
     document.getElementById('d-data').innerText = META.dataIN + (META.dataFIN && META.dataFIN !== META.dataIN ? ' - ' + META.dataFIN : '');
