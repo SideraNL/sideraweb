@@ -367,7 +367,7 @@
     <img src="img/sidera_logo.jpg" alt="Sidera" style="border-radius:6px" onerror="this.style.display='none'">
     <div style="flex:1">
       <div class="title">SideraDA10</div>
-      <div class="ver">Scanner Presenze ECM — v2.4</div>
+      <div class="ver">Scanner Presenze ECM — v2.5</div>
     </div>
     <button class="logout-btn" onclick="logout()" title="Esci" id="btn-logout" style="display:none">
       <span class="material-icons">logout</span>
@@ -1086,18 +1086,37 @@ function chiudiSegnalazione() {
 function inviaSegnalazione() {
   const testo = (document.getElementById('segnala-text').value || '').trim();
   if (!testo) { toast('Inserisci il testo della segnalazione', 'warning'); return; }
+  if (!authPin) { mostraLogin(); return; }
   const p = paxList.find(x => x.cf === segnalazioneCf);
   const nome = p ? p.cognome + ' ' + p.nome : segnalazioneCf;
-  const subject = 'Segnalazione partecipante — Progetto ' + currentProject;
-  const body = 'PROGETTO: ' + currentProject + '\n' +
-               'PARTECIPANTE: ' + nome + '\n' +
-               'CF: ' + segnalazioneCf + '\n\n' +
-               'SEGNALAZIONE:\n' + testo;
-  const a = document.createElement('a');
-  a.href = 'mailto:n.lapenna@tiscali.it?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body);
-  a.click();
-  chiudiSegnalazione();
-  toast('Email aperta nell\'app Mail', 'success');
+
+  const btn = document.querySelector('#segnala-overlay .btn-primary');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="material-icons" style="font-size:16px">hourglass_empty</span> Invio…';
+
+  fetch(GAS_ENDPOINT, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain' },
+    body: JSON.stringify({ action: 'segnala', cf: segnalazioneCf, idPgt: currentProject, nome: nome, testo: testo, pin: authPin }),
+    redirect: 'follow'
+  })
+  .then(r => r.json())
+  .then(result => {
+    btn.disabled = false;
+    btn.innerHTML = '<span class="material-icons" style="font-size:16px">send</span> Invia';
+    if (_handleAuthFail(result)) return;
+    if (result.ok) {
+      chiudiSegnalazione();
+      toast('Segnalazione inviata', 'success');
+    } else {
+      toast('Errore: ' + (result.error || 'sconosciuto'), 'error');
+    }
+  })
+  .catch(err => {
+    btn.disabled = false;
+    btn.innerHTML = '<span class="material-icons" style="font-size:16px">send</span> Invia';
+    toast('Errore di rete: ' + err.message, 'error');
+  });
 }
 
 function selezionaPax(cf) {
