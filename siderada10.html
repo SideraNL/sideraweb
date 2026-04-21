@@ -240,7 +240,13 @@
       text-align: center; font-size: 12px; color: var(--text2);
       padding: 4px 0 8px;
     }
-
+    .pax-pct {
+      padding: 2px 9px; border-radius: 10px;
+      font-size: 11px; font-weight: 700; color: #fff; flex-shrink: 0;
+    }
+    .pax-pct.ok  { background: var(--success); }
+    .pax-pct.no  { background: var(--error); }
+    .pax-pct.abs { background: #bdbdbd; }
 
     /* --- Login overlay --- */
     .login-overlay {
@@ -332,7 +338,7 @@
     <img src="img/sidera_logo.jpg" alt="Sidera" style="border-radius:6px" onerror="this.style.display='none'">
     <div style="flex:1">
       <div class="title">SideraDA10</div>
-      <div class="ver">Scanner Presenze ECM — v2.0</div>
+      <div class="ver">Scanner Presenze ECM — v2.1</div>
     </div>
     <button class="logout-btn" onclick="logout()" title="Esci" id="btn-logout" style="display:none">
       <span class="material-icons">logout</span>
@@ -464,6 +470,7 @@ let scannerAttivo  = false;
 let logEntries     = [];
 let authPin        = null;    // PIN di sessione (null = non autenticato)
 let inactivityTimer = null;
+let scansCache     = null;    // null=non caricato, []=vuoto, [...]= caricato
 
 // --- AUTH / LOGIN ---
 
@@ -718,6 +725,7 @@ function resetProgetto() {
   currentSsId = null;
   paxList = [];
   paxLoaded = false;
+  scansCache = null;
   sessionStorage.removeItem('siderada10_progetto');
   sessionStorage.removeItem('siderada10_ssid');
   stopScanner();
@@ -969,9 +977,21 @@ function apriPax() {
   stopScanner();
   nascondiDecision();
   document.getElementById('pax-search').value = '';
-  filtraPax();
   document.getElementById('pax-overlay').classList.add('active');
   setTimeout(() => document.getElementById('pax-search').focus(), 200);
+
+  if (scansCache !== null) { filtraPax(); return; }
+
+  const url = GAS_ENDPOINT + '?action=scans&idPgt=' + encodeURIComponent(currentProject) +
+              '&pin=' + encodeURIComponent(authPin);
+  fetch(url, { redirect: 'follow' })
+    .then(r => r.json())
+    .then(result => {
+      if (_handleAuthFail(result)) return;
+      scansCache = result.ok ? (result.scans || []) : [];
+      filtraPax();
+    })
+    .catch(() => { scansCache = []; filtraPax(); });
 }
 
 function chiudiPax() {
@@ -989,15 +1009,26 @@ function filtraPax() {
     list.innerHTML = '<div style="text-align:center;color:var(--text2);padding:20px;font-size:14px">Nessun risultato</div>';
     return;
   }
-  list.innerHTML = filtered.map(p =>
-    '<div class="pax-item" onclick="selezionaPax(\'' + p.cf + '\')">' +
+  const pctMap = scansCache !== null ? _calcolaPresenzePax(scansCache) : null;
+  list.innerHTML = filtered.map(p => {
+    let badge = '';
+    if (pctMap) {
+      const pct = pctMap[p.cf];
+      if (pct === null) {
+        badge = '<span class="pax-pct abs">0%</span>';
+      } else {
+        badge = '<span class="pax-pct ' + (pct >= 90 ? 'ok' : 'no') + '">' + pct + '%</span>';
+      }
+    }
+    return '<div class="pax-item" onclick="selezionaPax(\'' + p.cf + '\')">' +
       '<div class="info">' +
         '<div class="name">' + p.cognome + ' ' + p.nome + '</div>' +
         '<div class="cf">' + p.cf + '</div>' +
       '</div>' +
+      badge +
       '<span class="material-icons sel-icon">arrow_forward</span>' +
-    '</div>'
-  ).join('');
+    '</div>';
+  }).join('');
 }
 
 function selezionaPax(cf) {
@@ -1026,6 +1057,74 @@ function _todayStr() {
   return String(d.getDate()).padStart(2,'0') + '/' +
          String(d.getMonth()+1).padStart(2,'0') + '/' +
          d.getFullYear();
+}
+
+function _parseHhmm(s) {
+  if (!s) return 0;
+  const p = s.split(':');
+  return parseInt(p[0]) * 60 + (parseInt(p[1]) || 0);
+}
+
+function _nowMin() {
+  const d = new Date();
+  return d.getHours() * 60 + d.getMinutes();
+}
+
+function _calcolaPresenzePax(scans) {
+  if (!currentOrari.length) return {};
+  const today = _todayStr();
+  const nowMin = _nowMin();
+
+  const dayInfo = {};
+  let plannedTotal = 0;
+  currentOrari.forEach(g => {
+    const oIn = _parseHhmm(g.ora_in), oOut = _parseHhmm(g.ora_out);
+    let pauseMins = 0;
+    (g.pause || []).forEach(p => { pauseMins += _parseHhmm(p.out) - _parseHhmm(p.in); });
+    dayInfo[g.data] = { oIn, oOut, pause: g.pause || [], planned: Math.max(0, oOut - oIn - pauseMins) };
+    plannedTotal += dayInfo[g.data].planned;
+  });
+  if (plannedTotal === 0) return {};
+
+  const byDay = {};
+  scans.forEach(s => {
+    const parts = s.dataOra.split(' ');
+    if (parts.length < 2) return;
+    const dateStr = parts[0], timeStr = parts[1];
+    if (!dayInfo[dateStr]) return;
+    if (!byDay[s.cf]) byDay[s.cf] = {};
+    if (!byDay[s.cf][dateStr]) byDay[s.cf][dateStr] = [];
+    byDay[s.cf][dateStr].push({ tipo: s.tipo, time: _parseHhmm(timeStr) });
+  });
+
+  const result = {};
+  paxList.forEach(p => {
+    const days = byDay[p.cf] || {};
+    if (!Object.keys(days).length) { result[p.cf] = null; return; }
+    let totalNet = 0;
+    Object.keys(days).forEach(dateStr => {
+      const di = dayInfo[dateStr];
+      if (!di) return;
+      const ins  = days[dateStr].filter(s => s.tipo === 'IN').sort((a,b) => a.time - b.time);
+      const outs = days[dateStr].filter(s => s.tipo === 'OUT').sort((a,b) => a.time - b.time);
+      if (!ins.length) return;
+      const isToday = dateStr === today;
+      const realOut = (isToday && ins.length > outs.length) ? nowMin
+        : (outs.length ? outs[outs.length - 1].time : di.oOut);
+      const ecmIn = Math.max(ins[0].time, di.oIn);
+      const ecmOut = Math.min(realOut, di.oOut);
+      if (ecmOut <= ecmIn) return;
+      let pov = 0;
+      (di.pause || []).forEach(pa => {
+        const pIn = _parseHhmm(pa['in']), pOut = _parseHhmm(pa.out);
+        const ovS = Math.max(ecmIn, pIn), ovE = Math.min(ecmOut, pOut);
+        if (ovE > ovS) pov += ovE - ovS;
+      });
+      totalNet += Math.max(0, (ecmOut - ecmIn) - pov);
+    });
+    result[p.cf] = Math.min(100, Math.round((totalNet / plannedTotal) * 100));
+  });
+  return result;
 }
 
 // --- TOAST ---
