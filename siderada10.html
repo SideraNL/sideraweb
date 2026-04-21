@@ -241,6 +241,41 @@
     .pax-pct.ok  { background: var(--success); }
     .pax-pct.no  { background: var(--error); }
     .pax-pct.abs { background: #bdbdbd; }
+    .pax-mail {
+      background: none; border: none; cursor: pointer; flex-shrink: 0;
+      color: #0891b2; padding: 6px 4px; display: flex; align-items: center;
+    }
+    .pax-mail:active { opacity: .5; }
+    .pax-mail .material-icons { font-size: 22px; }
+
+    /* --- Segnalazione overlay --- */
+    .segnala-overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,.55); z-index: 200;
+      justify-content: center; align-items: center;
+      padding: 20px;
+    }
+    .segnala-overlay.active { display: flex; }
+    .segnala-panel {
+      width: 100%; max-width: 420px;
+      background: var(--card); border-radius: var(--radius);
+      box-shadow: 0 8px 32px rgba(0,0,0,.25);
+      padding: 20px; display: flex; flex-direction: column; gap: 12px;
+    }
+    .segnala-nome {
+      font-size: 13px; font-weight: 600; color: var(--primary);
+      background: #eff6ff; padding: 8px 12px; border-radius: 6px;
+    }
+    .segnala-text {
+      width: 100%; min-height: 90px; padding: 10px 12px;
+      border: 2px solid #e0e0e0; border-radius: 8px;
+      font-size: 15px; font-family: inherit; resize: vertical;
+    }
+    .segnala-text:focus { outline: none; border-color: var(--primary); }
+    .segnala-footer {
+      display: flex; gap: 10px;
+    }
+    .segnala-footer .btn { flex: 1; }
 
     /* --- Login overlay --- */
     .login-overlay {
@@ -332,7 +367,7 @@
     <img src="img/sidera_logo.jpg" alt="Sidera" style="border-radius:6px" onerror="this.style.display='none'">
     <div style="flex:1">
       <div class="title">SideraDA10</div>
-      <div class="ver">Scanner Presenze ECM — v2.3</div>
+      <div class="ver">Scanner Presenze ECM — v2.4</div>
     </div>
     <button class="logout-btn" onclick="logout()" title="Esci" id="btn-logout" style="display:none">
       <span class="material-icons">logout</span>
@@ -438,6 +473,23 @@
     </div>
   </div>
 
+  <!-- Segnalazione overlay -->
+  <div class="segnala-overlay" id="segnala-overlay" onclick="if(event.target===this)chiudiSegnalazione()">
+    <div class="segnala-panel">
+      <div class="card-title" style="margin:0">
+        <span class="material-icons" style="font-size:18px;vertical-align:middle;margin-right:6px">mail_outline</span>Segnalazione
+      </div>
+      <div class="segnala-nome" id="segnala-nome"></div>
+      <textarea class="segnala-text" id="segnala-text" placeholder="Descrivi la segnalazione…"></textarea>
+      <div class="segnala-footer">
+        <button class="btn btn-outline" onclick="chiudiSegnalazione()">Annulla</button>
+        <button class="btn btn-primary" onclick="inviaSegnalazione()">
+          <span class="material-icons" style="font-size:16px">send</span> Invia
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- Toast -->
   <div class="toast" id="toast"></div>
 
@@ -463,6 +515,7 @@ let logEntries     = [];
 let authPin        = null;    // PIN di sessione (null = non autenticato)
 let inactivityTimer = null;
 let scansCache     = null;    // null=non caricato, []=vuoto, [...]= caricato
+let segnalazioneCf = null;
 
 // --- AUTH / LOGIN ---
 
@@ -1002,6 +1055,9 @@ function renderPaxList(pctMap) {
       }
     }
     return '<div class="pax-item" onclick="selezionaPax(\'' + p.cf + '\')">' +
+      '<button class="pax-mail" onclick="event.stopPropagation();apriSegnalazione(\'' + p.cf + '\')">' +
+        '<span class="material-icons">mail_outline</span>' +
+      '</button>' +
       '<div class="info">' +
         '<div class="name">' + p.cognome + ' ' + p.nome + '</div>' +
         '<div class="cf">' + p.cf + '</div>' +
@@ -1010,6 +1066,38 @@ function renderPaxList(pctMap) {
       '<span class="material-icons sel-icon">arrow_forward</span>' +
     '</div>';
   }).join('');
+}
+
+function apriSegnalazione(cf) {
+  const p = paxList.find(x => x.cf === cf);
+  if (!p) return;
+  segnalazioneCf = cf;
+  document.getElementById('segnala-nome').textContent = p.cognome + ' ' + p.nome + ' — CF: ' + cf + ' — Progetto: ' + currentProject;
+  document.getElementById('segnala-text').value = '';
+  document.getElementById('segnala-overlay').classList.add('active');
+  setTimeout(() => document.getElementById('segnala-text').focus(), 200);
+}
+
+function chiudiSegnalazione() {
+  document.getElementById('segnala-overlay').classList.remove('active');
+  segnalazioneCf = null;
+}
+
+function inviaSegnalazione() {
+  const testo = (document.getElementById('segnala-text').value || '').trim();
+  if (!testo) { toast('Inserisci il testo della segnalazione', 'warning'); return; }
+  const p = paxList.find(x => x.cf === segnalazioneCf);
+  const nome = p ? p.cognome + ' ' + p.nome : segnalazioneCf;
+  const subject = 'Segnalazione partecipante — Progetto ' + currentProject;
+  const body = 'PROGETTO: ' + currentProject + '\n' +
+               'PARTECIPANTE: ' + nome + '\n' +
+               'CF: ' + segnalazioneCf + '\n\n' +
+               'SEGNALAZIONE:\n' + testo;
+  const a = document.createElement('a');
+  a.href = 'mailto:n.lapenna@tiscali.it?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body);
+  a.click();
+  chiudiSegnalazione();
+  toast('Email aperta nell\'app Mail', 'success');
 }
 
 function selezionaPax(cf) {
