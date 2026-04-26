@@ -205,12 +205,13 @@
     <div class="icon" style="color:#16a34a">✓</div>
     <h2>Dati inviati con successo</h2>
     <p>
-      Il contratto è stato generato e inviato al servizio di firma elettronica
-      <b>iLovePDF</b>. A breve riceverà un'email da iLovePDF con il pulsante
-      per apporre la sua firma sul documento.
+      I dati sono stati ricevuti correttamente. Sidera elaborerà il contratto
+      e Le invierà a breve un'email dal servizio di firma elettronica
+      <b>iLovePDF</b>, con il pulsante per apporre la Sua firma sul documento.
     </p>
     <p style="margin-top:14px;font-size:12px;color:#94a3b8">
-      Se non riceve l'email entro pochi minuti, controlli anche la cartella spam.
+      In genere arriva entro pochi minuti, controlli anche la cartella spam.
+      Se non la riceve entro qualche ora, scriva a <b>sidera@sideraweb.com</b>.
     </p>
   </div>
 
@@ -826,8 +827,9 @@ async function submitForm() {
   btn.textContent = '⏳ Invio in corso…';
 
   try {
-    // Strada B Fase 2A: prefill funziona (lettura GAS), submit ancora WIP — Fase 2B.
-    // L'utente vede un avviso esplicito invece che un errore generico.
+    // Strada B: il submit va al GAS Web App pubblico, che scrive sul Sheet
+    // Pipeline. MedFIND polla quel Sheet (ogni 5 min) e processa: genera PDF,
+    // mergeia CDI, manda a iLovePDF. Il signer riceverà l'email iLovePDF.
     const res = await fetch(GAS_API_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'text/plain;charset=utf-8' },  // GAS doPost evita preflight CORS con text/plain
@@ -842,7 +844,12 @@ async function submitForm() {
     });
     const data = await res.json();
     if (!data.ok) {
-      alert('⚠ Sistema in aggiornamento (Fase 2B): ' + (data.error || 'submit endpoint not yet implemented') + '\n\nIl contratto è stato pre-compilato correttamente, ma l\'invio finale non è ancora attivo. Riproveremo entro pochi giorni.');
+      const msg = data.error || 'errore sconosciuto';
+      if (data.already_submitted) {
+        showState('success-screen');
+        return;
+      }
+      alert('Errore invio: ' + msg);
       btn.disabled = false;
       btn.textContent = '📨 Invia PDF per la firma';
       return;
