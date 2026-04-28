@@ -233,12 +233,6 @@
     ]
   },
   {
-    "idPgt": "1347",
-    "luogo": "MILANO",
-    "data": "01/09/2026",
-    "titolo": ""
-  },
-  {
     "idPgt": "1330",
     "luogo": "WEBINAR",
     "data": "21/09/2026",
@@ -258,6 +252,12 @@
         "pause": []
       }
     ]
+  },
+  {
+    "idPgt": "1347",
+    "luogo": "MILANO",
+    "data": "24/09/2026",
+    "titolo": ""
   },
   {
     "idPgt": "1344",
