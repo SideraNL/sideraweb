@@ -210,6 +210,16 @@
       display: flex; align-items: center; gap: 10px;
     }
     .pax-header .card-title { margin: 0; flex: 1; }
+    .pax-refresh {
+      background: none; border: none; cursor: pointer;
+      color: var(--primary); padding: 4px; display: flex; align-items: center;
+    }
+    .pax-refresh:disabled { opacity: 0.4; cursor: default; }
+    .pax-refresh.spinning .material-icons { animation: pax-spin 0.8s linear infinite; }
+    @keyframes pax-spin {
+      from { transform: rotate(0deg); }
+      to   { transform: rotate(360deg); }
+    }
     .pax-close {
       background: none; border: none; cursor: pointer;
       font-size: 24px; color: var(--text2); padding: 0;
@@ -464,6 +474,9 @@
     <div class="pax-panel">
       <div class="pax-header">
         <div class="card-title">Partecipanti iscritti</div>
+        <button class="pax-refresh" id="pax-refresh-btn" onclick="aggiornaPax()" title="Aggiorna percentuali">
+          <span class="material-icons">refresh</span>
+        </button>
         <button class="pax-close" onclick="chiudiPax()">
           <span class="material-icons">close</span>
         </button>
@@ -495,7 +508,7 @@
 
 <script>
 /* ========================================================
-   SideraDA10 — Scanner Presenze ECM v1.1
+   SideraDA10 — Scanner Presenze ECM v1.10
    GitHub Pages + GAS endpoint
    PAX: verifica CF contro lista iscritti
    ======================================================== */
@@ -647,6 +660,12 @@ function avviaTimerInattivita() {
     .then(r => r.json())
     .then(eventi => {
       eventiData = eventi;
+      // Fix race con autoRestoreProgetto: se il progetto è stato impostato
+      // prima che corsi.json arrivasse, popola retroattivamente currentOrari
+      if (currentProject && !currentOrari.length) {
+        const ev = eventiData.find(e => e.idPgt === currentProject);
+        if (ev && ev.orari) currentOrari = ev.orari;
+      }
       const oggi = new Date(); oggi.setHours(0,0,0,0);
       // Solo eventi futuri con ssId
       const prossimi = eventi.filter(e => {
@@ -1023,17 +1042,34 @@ function apriPax() {
   nascondiDecision();
   document.getElementById('pax-overlay').classList.add('active');
   renderPaxList(null);  // mostra subito la lista senza badge
+  caricaScansECalcola().catch(() => renderPaxList(null));
+}
 
+function caricaScansECalcola() {
+  if (!currentProject || !authPin) return Promise.resolve();
+  // Ri-popola orari se non disponibili (fix race con corsi.json al boot)
+  if (!currentOrari.length && eventiData.length) {
+    const ev = eventiData.find(e => e.idPgt === currentProject);
+    if (ev && ev.orari) currentOrari = ev.orari;
+  }
   const url = GAS_ENDPOINT + '?action=scans&idPgt=' + encodeURIComponent(currentProject) +
               '&pin=' + encodeURIComponent(authPin);
-  fetch(url, { redirect: 'follow' })
+  return fetch(url, { redirect: 'follow' })
     .then(r => r.json())
     .then(result => {
       if (_handleAuthFail(result)) return;
       scansCache = result.ok ? (result.scans || []) : [];
       renderPaxList(_calcolaPresenzePax(scansCache));
-    })
-    .catch(() => renderPaxList(null));
+    });
+}
+
+function aggiornaPax() {
+  const btn = document.getElementById('pax-refresh-btn');
+  if (btn) { btn.classList.add('spinning'); btn.disabled = true; }
+  caricaScansECalcola()
+    .then(() => toast('Percentuali aggiornate', 'success'))
+    .catch(() => toast('Errore aggiornamento', 'error'))
+    .finally(() => { if (btn) { btn.classList.remove('spinning'); btn.disabled = false; } });
 }
 
 function chiudiPax() {
