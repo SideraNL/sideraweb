@@ -1,30 +1,5 @@
 [
   {
-    "idPgt": "1335",
-    "luogo": "SIENA",
-    "data": "06/05/2026",
-    "titolo": "RE-THINK TRD - RETE DI ESPERIENZA, TERAPIA E HUMAN INNOVATION NELLA DEPRESSIONE RESISTENTE",
-    "ssId": "1KIOTUIGBZNC4pKSN-mTwV7ajfbD7Ea_BGjV5Dm-OEAc",
-    "orari": [
-      {
-        "giorno": "1",
-        "data": "06/05/2026",
-        "ora_in": "09:30",
-        "ora_out": "16:00",
-        "pause": [
-          {
-            "in": "11:00",
-            "out": "11:30"
-          },
-          {
-            "in": "13:00",
-            "out": "14:00"
-          }
-        ]
-      }
-    ]
-  },
-  {
     "idPgt": "1325",
     "luogo": "MILANO",
     "data": "21/05/2026",
@@ -281,6 +256,12 @@
     ]
   },
   {
+    "idPgt": "1341",
+    "luogo": "COCCAGLIO",
+    "data": "20/10/2026",
+    "titolo": "DEPRESSIONE, DOLORE E DISTURBI CORRELATI: PERCORSI CLINICI CONDIVISI TRA PSICHIATRIA E NEUROLOGIA"
+  },
+  {
     "idPgt": "1345",
     "luogo": "MILANO",
     "data": "18/11/2026",
@@ -291,11 +272,5 @@
     "luogo": "L'AQUILA",
     "data": "01/12/2026",
     "titolo": "NUOVE FRONTIERE NELLA GESTIONE DELLA MALATTIA DI CHRON E DELLA COLITE ULCEROSA"
-  },
-  {
-    "idPgt": "1341",
-    "luogo": "",
-    "data": "01/12/2026",
-    "titolo": ""
   }
 ]
