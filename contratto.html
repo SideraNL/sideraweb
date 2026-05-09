@@ -179,6 +179,103 @@
   .state p { color: #475569; font-size: 14px; margin: 0; line-height: 1.6; }
 
   .footer { text-align: center; color: #94a3b8; font-size: 11px; margin-top: 30px; line-height: 1.6; }
+
+  /* v127.2 — Card riassunto Azienda + Modale bivio Pubblica/Privata */
+  .azienda-summary {
+    border: 2px solid #1a56db; border-radius: 8px; padding: 14px 18px; cursor: pointer;
+    background: #fff; transition: background .15s; min-height: 60px;
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  }
+  .azienda-summary:hover { background: #eff6ff; }
+  .azienda-summary-empty {
+    border: 2px dashed #cbd5e1; border-radius: 8px; padding: 18px; cursor: pointer;
+    background: #f8fafc; text-align: center; color: #64748b; transition: all .15s;
+  }
+  .azienda-summary-empty:hover { border-color: #1a56db; color: #1a56db; background: #eff6ff; }
+  .azienda-summary-info { flex: 1; }
+  .azienda-summary-info .name { font-weight: 700; color: #1e3a6e; font-size: 15px; }
+  .azienda-summary-info .meta { color: #64748b; font-size: 12px; margin-top: 4px; }
+  .azienda-summary-info .pec { font-family: monospace; font-size: 12px; color: #1a56db; margin-top: 4px; word-break: break-all; }
+  .azienda-summary .edit-btn {
+    background: #1a56db; color: #fff; border: none; border-radius: 6px;
+    padding: 6px 12px; font-size: 12px; font-weight: 600; cursor: pointer; white-space: nowrap;
+  }
+
+  .cm-overlay {
+    position: fixed; inset: 0; background: rgba(15,23,42,.55); z-index: 999;
+    display: flex; align-items: center; justify-content: center; padding: 20px;
+    animation: cmFade .15s ease-out;
+  }
+  @keyframes cmFade { from { opacity: 0 } to { opacity: 1 } }
+  .cm-modal {
+    background: #fff; border-radius: 12px; max-width: 640px; width: 100%;
+    max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,.3);
+    position: relative;
+  }
+  .cm-header {
+    background: linear-gradient(135deg,#1a56db 0%,#1e40af 100%); color: #fff;
+    padding: 16px 24px; border-radius: 12px 12px 0 0;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .cm-header h3 { margin: 0; font-size: 17px; font-weight: 700; }
+  .cm-close {
+    background: rgba(255,255,255,.2); border: none; color: #fff; width: 28px; height: 28px;
+    border-radius: 50%; cursor: pointer; font-size: 18px; line-height: 1;
+  }
+  .cm-close:hover { background: rgba(255,255,255,.35); }
+  .cm-body { padding: 22px 24px; }
+  .cm-step { display: none; }
+  .cm-step.active { display: block; }
+  .cm-choice {
+    display: block; width: 100%; padding: 18px; margin-bottom: 12px;
+    border: 2px solid #cbd5e1; border-radius: 10px; background: #fff;
+    cursor: pointer; text-align: left; transition: all .15s;
+  }
+  .cm-choice:hover { border-color: #1a56db; background: #eff6ff; transform: translateY(-1px); }
+  .cm-choice .icon { font-size: 32px; display: block; margin-bottom: 8px; }
+  .cm-choice .titolo { font-weight: 700; color: #1e3a6e; font-size: 15px; display: block; }
+  .cm-choice .desc { color: #64748b; font-size: 12px; margin-top: 6px; display: block; line-height: 1.5; }
+
+  .cm-back {
+    background: transparent; border: 1px solid #cbd5e1; color: #475569;
+    padding: 8px 14px; border-radius: 6px; cursor: pointer; font-size: 13px;
+  }
+  .cm-back:hover { background: #f1f5f9; }
+  .cm-primary {
+    background: #1a56db; color: #fff; border: none;
+    padding: 9px 18px; border-radius: 6px; cursor: pointer;
+    font-size: 14px; font-weight: 700;
+  }
+  .cm-primary:hover { background: #1e40af; }
+  .cm-primary:disabled { background: #cbd5e1; cursor: not-allowed; }
+  .cm-actions { display: flex; justify-content: space-between; margin-top: 18px; gap: 8px; }
+
+  .cm-input, .cm-select {
+    width: 100%; padding: 10px 12px; border: 2px solid #cbd5e1; border-radius: 6px;
+    font-size: 14px; box-sizing: border-box; margin-top: 4px;
+  }
+  .cm-input:focus, .cm-select:focus { border-color: #1a56db; outline: none; box-shadow: 0 0 0 3px rgba(26,86,219,.12); }
+  .cm-label { display: block; margin-top: 12px; font-weight: 600; font-size: 13px; color: #334155; }
+  .cm-label .req { color: #dc2626; }
+  .cm-readonly { background: #f1f5f9; color: #475569; padding: 8px 12px; border-radius: 6px; font-size: 13px; margin-top: 4px; }
+
+  .cm-section-title { font-weight: 700; color: #1e3a6e; font-size: 13px; text-transform: uppercase; letter-spacing: .5px; margin: 14px 0 8px; }
+  .cm-strut-list { max-height: 280px; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 6px; }
+  .cm-strut-item {
+    padding: 10px 14px; border-bottom: 1px solid #f1f5f9; cursor: pointer; font-size: 13px;
+    display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  }
+  .cm-strut-item:last-child { border-bottom: none; }
+  .cm-strut-item:hover { background: #eff6ff; }
+  .cm-strut-item .nome { font-weight: 600; color: #1e3a6e; flex: 1; }
+  .cm-strut-item .tipo { font-size: 10px; background: #e0e7ff; color: #3730a3; padding: 2px 7px; border-radius: 10px; font-weight: 700; white-space: nowrap; }
+  .cm-strut-empty { padding: 16px; text-align: center; color: #94a3b8; font-style: italic; font-size: 13px; }
+  .cm-altro-btn {
+    width: 100%; margin-top: 10px; padding: 12px;
+    background: #fef3c7; border: 2px dashed #f59e0b; border-radius: 8px;
+    color: #92400e; cursor: pointer; font-weight: 600; font-size: 13px;
+  }
+  .cm-altro-btn:hover { background: #fde68a; }
 </style>
 </head>
 <body>
@@ -283,13 +380,22 @@
     <div class="card step" data-step="3" style="display:none">
       <div class="card-icon">Passo 3</div>
       <h2>Attività professionale</h2>
-      <p class="lead">Ente di appartenenza e qualifica professionale.</p>
+      <p class="lead">Indichi la sua azienda di appartenenza e la qualifica.</p>
       <div class="grid">
-        <div class="field full"><label>Ente / Azienda</label><input id="f-ente"></div>
+        <!-- v127.2 — Card riassunto Azienda + bottone modifica -->
         <div class="field full">
-          <label>PEC aziendale <span id="pec-req-mark" class="req" style="display:none">*</span></label>
-          <input id="f-pec" type="email">
-          <div class="hint" id="pec-hint">Obbligatoria se è dipendente pubblico</div>
+          <label>Azienda</label>
+          <div id="azienda-summary" class="azienda-summary-empty" onclick="openCompanyModal()">
+            <span>Clicca per indicare la sua azienda di appartenenza</span>
+          </div>
+          <!-- Hidden fields popolati dal modale -->
+          <input type="hidden" id="f-ente">
+          <input type="hidden" id="f-pec">
+          <input type="hidden" id="f-company-type">
+          <input type="hidden" id="f-azienda-tipo">
+          <input type="hidden" id="f-azienda-citta">
+          <input type="hidden" id="f-azienda-prov">
+          <input type="hidden" id="f-dbao-id">
         </div>
         <div class="field"><label>Qualifica</label><input id="f-qualifica"></div>
         <div class="field"><label>Specialità</label><input id="f-specialita"></div>
@@ -436,6 +542,123 @@
 
 </div>
 
+<!-- v127.2 — Modale bivio Pubblica/Privata + flow strutture DBAO -->
+<div id="cm-overlay" class="cm-overlay" style="display:none">
+  <div class="cm-modal">
+    <div class="cm-header">
+      <h3 id="cm-title">La sua azienda</h3>
+      <button class="cm-close" onclick="closeCompanyModal()" aria-label="Chiudi">×</button>
+    </div>
+    <div class="cm-body">
+
+      <!-- Step bivio Pubblica/Privata -->
+      <div id="cm-step-bivio" class="cm-step active">
+        <p style="margin:0 0 16px;color:#475569">Selezioni il tipo di azienda per cui Lei lavora.</p>
+        <button class="cm-choice" onclick="cmChooseType('pubblica')">
+          <span class="icon">🏛️</span>
+          <span class="titolo">Azienda Pubblica</span>
+          <span class="desc">ASL, ASST, AOU, IRCCS, Università statale, Ministero, ente pubblico, ospedale pubblico.</span>
+        </button>
+        <button class="cm-choice" onclick="cmChooseType('privata')">
+          <span class="icon">🏢</span>
+          <span class="titolo">Azienda Privata / Altro</span>
+          <span class="desc">Studio professionale, libero professionista, casa di cura privata, struttura privata accreditata, ente di diritto privato, no profit.</span>
+        </button>
+      </div>
+
+      <!-- Step Privata: free text -->
+      <div id="cm-step-privata" class="cm-step">
+        <p style="margin:0 0 12px;color:#475569;font-size:13px">Indichi il nome della Sua azienda (denominazione esercitata).</p>
+        <label class="cm-label">Nome azienda</label>
+        <input id="cm-priv-nome" class="cm-input" type="text" placeholder="Es. Studio Medico Rossi" autocomplete="off">
+        <div class="cm-actions">
+          <button class="cm-back" onclick="cmGoBivio()">← Indietro</button>
+          <button class="cm-primary" onclick="cmSubmitPrivata()">Conferma</button>
+        </div>
+      </div>
+
+      <!-- Step Pubblica: città azienda -->
+      <div id="cm-step-citta" class="cm-step">
+        <p style="margin:0 0 12px;color:#475569;font-size:13px">In quale città si trova l'azienda dove Lei presta servizio? (Non quella di residenza.)</p>
+        <label class="cm-label">Città dell'azienda</label>
+        <input id="cm-pub-citta" class="cm-input" type="text" list="cm-cities-datalist"
+               placeholder="Es. Alessandria" autocomplete="off">
+        <datalist id="cm-cities-datalist"></datalist>
+        <div class="cm-actions">
+          <button class="cm-back" onclick="cmGoBivio()">← Indietro</button>
+          <button class="cm-primary" onclick="cmCittaNext()">Avanti →</button>
+        </div>
+      </div>
+
+      <!-- Step Pubblica: lista strutture filtrate per città/provincia -->
+      <div id="cm-step-strutture" class="cm-step">
+        <p style="margin:0 0 8px;color:#475569;font-size:13px">
+          Selezioni la Sua struttura. Sotto trova anche le strutture della stessa provincia
+          (alcune hanno sede legale in piccoli comuni).
+        </p>
+        <div id="cm-strutture-citta-block">
+          <div class="cm-section-title">In <span id="cm-strut-citta-name"></span></div>
+          <div id="cm-strutture-citta-list" class="cm-strut-list"></div>
+        </div>
+        <div id="cm-strutture-prov-block" style="margin-top:14px">
+          <div class="cm-section-title">In provincia di <span id="cm-strut-prov-name"></span></div>
+          <div id="cm-strutture-prov-list" class="cm-strut-list"></div>
+        </div>
+        <button class="cm-altro-btn" onclick="cmAltroChoice()">
+          ⚠ La mia struttura non è in elenco — inseriscila manualmente
+        </button>
+        <div class="cm-actions">
+          <button class="cm-back" onclick="cmGoCitta()">← Indietro</button>
+        </div>
+      </div>
+
+      <!-- Step Pubblica: conferma struttura selezionata + PEC -->
+      <div id="cm-step-conferma" class="cm-step">
+        <div class="cm-section-title">Struttura selezionata</div>
+        <div id="cm-struttura-info" class="cm-readonly" style="padding:12px"></div>
+        <label class="cm-label">PEC aziendale <span class="req">*</span></label>
+        <input id="cm-pub-pec" class="cm-input" type="email" placeholder="es. protocollo@pec.ente.it">
+        <div class="hint" id="cm-pec-hint" style="font-size:11px;color:#64748b;margin-top:4px">
+          Obbligatoria. Se non la conosce, può trovarla sul cedolino o sul sito istituzionale dell'ente.
+        </div>
+        <div class="cm-actions">
+          <button class="cm-back" onclick="cmGoStrutture()">← Indietro</button>
+          <button class="cm-primary" onclick="cmSubmitPubblica()">Conferma</button>
+        </div>
+      </div>
+
+      <!-- Step Pubblica: Altro (struttura non in DBAO) -->
+      <div id="cm-step-altro" class="cm-step">
+        <p style="margin:0 0 12px;color:#475569;font-size:13px">
+          Indichi i dati della Sua struttura. Sarà censita in archivio dopo verifica.
+        </p>
+        <label class="cm-label">Città / Provincia</label>
+        <div class="cm-readonly" id="cm-altro-citta-readonly"></div>
+        <label class="cm-label">Nome ente <span class="req">*</span></label>
+        <input id="cm-altro-nome" class="cm-input" type="text" placeholder="Denominazione esatta">
+        <label class="cm-label">Tipologia <span class="req">*</span></label>
+        <select id="cm-altro-tipo" class="cm-select">
+          <option value="">— scegli —</option>
+          <option value="ASL">ASL</option>
+          <option value="ASST">ASST</option>
+          <option value="IRCCS">IRCCS</option>
+          <option value="UNIVERSITA">Università statale</option>
+          <option value="OSPEDALE">Ospedale</option>
+          <option value="AZIENDA OSPEDALIERA">Azienda Ospedaliera</option>
+          <option value="ALTRO">Altro</option>
+        </select>
+        <label class="cm-label">PEC aziendale <span class="req">*</span></label>
+        <input id="cm-altro-pec" class="cm-input" type="email" placeholder="es. protocollo@pec.ente.it">
+        <div class="cm-actions">
+          <button class="cm-back" onclick="cmGoStrutture()">← Indietro</button>
+          <button class="cm-primary" onclick="cmSubmitAltro()">Conferma</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
 <script>
 // ── Strada B (Opzione A) — backend GAS Web App ────────────────────────────
 // Il form è statico su sideraweb.com (GitHub Pages). Per prefill/submit chiama
@@ -566,6 +789,13 @@ function populate(data) {
   $('ev-luogo').textContent = ev.luogo || '—';
   $('ev-cod').textContent = ev.codice_ecm || '—';
 
+  // v127.2 — Snapshot DBAO embedded nel prefill (Fase 4). Array di record
+  // {ID, TIPO, NOME, INDIRIZZO, CAP, CITTA, Prov, PEC}. Senza dati il modale
+  // accetterà solo il branch Privata/"Altro" (free text).
+  if (Array.isArray(data.dbao)) {
+    cmDbaoCache = data.dbao;
+  }
+
   // Anagrafica
   const a = data.anagrafica || {};
   for (const k of FIELDS) {
@@ -575,6 +805,33 @@ function populate(data) {
     if (k === 'nato_il') val = normalizeDateInput(val);
     if (k === 'provincia') val = (val || '').toUpperCase();
     el.value = val;
+  }
+
+  // v127.2 — Pre-fill Azienda dal data se MedFIND conosce già l'ente del relatore.
+  // Atteso (Fase 5): data.anagrafica.ente, data.anagrafica.pec, data.anagrafica.dbao_id,
+  // data.anagrafica.azienda_tipo, data.anagrafica.azienda_citta, data.anagrafica.azienda_prov,
+  // data.anagrafica.company_type ('pubblica'|'privata'). Se assenti, summary parte vuota.
+  if (a.ente) {
+    $('f-ente').value = a.ente || '';
+    $('f-pec').value = a.pec || '';
+    $('f-company-type').value = (a.company_type || (a.dbao_id ? 'pubblica' : '')).toLowerCase();
+    $('f-azienda-tipo').value = a.azienda_tipo || '';
+    $('f-azienda-citta').value = a.azienda_citta || '';
+    $('f-azienda-prov').value = a.azienda_prov || '';
+    $('f-dbao-id').value = a.dbao_id ? String(a.dbao_id) : '';
+    // Sync stato modale per riapertura coerente
+    cmState.type = $('f-company-type').value || null;
+    if (cmState.type === 'pubblica') {
+      cmState.citta = a.azienda_citta || '';
+      cmState.prov = a.azienda_prov || '';
+      if (a.dbao_id) {
+        cmState.struttura = cmDbaoCache.find(r => +r.ID === +a.dbao_id) || null;
+        cmState.pec_attuale = cmState.struttura ? (cmState.struttura.PEC || '') : '';
+      }
+    } else if (cmState.type === 'privata') {
+      cmState.privata_nome = a.ente || '';
+    }
+    updateAziendaSummary();
   }
 
   // Opzione: nessun default pre-selezionato (v120.3, richiesta utente).
@@ -732,8 +989,17 @@ function showIbanFeedback() {
 }
 
 function getCurrentSteps() {
-  // Dinamica: A → 1..5 + cdi + final ; B/C → 1..5 + 6 + 7 + cdi + final
-  // Lo step CDI (conflitto di interesse) è sempre presente per tutti.
+  // v127.2 — La scelta Pubblica/Privata fatta nel modale Step 3 determina
+  // anche il flusso di Art. 3:
+  //   • Privata/Altro → Opzione A forzata, salta del tutto step 5 (Art.3) e
+  //                      i due step di clausole BIS/TER (6, 7).
+  //   • Pubblica → step 5 mostra solo B/C (logica esistente di getCurrentSteps);
+  //                BIS/TER attivi solo se B o C scelta.
+  // Step CDI sempre presente.
+  const companyType = (document.getElementById('f-company-type') || {}).value || '';
+  if (companyType.toLowerCase() === 'privata') {
+    return ['1','2','3','4','cdi','final'];
+  }
   const sel = document.querySelector('input[name="opzione"]:checked');
   const base = ['1','2','3','4','5'];
   if (sel && (sel.value === 'B' || sel.value === 'C')) return [...base, '6','7','cdi','final'];
@@ -799,6 +1065,24 @@ function validateStep() {
     }
   }
 
+  // v127.2 — Step 3: azienda obbligatoria (scelta dal modale Pubblica/Privata)
+  if (stepKey === '3') {
+    const ente = ($('f-ente').value || '').trim();
+    const ctype = ($('f-company-type').value || '').trim();
+    if (!ente || !ctype) {
+      alert('Indichi la Sua azienda cliccando sulla card "Azienda".');
+      return false;
+    }
+    // Per Pubblica la PEC è obbligatoria (gestita nel modale, ma defensive check)
+    if (ctype === 'pubblica') {
+      const pec = ($('f-pec').value || '').trim();
+      if (!pec) {
+        alert('Per le aziende pubbliche la PEC è obbligatoria. Riapra il modale "Azienda" per inserirla.');
+        return false;
+      }
+    }
+  }
+
   // v120.5 — Validazione IBAN allo step 4
   if (stepKey === '4') {
     const ibanEl = $('f-iban');
@@ -833,6 +1117,16 @@ function validateStep() {
       const subSel = document.querySelector('input[name="op-C-tipo"]:checked');
       if (!subSel) {
         alert('Per l\'Opzione C selezioni la categoria di appartenenza (Dipendente pubblico SSN/PA oppure Professore Università Statale).');
+        return false;
+      }
+    }
+    // v126.8 — PEC obbligatoria per dipendenti pubblici (Opzione B o C).
+    // Bug fixato: prima il form aveva solo l'asterisco visivo ma nessun blocco.
+    if (sel.value === 'B' || sel.value === 'C') {
+      const pecV = (($('f-pec') || {}).value || '').trim();
+      if (!pecV) {
+        alert('PEC aziendale obbligatoria per dipendenti pubblici (Opzione ' + sel.value + ').\n\n' +
+              'Torni al Passo 3 e inserisca la PEC del Suo ente di appartenenza.');
         return false;
       }
     }
@@ -1017,6 +1311,16 @@ async function submitForm() {
   const sel = document.querySelector('input[name="opzione"]:checked');
   if (!sel) { alert('Selezione opzione mancante.'); return; }
 
+  // v126.8 — Final PEC check (defensive, lo step 5 dovrebbe già aver bloccato)
+  if (sel.value === 'B' || sel.value === 'C') {
+    const pecV = (($('f-pec') || {}).value || '').trim();
+    if (!pecV) {
+      alert('PEC aziendale obbligatoria per dipendenti pubblici (Opzione ' + sel.value + ').\n\n' +
+            'Torni al Passo 3 e inserisca la PEC prima di inviare.');
+      return;
+    }
+  }
+
   // v120.5 — Final IBAN check (defensive, lo step 4 dovrebbe già aver bloccato)
   const ibanV = ($('f-iban').value || '').trim();
   if (!ibanV && ibanIsRequired()) {
@@ -1056,6 +1360,16 @@ async function submitForm() {
     const subC = document.querySelector('input[name="op-C-tipo"]:checked');
     const tipoDipPub = (sel.value === 'C' && subC) ? subC.value : '';
 
+    // v127.2 — Snapshot Azienda (Pubblica/Privata + lookup DBAO o Altro)
+    const azienda = {
+      company_type: ($('f-company-type').value || '').toLowerCase(),  // 'pubblica' | 'privata' | ''
+      tipo:        $('f-azienda-tipo').value || '',
+      citta:       $('f-azienda-citta').value || '',
+      prov:        $('f-azienda-prov').value || '',
+      dbao_id:     $('f-dbao-id').value || '',                         // '' se Altro
+      pec_attuale: cmState.pec_attuale || '',                          // PEC originale in DBAO
+    };
+
     const res = await fetch(GAS_API_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'text/plain;charset=utf-8' },  // GAS doPost evita preflight CORS con text/plain
@@ -1065,6 +1379,7 @@ async function submitForm() {
         opzione_aut: sel.value,
         tipo_dip_pub: tipoDipPub,  // v120.4: 'SSN' | 'UNIV' (solo se C)
         anagrafica: anag,
+        azienda: azienda,         // v127.2 (Fase 5: backend usa per discordanze PEC / nuovi enti)
         aziende: cdi.aziende,
         no_collab: cdi.no_collab,
       }),
@@ -1087,6 +1402,320 @@ async function submitForm() {
     btn.disabled = false;
     btn.textContent = '📨 Invia PDF per la firma';
   }
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// v127.2 — Modale bivio Pubblica/Privata + flow strutture DBAO (Fase 3 + 4)
+// ════════════════════════════════════════════════════════════════════════════
+
+// Stato del modale + dati DBAO embeddati nello snapshot di prefill
+const cmState = {
+  type: null,           // 'pubblica' | 'privata' | null
+  citta: null,          // città azienda (solo Pubblica)
+  prov: null,           // provincia derivata da città
+  struttura: null,      // record DBAO selezionato (solo Pubblica)
+  altro_nome: null,     // nome ente per "Altro" (Pubblica + non in DBAO)
+  altro_tipo: null,
+  pec: null,            // PEC inserita o da DBAO (modificata)
+  pec_attuale: null,    // PEC originale in DBAO al momento della selezione
+  privata_nome: null,   // nome free text (Privata)
+};
+let cmDbaoCache = [];   // snapshot DBAO da prefill (Fase 4)
+
+function _cm(id) { return document.getElementById(id); }
+
+function openCompanyModal() {
+  // Apre sempre dal bivio (R7: "Modifica" riapre da Step 1).
+  cmShowStep('cm-step-bivio');
+  _cm('cm-overlay').style.display = 'flex';
+}
+function closeCompanyModal() {
+  _cm('cm-overlay').style.display = 'none';
+}
+function cmShowStep(stepId) {
+  document.querySelectorAll('.cm-step').forEach(el => el.classList.remove('active'));
+  const target = _cm(stepId);
+  if (target) target.classList.add('active');
+  // Aggiorna titolo header
+  const titles = {
+    'cm-step-bivio':     'La sua azienda',
+    'cm-step-privata':   'Azienda privata / altro',
+    'cm-step-citta':     'Città dell’azienda pubblica',
+    'cm-step-strutture': 'Selezione struttura',
+    'cm-step-conferma':  'Conferma struttura + PEC',
+    'cm-step-altro':     'Struttura non in elenco',
+  };
+  const t = _cm('cm-title');
+  if (t) t.textContent = titles[stepId] || 'La sua azienda';
+}
+
+function cmGoBivio()     { cmShowStep('cm-step-bivio'); }
+function cmGoCitta()     { cmShowStep('cm-step-citta'); }
+function cmGoStrutture() { cmShowStep('cm-step-strutture'); }
+
+function cmChooseType(type) {
+  cmState.type = type;
+  if (type === 'privata') {
+    // Pre-fill se già scelto in passato
+    const nome = cmState.privata_nome || _cm('f-ente').value || '';
+    _cm('cm-priv-nome').value = nome;
+    cmShowStep('cm-step-privata');
+    setTimeout(() => _cm('cm-priv-nome').focus(), 50);
+  } else {
+    // Pubblica: vai a step città
+    const citta = cmState.citta || _cm('f-azienda-citta').value || '';
+    _cm('cm-pub-citta').value = citta;
+    _populateCitiesDatalist();
+    cmShowStep('cm-step-citta');
+    setTimeout(() => _cm('cm-pub-citta').focus(), 50);
+  }
+}
+
+function cmSubmitPrivata() {
+  const nome = (_cm('cm-priv-nome').value || '').trim();
+  if (!nome) {
+    alert('Indichi il nome dell’azienda.');
+    return;
+  }
+  cmState.privata_nome = nome;
+  // Salva nei hidden field del form principale
+  _cm('f-ente').value = nome;
+  _cm('f-pec').value = '';
+  _cm('f-company-type').value = 'privata';
+  _cm('f-azienda-tipo').value = '';
+  _cm('f-azienda-citta').value = '';
+  _cm('f-azienda-prov').value = '';
+  _cm('f-dbao-id').value = '';
+  // Privata → forza Opzione A in Art. 3 (e auto-skip step 5/6/7)
+  const radioA = document.querySelector('input[name="opzione"][value="A"]');
+  if (radioA) {
+    radioA.checked = true;
+    if (typeof updateOpzione === 'function') updateOpzione();
+  }
+  updateAziendaSummary();
+  closeCompanyModal();
+}
+
+function _populateCitiesDatalist() {
+  // Riempie la datalist con le città distinte presenti in DBAO (Pubblica).
+  const dl = _cm('cm-cities-datalist');
+  if (!dl) return;
+  const setCitta = new Map(); // citta_upper → display "Citta (PROV)"
+  for (const r of cmDbaoCache) {
+    const c = (r.CITTA || '').trim();
+    const p = (r.Prov || r.PROV || '').trim();
+    if (!c) continue;
+    const key = c.toUpperCase() + '|' + p.toUpperCase();
+    if (!setCitta.has(key)) setCitta.set(key, c);
+  }
+  const sortedCitta = [...setCitta.values()].sort((a, b) => a.localeCompare(b, 'it'));
+  dl.innerHTML = '';
+  for (const c of sortedCitta) {
+    const o = document.createElement('option');
+    o.value = c;
+    dl.appendChild(o);
+  }
+}
+
+function _cmFindCitta(input) {
+  // Match case-insensitive sul campo CITTA di DBAO. Ritorna provincia desunta
+  // dal primo match (omonimie ignorate per ora — accetta la prima provincia trovata).
+  const target = (input || '').trim().toUpperCase();
+  if (!target) return null;
+  for (const r of cmDbaoCache) {
+    if ((r.CITTA || '').trim().toUpperCase() === target) {
+      return { citta: (r.CITTA || '').trim(), prov: (r.Prov || r.PROV || '').trim() };
+    }
+  }
+  return null;
+}
+
+function cmCittaNext() {
+  const inp = (_cm('cm-pub-citta').value || '').trim();
+  if (!inp) {
+    alert('Indichi la città dell’azienda.');
+    return;
+  }
+  const match = _cmFindCitta(inp);
+  if (!match) {
+    if (!confirm('La città indicata non risulta tra quelle in archivio. ' +
+                 'Vuole proseguire comunque (potrà inserire la struttura come "Altro")?')) {
+      return;
+    }
+    cmState.citta = inp;
+    cmState.prov = '';
+  } else {
+    cmState.citta = match.citta;
+    cmState.prov = match.prov;
+  }
+  _populateStrutture();
+  cmShowStep('cm-step-strutture');
+}
+
+function _populateStrutture() {
+  // Popola le 2 sezioni: strutture in città + strutture in provincia (alfabetiche).
+  const targetCitta = (cmState.citta || '').toUpperCase();
+  const targetProv = (cmState.prov || '').toUpperCase();
+  _cm('cm-strut-citta-name').textContent = cmState.citta || '—';
+  _cm('cm-strut-prov-name').textContent = cmState.prov || '—';
+  const inCitta = [];
+  const inProv = [];
+  for (const r of cmDbaoCache) {
+    const rCitta = (r.CITTA || '').toUpperCase();
+    const rProv = (r.Prov || r.PROV || '').toUpperCase();
+    if (rCitta === targetCitta) {
+      inCitta.push(r);
+    } else if (targetProv && rProv === targetProv) {
+      inProv.push(r);
+    }
+  }
+  inCitta.sort((a, b) => (a.NOME || '').localeCompare(b.NOME || '', 'it'));
+  inProv.sort((a, b) => (a.NOME || '').localeCompare(b.NOME || '', 'it'));
+  const renderList = (items, containerId) => {
+    const el = _cm(containerId);
+    if (!el) return;
+    if (items.length === 0) {
+      el.innerHTML = '<div class="cm-strut-empty">Nessuna struttura trovata.</div>';
+      return;
+    }
+    let html = '';
+    for (const r of items) {
+      const id = r.ID;
+      const nome = (r.NOME || '').replace(/'/g, '&#39;').replace(/"/g, '&quot;');
+      const tipo = r.TIPO || '';
+      html += `<div class="cm-strut-item" onclick="cmSelectStruttura(${id})">` +
+              `<span class="nome">${nome}</span>` +
+              `<span class="tipo">${tipo}</span></div>`;
+    }
+    el.innerHTML = html;
+  };
+  renderList(inCitta, 'cm-strutture-citta-list');
+  renderList(inProv, 'cm-strutture-prov-list');
+  // Nascondi sezione provincia se vuota
+  _cm('cm-strutture-prov-block').style.display =
+    (inProv.length === 0 || !targetProv) ? 'none' : 'block';
+}
+
+function cmSelectStruttura(id) {
+  const rec = cmDbaoCache.find(r => +r.ID === +id);
+  if (!rec) return;
+  cmState.struttura = rec;
+  cmState.pec_attuale = (rec.PEC || '').trim();
+  // Pre-fill PEC se in DBAO; altrimenti vuota da compilare
+  _cm('cm-pub-pec').value = cmState.pec_attuale;
+  // Render info struttura
+  _cm('cm-struttura-info').innerHTML =
+    '<b>' + (rec.NOME || '') + '</b><br>' +
+    '<span style="color:#64748b;font-size:12px">' +
+    (rec.TIPO || '') + ' · ' + (rec.CITTA || '') + ' (' + (rec.Prov || rec.PROV || '') + ')' +
+    '</span>';
+  // Hint PEC dinamico
+  const hint = _cm('cm-pec-hint');
+  if (hint) {
+    if (cmState.pec_attuale) {
+      hint.textContent = 'Verifichi la PEC mostrata. Se è cambiata, può modificarla qui — la modifica sarà sottoposta ad approvazione.';
+      hint.style.color = '#16a34a';
+    } else {
+      hint.textContent = 'PEC non in archivio. Inserisca quella corretta del Suo ente — verrà censita.';
+      hint.style.color = '#92400e';
+    }
+  }
+  cmShowStep('cm-step-conferma');
+  setTimeout(() => _cm('cm-pub-pec').focus(), 50);
+}
+
+function cmAltroChoice() {
+  // Pre-fill città/prov in read-only
+  const lab = (cmState.citta || '—') + ' (' + (cmState.prov || '—') + ')';
+  _cm('cm-altro-citta-readonly').textContent = lab;
+  _cm('cm-altro-nome').value = cmState.altro_nome || '';
+  _cm('cm-altro-tipo').value = cmState.altro_tipo || '';
+  _cm('cm-altro-pec').value = '';
+  cmShowStep('cm-step-altro');
+  setTimeout(() => _cm('cm-altro-nome').focus(), 50);
+}
+
+function cmSubmitPubblica() {
+  const pec = (_cm('cm-pub-pec').value || '').trim();
+  if (!pec) {
+    alert('La PEC è obbligatoria. Se non la conosce, la cerchi sul cedolino o sul sito dell’ente.');
+    return;
+  }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(pec)) {
+    alert('Formato PEC non valido. Esempio: protocollo@pec.ente.it');
+    return;
+  }
+  const rec = cmState.struttura;
+  if (!rec) return;
+  cmState.pec = pec;
+  // Salva nei hidden del form principale
+  _cm('f-ente').value = rec.NOME || '';
+  _cm('f-pec').value = pec;
+  _cm('f-company-type').value = 'pubblica';
+  _cm('f-azienda-tipo').value = rec.TIPO || '';
+  _cm('f-azienda-citta').value = rec.CITTA || '';
+  _cm('f-azienda-prov').value = (rec.Prov || rec.PROV || '');
+  _cm('f-dbao-id').value = String(rec.ID || '');
+  updateAziendaSummary();
+  closeCompanyModal();
+}
+
+function cmSubmitAltro() {
+  const nome = (_cm('cm-altro-nome').value || '').trim();
+  const tipo = (_cm('cm-altro-tipo').value || '').trim();
+  const pec = (_cm('cm-altro-pec').value || '').trim();
+  if (!nome) { alert('Indichi il nome dell’ente.'); return; }
+  if (!tipo) { alert('Selezioni la tipologia.'); return; }
+  if (!pec) { alert('La PEC è obbligatoria.'); return; }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(pec)) {
+    alert('Formato PEC non valido. Esempio: protocollo@pec.ente.it'); return;
+  }
+  cmState.altro_nome = nome;
+  cmState.altro_tipo = tipo;
+  cmState.pec = pec;
+  cmState.struttura = null; // reset (Altro = no DBAO match)
+  // Salva nei hidden
+  _cm('f-ente').value = nome;
+  _cm('f-pec').value = pec;
+  _cm('f-company-type').value = 'pubblica';   // resta pubblica (Opzione B/C)
+  _cm('f-azienda-tipo').value = tipo;
+  _cm('f-azienda-citta').value = cmState.citta || '';
+  _cm('f-azienda-prov').value = cmState.prov || '';
+  _cm('f-dbao-id').value = '';   // niente ID DBAO → backend creerà PENDING_NEW
+  updateAziendaSummary();
+  closeCompanyModal();
+}
+
+function updateAziendaSummary() {
+  // Aggiorna la card riassunto in Step 3 in base a quanto scelto nel modale.
+  const sum = _cm('azienda-summary');
+  if (!sum) return;
+  const type = (_cm('f-company-type').value || '').toLowerCase();
+  const ente = _cm('f-ente').value || '';
+  const pec = _cm('f-pec').value || '';
+  const tipo = _cm('f-azienda-tipo').value || '';
+  const citta = _cm('f-azienda-citta').value || '';
+  const prov = _cm('f-azienda-prov').value || '';
+  if (!ente) {
+    sum.className = 'azienda-summary-empty';
+    sum.innerHTML = '<span>Clicca per indicare la sua azienda di appartenenza</span>';
+    return;
+  }
+  sum.className = 'azienda-summary';
+  let metaParts = [];
+  if (type === 'pubblica') {
+    if (tipo) metaParts.push('<b>' + tipo + '</b>');
+    if (citta) metaParts.push(citta + (prov ? ' (' + prov + ')' : ''));
+  } else {
+    metaParts.push('<i>Privata / Altro</i>');
+  }
+  let html = '<div class="azienda-summary-info">';
+  html += '<div class="name">' + ente.replace(/</g, '&lt;') + '</div>';
+  if (metaParts.length) html += '<div class="meta">' + metaParts.join(' · ') + '</div>';
+  if (pec) html += '<div class="pec">📧 ' + pec.replace(/</g, '&lt;') + '</div>';
+  html += '</div>';
+  html += '<button class="edit-btn" onclick="event.stopPropagation();openCompanyModal()">✏️ Modifica</button>';
+  sum.innerHTML = html;
 }
 
 init();
