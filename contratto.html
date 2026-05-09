@@ -15,8 +15,10 @@
 
   /* Header brand */
   .brand { text-align: center; margin-bottom: 18px; }
-  .brand h1 { color: #1e3a6e; font-size: 22px; margin: 8px 0 4px; }
-  .brand .sub { color: #64748b; font-size: 13px; }
+  .brand .row { display: flex; align-items: center; justify-content: center; gap: 12px; }
+  .brand .logo { height: 36px; width: auto; object-fit: contain; border-radius: 6px; background: #fff; padding: 2px 4px; }
+  .brand h1 { color: #1e3a6e; font-size: 22px; margin: 0; }
+  .brand .sub { color: #64748b; font-size: 13px; margin-top: 6px; }
 
   /* Box evento */
   .evento-box {
@@ -283,7 +285,10 @@
 <div class="wrap">
 
   <div class="brand">
-    <h1>Sidera S.R.L. — Provider ECM n. 84</h1>
+    <div class="row">
+      <img class="logo" src="img/sidera_logo.jpg" onerror="this.onerror=null;this.src='/static/sidera_logo.jpg'" alt="Sidera">
+      <h1>Sidera — Provider ECM n. 84</h1>
+    </div>
     <div class="sub">Compilazione contratto relatore</div>
   </div>
 
