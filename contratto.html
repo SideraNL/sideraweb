@@ -78,17 +78,21 @@
   /* Form */
   .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
   @media (max-width: 600px) { .grid { grid-template-columns: 1fr; } }
-  .field { display: flex; flex-direction: column; }
+  .field { display: flex; flex-direction: column; min-width: 0; }
   .field.full { grid-column: 1/-1; }
   .field label {
     font-size: 12px; font-weight: 600; color: #334155; margin-bottom: 4px;
   }
   .field label .req { color: #dc2626; }
   .field input, .field select, .field textarea {
+    width: 100%; box-sizing: border-box;
     border: 1px solid #cbd5e1; border-radius: 6px; padding: 9px 11px;
     font-size: 14px; font-family: inherit; background: #fff;
     transition: border-color .15s, box-shadow .15s;
   }
+  /* v128.2 — Long option text in select: clip lo standard browser display, ma le voci nel dropdown aperto
+     restano leggibili (overflow del browser native widget). text-overflow ellipsis per fallback testo. */
+  .field select { text-overflow: ellipsis; }
   .field input:focus, .field select:focus, .field textarea:focus {
     outline: none; border-color: #1a56db; box-shadow: 0 0 0 2px rgba(26,86,219,.15);
   }
