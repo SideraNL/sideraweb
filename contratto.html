@@ -385,7 +385,7 @@
     <div class="card step" data-step="3" style="display:none">
       <div class="card-icon">Passo 3</div>
       <h2>Attività professionale</h2>
-      <p class="lead">Indichi la sua azienda di appartenenza e la qualifica.</p>
+      <p class="lead">Indichi la sua azienda di appartenenza, la professione e la disciplina.</p>
       <div class="grid">
         <!-- v127.2 — Card riassunto Azienda + bottone modifica -->
         <div class="field full">
@@ -402,8 +402,8 @@
           <input type="hidden" id="f-azienda-prov">
           <input type="hidden" id="f-dbao-id">
         </div>
-        <div class="field"><label>Qualifica</label><input id="f-qualifica"></div>
-        <div class="field"><label>Specialità</label><input id="f-specialita"></div>
+        <div class="field"><label>Professione</label><input id="f-qualifica"></div>
+        <div class="field"><label>Disciplina</label><input id="f-specialita"></div>
       </div>
     </div>
 
@@ -1284,7 +1284,7 @@ function renderSummary() {
     <tr><td>Nato a / il</td><td>${get('f-nato_a')} (${get('f-provincia')}) — ${dataNasc}</td></tr>
     <tr><td>Indirizzo</td><td>${get('f-indirizzo')} — ${get('f-cap')} ${get('f-citta')} ${get('f-provincia')}</td></tr>
     <tr><td>Cellulare / Email</td><td>${get('f-cellulare')} — ${get('f-email')}</td></tr>
-    <tr><td>Ente / Qualifica</td><td>${get('f-ente')} — ${get('f-qualifica')}</td></tr>
+    <tr><td>Azienda / Professione</td><td>${get('f-ente')} — ${get('f-qualifica')}</td></tr>
     <tr><td>PEC aziendale</td><td>${get('f-pec')}</td></tr>
     <tr><td>IBAN</td><td>${get('f-iban')}</td></tr>
     <tr><td>P.IVA</td><td>${get('f-partita_iva')}</td></tr>
