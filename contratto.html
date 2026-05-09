@@ -425,8 +425,28 @@
             <button type="button" class="ecm-edit-btn" onclick="openEcmModal()">✏️ Modifica</button>
           </div>
         </div>
-        <div class="field"><label>Professione</label><input id="f-qualifica"></div>
-        <div class="field"><label>Disciplina</label><input id="f-specialita"></div>
+        <!-- v128.0 — Modalità ECM: dropdown vincolati AGENAS · Modalità Non-ECM/Straniero: free text -->
+        <!-- Hidden: codici numerici AGENAS (popolati solo se ECM) -->
+        <input type="hidden" id="f-prof-cod">
+        <input type="hidden" id="f-disc-cod">
+
+        <!-- Modalità ECM: dropdown -->
+        <div class="field" id="prof-ecm-row" style="display:none">
+          <label>Professione <span style="color:#dc2626">*</span></label>
+          <select id="f-prof-select" onchange="onProfEcmChange()">
+            <option value="">— scegli professione —</option>
+          </select>
+        </div>
+        <div class="field" id="disc-ecm-row" style="display:none">
+          <label>Disciplina <span style="color:#dc2626">*</span></label>
+          <select id="f-disc-select" onchange="onDiscEcmChange()" disabled>
+            <option value="">— prima scelga la professione —</option>
+          </select>
+        </div>
+
+        <!-- Modalità Non-ECM / Straniero: free text -->
+        <div class="field" id="prof-free-row"><label>Professione</label><input id="f-qualifica"></div>
+        <div class="field" id="disc-free-row"><label>Disciplina</label><input id="f-specialita"></div>
       </div>
     </div>
 
@@ -723,6 +743,12 @@ let TOKEN = '';
 let CURRENT_STEP_INDEX = 0;
 let CLAUSOLE_LOADED = false;
 let CLAUSOLE_INLINE = null;  // Strada B: clausole arrivano dentro al prefill
+
+// v128.0 — Tabelle AGENAS Allegato F+G v1.24 (31 professioni + 121 discipline)
+// Embedded statico: cambiano raramente (versioni 1.20→1.24 in molti anni).
+// Per aggiornare: rigenera con `python scripts/rebuild_codici_agenas.py` poi sostituisci sotto.
+const AGENAS_DATA = {"professioni":[{"cod":1,"nome":"MEDICO CHIRURGO"},{"cod":2,"nome":"ODONTOIATRA"},{"cod":3,"nome":"FARMACISTA"},{"cod":4,"nome":"VETERINARIO"},{"cod":5,"nome":"PSICOLOGO"},{"cod":6,"nome":"BIOLOGO"},{"cod":7,"nome":"CHIMICO"},{"cod":8,"nome":"FISICO"},{"cod":9,"nome":"ASSISTENTE SANITARIO"},{"cod":10,"nome":"DIETISTA"},{"cod":11,"nome":"EDUCATORE PROFESSIONALE"},{"cod":12,"nome":"FISIOTERAPISTA"},{"cod":13,"nome":"IGIENISTA DENTALE"},{"cod":14,"nome":"INFERMIERE"},{"cod":15,"nome":"INFERMIERE PEDIATRICO"},{"cod":16,"nome":"LOGOPEDISTA"},{"cod":17,"nome":"ORTOTTISTA/ASSISTENTE DI OFTALMOLOGIA"},{"cod":18,"nome":"OSTETRICA/O"},{"cod":19,"nome":"PODOLOGO"},{"cod":20,"nome":"TECNICO AUDIOMETRISTA"},{"cod":21,"nome":"TECNICO AUDIOPROTESISTA"},{"cod":22,"nome":"TECNICO DELLA FISIOPATOLOGIA CARDIOCIRCOLATORIA E PERFUSIONE CARDIOVASCOLARE"},{"cod":23,"nome":"TECNICO DELLA PREVENZIONE NELL'AMBIENTE E NEI LUOGHI DI LAVORO"},{"cod":24,"nome":"TECNICO DELLA RIABILITAZIONE PSICHIATRICA"},{"cod":25,"nome":"TECNICO DI NEUROFISIOPATOLOGIA"},{"cod":26,"nome":"TECNICO ORTOPEDICO"},{"cod":27,"nome":"TECNICO SANITARIO DI RADIOLOGIA MEDICA"},{"cod":28,"nome":"TECNICO SANITARIO LABORATORIO BIOMEDICO"},{"cod":29,"nome":"TERAPISTA DELLA NEURO E PSICOMOTRICITA' DELL'ETA' EVOLUTIVA"},{"cod":30,"nome":"TERAPISTA OCCUPAZIONALE"},{"cod":33,"nome":"MASSOFISIOTERAPISTA ISCRITTO ALL'ELENCO SPECIALE EX ART.5 D.M. 9 AGOSTO 2019"}],"discipline_per_prof":{"1":[{"cod":1,"nome":"ALLERGOLOGIA ED IMMUNOLOGIA CLINICA"},{"cod":42,"nome":"ANATOMIA PATOLOGICA"},{"cod":43,"nome":"ANESTESIA E RIANIMAZIONE"},{"cod":2,"nome":"ANGIOLOGIA"},{"cod":111,"nome":"AUDIOLOGIA E FONIATRIA"},{"cod":44,"nome":"BIOCHIMICA CLINICA"},{"cod":29,"nome":"CARDIOCHIRURGIA"},{"cod":3,"nome":"CARDIOLOGIA"},{"cod":30,"nome":"CHIRURGIA GENERALE"},{"cod":31,"nome":"CHIRURGIA MAXILLO-FACCIALE"},{"cod":32,"nome":"CHIRURGIA PEDIATRICA"},{"cod":33,"nome":"CHIRURGIA PLASTICA E RICOSTRUTTIVA"},{"cod":34,"nome":"CHIRURGIA TORACICA"},{"cod":35,"nome":"CHIRURGIA VASCOLARE"},{"cod":59,"nome":"CONTINUITA' ASSISTENZIALE"},{"cod":114,"nome":"CURE PALLIATIVE"},{"cod":4,"nome":"DERMATOLOGIA E VENEREOLOGIA"},{"cod":107,"nome":"DIREZIONE MEDICA DI PRESIDIO OSPEDALIERO"},{"cod":5,"nome":"EMATOLOGIA"},{"cod":6,"nome":"ENDOCRINOLOGIA"},{"cod":115,"nome":"EPIDEMIOLOGIA"},{"cod":45,"nome":"FARMACOLOGIA E TOSSICOLOGIA CLINICA"},{"cod":7,"nome":"GASTROENTEROLOGIA"},{"cod":8,"nome":"GENETICA MEDICA"},{"cod":9,"nome":"GERIATRIA"},{"cod":36,"nome":"GINECOLOGIA E OSTETRICIA"},{"cod":56,"nome":"IGIENE DEGLI ALIMENTI E DELLA NUTRIZIONE"},{"cod":55,"nome":"IGIENE, EPIDEMIOLOGIA E SANITA' PUBBLICA"},{"cod":46,"nome":"LABORATORIO DI GENETICA MEDICA"},{"cod":11,"nome":"MALATTIE DELL'APPARATO RESPIRATORIO"},{"cod":12,"nome":"MALATTIE INFETTIVE"},{"cod":10,"nome":"MALATTIE METABOLICHE E DIABETOLOGIA"},{"cod":17,"nome":"MEDICINA AERONAUTICA E SPAZIALE"},{"cod":13,"nome":"MEDICINA D'EMERGENZA-URGENZA"},{"cod":57,"nome":"MEDICINA DEL LAVORO E SICUREZZA DEGLI AMBIENTI DI LAVORO"},{"cod":18,"nome":"MEDICINA DELLO SPORT"},{"cod":116,"nome":"MEDICINA DI COMUNITA' E DELLE CURE PRIMARIE"},{"cod":14,"nome":"MEDICINA FISICA E RIABILITAZIONE"},{"cod":58,"nome":"MEDICINA GENERALE (MEDICI DI FAMIGLIA)"},{"cod":15,"nome":"MEDICINA INTERNA"},{"cod":48,"nome":"MEDICINA LEGALE"},{"cod":49,"nome":"MEDICINA NUCLEARE"},{"cod":117,"nome":"MEDICINA SUBACQUEA E IPERBARICA"},{"cod":16,"nome":"MEDICINA TERMALE"},{"cod":47,"nome":"MEDICINA TRASFUSIONALE"},{"cod":50,"nome":"MICROBIOLOGIA E VIROLOGIA"},{"cod":19,"nome":"NEFROLOGIA"},{"cod":20,"nome":"NEONATOLOGIA"},{"cod":37,"nome":"NEUROCHIRURGIA"},{"cod":51,"nome":"NEUROFISIOPATOLOGIA"},{"cod":21,"nome":"NEUROLOGIA"},{"cod":22,"nome":"NEUROPSICHIATRIA INFANTILE"},{"cod":52,"nome":"NEURORADIOLOGIA"},{"cod":38,"nome":"OFTALMOLOGIA"},{"cod":23,"nome":"ONCOLOGIA"},{"cod":108,"nome":"ORGANIZZAZIONE DEI SERVIZI SANITARI DI BASE"},{"cod":39,"nome":"ORTOPEDIA E TRAUMATOLOGIA"},{"cod":40,"nome":"OTORINOLARINGOIATRIA"},{"cod":53,"nome":"PATOLOGIA CLINICA (LABORATORIO DI ANALISI CHIMICO-CLINICHE E MICROBIOLOGIA)"},{"cod":24,"nome":"PEDIATRIA"},{"cod":60,"nome":"PEDIATRIA (PEDIATRI DI LIBERA SCELTA)"},{"cod":113,"nome":"PRIVO DI SPECIALIZZAZIONE"},{"cod":25,"nome":"PSICHIATRIA"},{"cod":112,"nome":"PSICOTERAPIA"},{"cod":54,"nome":"RADIODIAGNOSTICA"},{"cod":26,"nome":"RADIOTERAPIA"},{"cod":27,"nome":"REUMATOLOGIA"},{"cod":106,"nome":"SCIENZA DELL'ALIMENTAZIONE E DIETETICA"},{"cod":41,"nome":"UROLOGIA"}],"2":[{"cod":64,"nome":"ODONTOIATRIA"}],"3":[{"cod":118,"nome":"FARMACISTA DI ALTRO SETTORE"},{"cod":66,"nome":"FARMACISTA PUBBLICO DEL SSN"},{"cod":67,"nome":"FARMACISTA TERRITORIALE"}],"4":[{"cod":61,"nome":"IGIENE DEGLI ALLEVAMENTI E DELLE PRODUZIONI ZOOTECNICHE"},{"cod":62,"nome":"IGIENE PROD., TRASF., COMMERCIAL., CONSERV. E TRAS. ALIMENTI DI ORIGINE ANIMALE E DERIVATI"},{"cod":63,"nome":"SANITA' ANIMALE"}],"5":[{"cod":78,"nome":"PSICOLOGIA"},{"cod":77,"nome":"PSICOTERAPIA"}],"6":[{"cod":68,"nome":"BIOLOGO"}],"7":[{"cod":76,"nome":"CHIMICA"}],"8":[{"cod":79,"nome":"FISICA"}],"9":[{"cod":80,"nome":"ASSISTENTE SANITARIO"}],"10":[{"cod":81,"nome":"DIETISTA"},{"cod":119,"nome":"ISCRITTO NELL'ELENCO SPECIALE AD ESAURIMENTO"}],"11":[{"cod":83,"nome":"EDUCATORE PROFESSIONALE"},{"cod":120,"nome":"ISCRITTO NELL'ELENCO SPECIALE AD ESAURIMENTO"}],"12":[{"cod":82,"nome":"FISIOTERAPISTA"},{"cod":121,"nome":"ISCRITTO NELL'ELENCO SPECIALE AD ESAURIMENTO"}],"13":[{"cod":84,"nome":"IGIENISTA DENTALE"},{"cod":122,"nome":"ISCRITTO NELL'ELENCO SPECIALE AD ESAURIMENTO"}],"14":[{"cod":85,"nome":"INFERMIERE"}],"15":[{"cod":86,"nome":"INFERMIERE PEDIATRICO"}],"16":[{"cod":123,"nome":"ISCRITTO NELL'ELENCO SPECIALE AD ESAURIMENTO"},{"cod":87,"nome":"LOGOPEDISTA"}],"17":[{"cod":124,"nome":"ISCRITTO NELL'ELENCO SPECIALE AD ESAURIMENTO"},{"cod":88,"nome":"ORTOTTISTA/ASSISTENTE DI OFTALMOLOGIA"}],"18":[{"cod":89,"nome":"OSTETRICA/O"}],"19":[{"cod":125,"nome":"ISCRITTO NELL'ELENCO SPECIALE AD ESAURIMENTO"},{"cod":90,"nome":"PODOLOGO"}],"20":[{"cod":126,"nome":"ISCRITTO NELL'ELENCO SPECIALE AD ESAURIMENTO"},{"cod":95,"nome":"TECNICO AUDIOMETRISTA"}],"21":[{"cod":127,"nome":"ISCRITTO NELL'ELENCO SPECIALE AD ESAURIMENTO"},{"cod":96,"nome":"TECNICO AUDIOPROTESISTA"}],"22":[{"cod":128,"nome":"ISCRITTO NELL'ELENCO SPECIALE AD ESAURIMENTO"},{"cod":92,"nome":"TECNICO DELLA FISIOPATOLOGIA CARDIOCIRCOLATORIA E PERFUSIONE CARDIOVASCOLARE"}],"23":[{"cod":129,"nome":"ISCRITTO NELL'ELENCO SPECIALE AD ESAURIMENTO"},{"cod":105,"nome":"TECNICO DELLA PREVENZIONE NELL'AMBIENTE E NEI LUOGHI DI LAVORO"}],"24":[{"cod":130,"nome":"ISCRITTO NELL'ELENCO SPECIALE AD ESAURIMENTO"},{"cod":91,"nome":"TECNICO DELLA RIABILITAZIONE PSICHIATRICA"}],"25":[{"cod":131,"nome":"ISCRITTO NELL'ELENCO SPECIALE AD ESAURIMENTO"},{"cod":98,"nome":"TECNICO DI NEUROFISIOPATOLOGIA"}],"26":[{"cod":132,"nome":"ISCRITTO NELL'ELENCO SPECIALE AD ESAURIMENTO"},{"cod":99,"nome":"TECNICO ORTOPEDICO"}],"27":[{"cod":94,"nome":"TECNICO SANITARIO DI RADIOLOGIA MEDICA"}],"28":[{"cod":133,"nome":"ISCRITTO NELL'ELENCO SPECIALE AD ESAURIMENTO"},{"cod":93,"nome":"TECNICO SANITARIO LABORATORIO BIOMEDICO"}],"29":[{"cod":134,"nome":"ISCRITTO NELL'ELENCO SPECIALE AD ESAURIMENTO"},{"cod":100,"nome":"TERAPISTA DELLA NEURO E PSICOMOTRICITA' DELL'ETA' EVOLUTIVA"}],"30":[{"cod":135,"nome":"ISCRITTO NELL'ELENCO SPECIALE AD ESAURIMENTO"},{"cod":101,"nome":"TERAPISTA OCCUPAZIONALE"}],"33":[{"cod":136,"nome":"ISCRITTO NELL'ELENCO SPECIALE AD ESAURIMENTO EX ART.5 D.M. 09.08.2019"}]}};
+
 const FIELDS = [
   'cognome','nome','cf','nato_il','nato_a','provincia',
   'indirizzo','cap','citta','cellulare','email',
@@ -805,6 +831,7 @@ async function init() {
   if (!TOKEN) { showError('Link non valido: token mancante.'); return; }
 
   populateProvince();
+  _populateProfDropdown();  // v128.0 — dropdown professioni AGENAS
 
   // Auto-normalizza data nato_il su blur
   const dataEl = $('f-nato_il');
@@ -1092,6 +1119,7 @@ function renderStep() {
   // v127.9 — entrando in Step 3, se Azienda già pre-fillata e ECM non scelto, apri modal ECM
   if (stepKey === '3') {
     updateEcmBadge();
+    applyEcmModeToStep3();  // v128.0 — sincronizza visibilità dropdown/free text
     const enteAlreadyFilled = ($('f-ente').value || '').trim();
     if (enteAlreadyFilled) setTimeout(tryAutoOpenEcmModal, 250);
   }
@@ -1153,6 +1181,21 @@ function validateStep() {
       if (ecmFlag !== '0' && ecmFlag !== '1') {
         openEcmModal();
         return false;
+      }
+      // v128.0 — italiano + ECM: professione e disciplina AGENAS obbligatorie
+      if (ecmFlag === '1') {
+        const profCod = ($('f-prof-cod').value || '').trim();
+        const discCod = ($('f-disc-cod').value || '').trim();
+        if (!profCod) {
+          alert('Selezioni la Sua professione dall\'elenco.');
+          $('f-prof-select').focus();
+          return false;
+        }
+        if (!discCod) {
+          alert('Selezioni la Sua disciplina dall\'elenco.');
+          $('f-disc-select').focus();
+          return false;
+        }
       }
     }
   }
@@ -1459,6 +1502,8 @@ async function submitForm() {
         anagrafica: anag,
         azienda: azienda,         // v127.2 (Fase 5: backend usa per discordanze PEC / nuovi enti)
         ecm: ($('f-ecm-flag').value || ''),  // v127.9: '1' ECM, '0' non ECM, '' straniero
+        agenas_prof_cod: ($('f-prof-cod').value || ''),     // v128.0: codice prof. AGENAS (solo se ECM)
+        agenas_disc_cod: ($('f-disc-cod').value || ''),     // v128.0: codice disciplina AGENAS (solo se ECM)
         aziende: cdi.aziende,
         no_collab: cdi.no_collab,
       }),
@@ -1814,6 +1859,7 @@ function emChoose(value) {
   // value = 1 (ECM) | 0 (non ECM)
   $('f-ecm-flag').value = String(value);
   updateEcmBadge();
+  applyEcmModeToStep3();  // v128.0 — switch UI dropdown vs free text
   closeEcmModal();
 }
 function updateEcmBadge() {
@@ -1843,6 +1889,98 @@ function tryAutoOpenEcmModal() {
   if (CONTRATTO_INFO.straniero) return;
   if (($('f-ecm-flag').value || '').trim() !== '') return;
   openEcmModal();
+}
+
+// v128.0 — Dropdown vincolati AGENAS (modalità ECM) ─────────────────────────
+
+function _populateProfDropdown() {
+  // Popola il <select> Professione con le 31 voci AGENAS (ordine numerico cod).
+  const sel = $('f-prof-select');
+  if (!sel) return;
+  // Mantieni la prima opzione vuota
+  let html = '<option value="">— scegli professione —</option>';
+  for (const p of AGENAS_DATA.professioni) {
+    html += `<option value="${p.cod}">${p.nome}</option>`;
+  }
+  sel.innerHTML = html;
+}
+
+function _populateDiscDropdown(codProf) {
+  // Popola il <select> Disciplina con le discipline native della professione scelta.
+  // Le voci sono già ordinate alfabeticamente nel JSON.
+  const sel = $('f-disc-select');
+  if (!sel) return;
+  if (!codProf) {
+    sel.innerHTML = '<option value="">— prima scelga la professione —</option>';
+    sel.disabled = true;
+    return;
+  }
+  const list = AGENAS_DATA.discipline_per_prof[String(codProf)] || [];
+  let html = '<option value="">— scegli disciplina —</option>';
+  for (const d of list) {
+    html += `<option value="${d.cod}">${d.nome}</option>`;
+  }
+  sel.innerHTML = html;
+  sel.disabled = false;
+}
+
+function onProfEcmChange() {
+  const sel = $('f-prof-select');
+  const codProf = sel.value;
+  const nomeProf = sel.options[sel.selectedIndex] ? sel.options[sel.selectedIndex].text : '';
+  $('f-prof-cod').value = codProf || '';
+  $('f-qualifica').value = (codProf ? nomeProf : '');
+  // Reset disciplina quando cambia la professione
+  $('f-disc-cod').value = '';
+  $('f-specialita').value = '';
+  _populateDiscDropdown(codProf);
+}
+
+function onDiscEcmChange() {
+  const sel = $('f-disc-select');
+  const codDisc = sel.value;
+  const nomeDisc = sel.options[sel.selectedIndex] ? sel.options[sel.selectedIndex].text : '';
+  $('f-disc-cod').value = codDisc || '';
+  $('f-specialita').value = (codDisc ? nomeDisc : '');
+}
+
+function applyEcmModeToStep3() {
+  // Mostra dropdown AGENAS (ECM) o input free text (Non-ECM/straniero).
+  const ecmFlag = ($('f-ecm-flag').value || '').trim();
+  const isEcm = (ecmFlag === '1');
+  // Stranieri: niente flag → mostra free text (modalità default)
+  $('prof-ecm-row').style.display = isEcm ? '' : 'none';
+  $('disc-ecm-row').style.display = isEcm ? '' : 'none';
+  $('prof-free-row').style.display = isEcm ? 'none' : '';
+  $('disc-free-row').style.display = isEcm ? 'none' : '';
+
+  if (isEcm) {
+    // Pre-selezione: se Qualifica DBDOC = nome canonico AGENAS, preseleziona dropdown
+    const qualNow = ($('f-qualifica').value || '').trim().toUpperCase();
+    const profMatch = AGENAS_DATA.professioni.find(p => p.nome === qualNow);
+    if (profMatch && !$('f-prof-cod').value) {
+      $('f-prof-select').value = String(profMatch.cod);
+      $('f-prof-cod').value = String(profMatch.cod);
+      _populateDiscDropdown(profMatch.cod);
+      // Pre-selezione Disciplina se Specialità DBDOC matcha esattamente
+      const specNow = ($('f-specialita').value || '').trim().toUpperCase();
+      if (specNow) {
+        const list = AGENAS_DATA.discipline_per_prof[String(profMatch.cod)] || [];
+        const discMatch = list.find(d => d.nome === specNow);
+        if (discMatch) {
+          $('f-disc-select').value = String(discMatch.cod);
+          $('f-disc-cod').value = String(discMatch.cod);
+        }
+      }
+    } else if ($('f-prof-cod').value) {
+      // Il codice è già impostato (es. dopo onProfEcmChange) — solo sincronizza select
+      $('f-prof-select').value = $('f-prof-cod').value;
+      _populateDiscDropdown($('f-prof-cod').value);
+      if ($('f-disc-cod').value) {
+        $('f-disc-select').value = $('f-disc-cod').value;
+      }
+    }
+  }
 }
 
 init();
