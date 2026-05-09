@@ -193,6 +193,9 @@
     display: flex; align-items: center; justify-content: space-between; gap: 12px;
   }
   .azienda-summary:hover { background: #eff6ff; }
+  /* v128.3 — Stato "tipologia da confermare" (pre-fill DBDOC senza dbao_id) */
+  .azienda-summary-pending { border-color: #f59e0b; background: #fff7ed; }
+  .azienda-summary-pending:hover { background: #fef3c7; }
   .azienda-summary-empty {
     border: 2px dashed #cbd5e1; border-radius: 8px; padding: 18px; cursor: pointer;
     background: #f8fafc; text-align: center; color: #64748b; transition: all .15s;
@@ -1133,7 +1136,14 @@ function renderStep() {
     updateEcmBadge();
     applyEcmModeToStep3();  // v128.0 — sincronizza visibilità dropdown/free text
     const enteAlreadyFilled = ($('f-ente').value || '').trim();
-    if (enteAlreadyFilled) setTimeout(tryAutoOpenEcmModal, 250);
+    const ctypeFilled = ($('f-company-type').value || '').trim();
+    if (enteAlreadyFilled && !ctypeFilled) {
+      // v128.3 — DBDOC ha l'ente ma non la tipologia (mai legato a DBAO).
+      // Apri il modal Azienda dal bivio per chiedere conferma Pubblica/Privata.
+      setTimeout(openCompanyModal, 200);
+    } else if (enteAlreadyFilled) {
+      setTimeout(tryAutoOpenEcmModal, 250);
+    }
   }
 
   window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -1175,8 +1185,13 @@ function validateStep() {
   if (stepKey === '3') {
     const ente = ($('f-ente').value || '').trim();
     const ctype = ($('f-company-type').value || '').trim();
-    if (!ente || !ctype) {
+    if (!ente) {
       alert('Indichi la Sua azienda cliccando sulla card "Azienda".');
+      return false;
+    }
+    if (!ctype) {
+      alert('Confermi la tipologia (Pubblica oppure Privata/Altro) della Sua azienda cliccando "Modifica" sulla card.');
+      openCompanyModal();
       return false;
     }
     // Per Pubblica la PEC è obbligatoria (gestita nel modale, ma defensive check)
@@ -1844,8 +1859,12 @@ function updateAziendaSummary() {
   if (type === 'pubblica') {
     if (tipo) metaParts.push('<b>' + tipo + '</b>');
     if (citta) metaParts.push(citta + (prov ? ' (' + prov + ')' : ''));
-  } else {
+  } else if (type === 'privata') {
     metaParts.push('<i>Privata / Altro</i>');
+  } else {
+    // v128.3 — Tipologia ignota (pre-fill da DBDOC senza dbao_id né company_type)
+    sum.className = 'azienda-summary azienda-summary-pending';
+    metaParts.push('<i style="color:#92400e">⚠ Tipologia da confermare</i>');
   }
   let html = '<div class="azienda-summary-info">';
   html += '<div class="name">' + ente.replace(/</g, '&lt;') + '</div>';
