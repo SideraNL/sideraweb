@@ -278,6 +278,20 @@
     color: #92400e; cursor: pointer; font-weight: 600; font-size: 13px;
   }
   .cm-altro-btn:hover { background: #fde68a; }
+
+  /* v127.9 — Badge ECM/Non ECM */
+  .ecm-badge {
+    display: flex; align-items: center; gap: 12px;
+    padding: 10px 14px; border-radius: 8px;
+    border: 2px solid; font-weight: 600; font-size: 14px;
+  }
+  .ecm-badge.ecm { background: #ecfdf5; border-color: #10b981; color: #065f46; }
+  .ecm-badge.non-ecm { background: #fef3c7; border-color: #f59e0b; color: #92400e; }
+  .ecm-edit-btn {
+    margin-left: auto; padding: 6px 12px; font-size: 12px; font-weight: 600;
+    background: #1a56db; color: #fff; border: none; border-radius: 6px; cursor: pointer;
+  }
+  .ecm-edit-btn:hover { background: #1241a8; }
 </style>
 </head>
 <body>
@@ -401,6 +415,15 @@
           <input type="hidden" id="f-azienda-citta">
           <input type="hidden" id="f-azienda-prov">
           <input type="hidden" id="f-dbao-id">
+        </div>
+        <!-- v127.9 — Badge ECM / Non ECM (solo italiani). Hidden field f-ecm-flag = '1' | '0' | '' -->
+        <input type="hidden" id="f-ecm-flag">
+        <div id="ecm-badge-row" class="field full" style="display:none">
+          <label>Ambito professionale</label>
+          <div id="ecm-badge" class="ecm-badge">
+            <span id="ecm-badge-text">—</span>
+            <button type="button" class="ecm-edit-btn" onclick="openEcmModal()">✏️ Modifica</button>
+          </div>
         </div>
         <div class="field"><label>Professione</label><input id="f-qualifica"></div>
         <div class="field"><label>Disciplina</label><input id="f-specialita"></div>
@@ -660,6 +683,31 @@
         </div>
       </div>
 
+    </div>
+  </div>
+</div>
+
+<!-- v127.9 — Mini modale ECM / Non ECM (solo italiani). Si apre all'ingresso Step 3 dopo l'Azienda. -->
+<div id="em-overlay" class="cm-overlay" style="display:none">
+  <div class="cm-modal" style="max-width:560px">
+    <div class="cm-header">
+      <h3>Ambito professionale</h3>
+      <!-- Niente bottone X: la scelta è obbligatoria -->
+    </div>
+    <div class="cm-body">
+      <p style="margin:0 0 16px;color:#475569;font-size:14px">
+        Esercita una professione sanitaria che rientra nell'ambito ECM?
+      </p>
+      <button class="cm-choice" onclick="emChoose(1)">
+        <span class="icon">✅</span>
+        <span class="titolo">Sì — sono nell'ambito ECM</span>
+        <span class="desc">Medico, infermiere, psicologo, farmacista, biologo, fisioterapista, ostetrica, ecc. (incluso elenco speciale ad esaurimento)</span>
+      </button>
+      <button class="cm-choice" onclick="emChoose(0)">
+        <span class="icon">📋</span>
+        <span class="titolo">No — non rientro nell'ambito ECM</span>
+        <span class="desc">Es. amministrativo, avvocato, manager non sanitario, professore universitario di altra disciplina, ecc.</span>
+      </button>
     </div>
   </div>
 </div>
@@ -1041,6 +1089,13 @@ function renderStep() {
 
   if (stepKey === 'final') renderSummary();
 
+  // v127.9 — entrando in Step 3, se Azienda già pre-fillata e ECM non scelto, apri modal ECM
+  if (stepKey === '3') {
+    updateEcmBadge();
+    const enteAlreadyFilled = ($('f-ente').value || '').trim();
+    if (enteAlreadyFilled) setTimeout(tryAutoOpenEcmModal, 250);
+  }
+
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
@@ -1089,6 +1144,14 @@ function validateStep() {
       const pec = ($('f-pec').value || '').trim();
       if (!pec) {
         alert('Per le aziende pubbliche la PEC è obbligatoria. Riapra il modale "Azienda" per inserirla.');
+        return false;
+      }
+    }
+    // v127.9 — italiani: scelta ECM/Non ECM obbligatoria
+    if (!CONTRATTO_INFO.straniero) {
+      const ecmFlag = ($('f-ecm-flag').value || '').trim();
+      if (ecmFlag !== '0' && ecmFlag !== '1') {
+        openEcmModal();
         return false;
       }
     }
@@ -1395,6 +1458,7 @@ async function submitForm() {
         tipo_dip_pub: tipoDipPub,  // v120.4: 'SSN' | 'UNIV' (solo se C)
         anagrafica: anag,
         azienda: azienda,         // v127.2 (Fase 5: backend usa per discordanze PEC / nuovi enti)
+        ecm: ($('f-ecm-flag').value || ''),  // v127.9: '1' ECM, '0' non ECM, '' straniero
         aziende: cdi.aziende,
         no_collab: cdi.no_collab,
       }),
@@ -1446,6 +1510,8 @@ function openCompanyModal() {
 }
 function closeCompanyModal() {
   _cm('cm-overlay').style.display = 'none';
+  // v127.9 — dopo aver scelto l'Azienda, chiediamo l'ambito ECM (solo italiani)
+  setTimeout(tryAutoOpenEcmModal, 200);
 }
 function cmShowStep(stepId) {
   document.querySelectorAll('.cm-step').forEach(el => el.classList.remove('active'));
@@ -1731,6 +1797,52 @@ function updateAziendaSummary() {
   html += '</div>';
   html += '<button class="edit-btn" onclick="event.stopPropagation();openCompanyModal()">✏️ Modifica</button>';
   sum.innerHTML = html;
+}
+
+// v127.9 — Mini modal ECM/Non ECM ─────────────────────────────────────────
+// Si apre automaticamente all'ingresso Step 3 (solo italiani, solo se flag
+// non ancora impostato). La scelta condiziona il flag "ecm" salvato nel submit.
+// Per ora i campi Professione/Disciplina restano free text in entrambi i casi.
+
+function openEcmModal() {
+  $('em-overlay').style.display = 'flex';
+}
+function closeEcmModal() {
+  $('em-overlay').style.display = 'none';
+}
+function emChoose(value) {
+  // value = 1 (ECM) | 0 (non ECM)
+  $('f-ecm-flag').value = String(value);
+  updateEcmBadge();
+  closeEcmModal();
+}
+function updateEcmBadge() {
+  const row = $('ecm-badge-row');
+  const badge = $('ecm-badge');
+  const text = $('ecm-badge-text');
+  if (!row || !badge || !text) return;
+  const v = ($('f-ecm-flag').value || '').trim();
+  if (v === '1') {
+    row.style.display = '';
+    badge.className = 'ecm-badge ecm';
+    text.innerHTML = '✅ <b>Ambito ECM</b> — professione sanitaria';
+  } else if (v === '0') {
+    row.style.display = '';
+    badge.className = 'ecm-badge non-ecm';
+    text.innerHTML = '📋 <b>Non ECM</b> — non rientro tra le professioni sanitarie ECM';
+  } else {
+    row.style.display = 'none';
+  }
+}
+function tryAutoOpenEcmModal() {
+  // Apri il modal ECM se: siamo in Step 3 + non straniero + flag vuoto.
+  // Per stranieri non chiediamo (gestiti separatamente come oggi).
+  const steps = getCurrentSteps();
+  const stepKey = steps[CURRENT_STEP_INDEX];
+  if (stepKey !== '3') return;
+  if (CONTRATTO_INFO.straniero) return;
+  if (($('f-ecm-flag').value || '').trim() !== '') return;
+  openEcmModal();
 }
 
 init();
