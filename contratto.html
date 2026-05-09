@@ -881,6 +881,14 @@ function populate(data) {
   if (Array.isArray(data.dbao)) {
     cmDbaoCache = data.dbao;
   }
+  // v128.1 — Snapshot AGENAS embedded nel prefill (override del fallback statico).
+  // Se GAS porta dati AGENAS aggiornati, sostituiscono la costante AGENAS_DATA inline.
+  // Fallback: se data.agenas manca o è malformato, usiamo l'embedded (sempre presente).
+  if (data.agenas && Array.isArray(data.agenas.professioni) && data.agenas.discipline_per_prof) {
+    AGENAS_DATA.professioni = data.agenas.professioni;
+    AGENAS_DATA.discipline_per_prof = data.agenas.discipline_per_prof;
+    _populateProfDropdown();  // ripopola il dropdown con i dati freschi
+  }
 
   // Anagrafica
   const a = data.anagrafica || {};
