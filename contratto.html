@@ -760,8 +760,14 @@ async function init() {
   });
 
   try {
-    // Strada B: chiama GAS Web App pubblico (sempre online), che legge dal Sheet "Contratti"
-    const res = await fetch(GAS_API_URL + '?action=prefill&t=' + encodeURIComponent(TOKEN));
+    // v127.3 — Se aperto da localhost (testing diretto su MedFIND), bypassa GAS
+    // e chiama direttamente l'endpoint locale /api/contratti/prefill/<token>
+    // (che ritorna anche `dbao` per il modale Pubblica).
+    const isLocal = ['localhost', '127.0.0.1'].includes(window.location.hostname);
+    const url = isLocal
+      ? ('/api/contratti/prefill/' + encodeURIComponent(TOKEN))
+      : (GAS_API_URL + '?action=prefill&t=' + encodeURIComponent(TOKEN));
+    const res = await fetch(url);
     const data = await res.json();
     if (!data.ok) { showError(data.error || 'Errore caricamento dati.'); return; }
     if (data.submitted) { showState('success-screen'); return; }
@@ -1157,8 +1163,12 @@ function updateOpzione() {
   const sel = document.querySelector('input[name="opzione"]:checked');
   ['A','B','C'].forEach(k => $('op-' + k).classList.toggle('selected', sel && sel.value === k));
   const isPublic = sel && (sel.value === 'B' || sel.value === 'C');
-  $('pec-req-mark').style.display = isPublic ? 'inline' : 'none';
-  $('pec-hint').textContent = isPublic
+  // v127.3 — pec-req-mark e pec-hint rimossi in v127.2 (Step 3 ridisegnato con
+  // card riassunto + modale Pubblica/Privata). Null-guard per backward compat.
+  const pecMark = $('pec-req-mark');
+  if (pecMark) pecMark.style.display = isPublic ? 'inline' : 'none';
+  const pecHint = $('pec-hint');
+  if (pecHint) pecHint.textContent = isPublic
     ? '⚠ Obbligatoria per dipendenti pubblici'
     : 'Obbligatoria se è dipendente pubblico';
   if (isPublic && !CLAUSOLE_LOADED) loadClausole();
