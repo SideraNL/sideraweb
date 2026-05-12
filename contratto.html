@@ -461,9 +461,9 @@
     <div class="card step" data-step="4" style="display:none">
       <div class="card-icon">Passo 4</div>
       <h2>Dati fiscali e bancari</h2>
-      <p class="lead">IBAN per l'accredito del compenso e P.IVA se applicabile.</p>
+      <p class="lead" id="step4-lead">IBAN per l'accredito del compenso e P.IVA se applicabile.</p>
       <div class="grid">
-        <div class="field full">
+        <div class="field full" id="iban-row">
           <label>IBAN <span id="iban-req-mark" style="color:#dc2626;display:none">*</span></label>
           <input id="f-iban" maxlength="34" style="text-transform:uppercase"
                  oninput="onIbanInput()" onblur="onIbanBlur()">
@@ -1046,7 +1046,22 @@ function ibanIsRequired() {
   return CONTRATTO_INFO.importo > 0 && !CONTRATTO_INFO.straniero;
 }
 
+// v133.1 — Se l'incarico è gratuito (importo == 0), l'IBAN non serve: nascondo
+// la riga IBAN per non chiederla al relatore. Resta visibile solo P.IVA.
+function ibanIsHidden() {
+  return CONTRATTO_INFO.importo === 0;
+}
+
 function updateIbanRequiredMark() {
+  // v133.1 — Nascondi/mostra l'intera riga IBAN in base all'importo
+  const ibanRow = $('iban-row');
+  if (ibanRow) ibanRow.style.display = ibanIsHidden() ? 'none' : '';
+  const lead = $('step4-lead');
+  if (lead) {
+    lead.textContent = ibanIsHidden()
+      ? 'P.IVA se applicabile.'
+      : 'IBAN per l\'accredito del compenso e P.IVA se applicabile.';
+  }
   const mark = $('iban-req-mark');
   if (mark) mark.style.display = ibanIsRequired() ? 'inline' : 'none';
   const fb = $('iban-feedback');
@@ -1231,7 +1246,8 @@ function validateStep() {
   }
 
   // v120.5 — Validazione IBAN allo step 4
-  if (stepKey === '4') {
+  // v133.1 — Skip se incarico gratuito (IBAN row nascosta)
+  if (stepKey === '4' && !ibanIsHidden()) {
     const ibanEl = $('f-iban');
     const v = (ibanEl.value || '').trim();
     if (!v) {
@@ -1422,7 +1438,7 @@ function renderSummary() {
     <tr><td>Cellulare / Email</td><td>${get('f-cellulare')} — ${get('f-email')}</td></tr>
     <tr><td>Azienda / Professione</td><td>${get('f-ente')} — ${get('f-qualifica')}</td></tr>
     <tr><td>PEC aziendale</td><td>${get('f-pec')}</td></tr>
-    <tr><td>IBAN</td><td>${get('f-iban')}</td></tr>
+    ${ibanIsHidden() ? '' : `<tr><td>IBAN</td><td>${get('f-iban')}</td></tr>`}
     <tr><td>P.IVA</td><td>${get('f-partita_iva')}</td></tr>
     <tr><td>Autorizzazione</td><td><b>${opTxt}</b></td></tr>
     <tr><td>Conflitto interesse</td><td>${cdiTxt}</td></tr>
@@ -1473,18 +1489,21 @@ async function submitForm() {
   }
 
   // v120.5 — Final IBAN check (defensive, lo step 4 dovrebbe già aver bloccato)
-  const ibanV = ($('f-iban').value || '').trim();
-  if (!ibanV && ibanIsRequired()) {
-    alert('IBAN obbligatorio: il contratto prevede un compenso. Torni al passo 4 e inserisca l\'IBAN.');
-    return;
-  }
-  if (ibanV) {
-    const r = validateIban(ibanV);
-    if (!r.ok) {
-      alert('IBAN non valido — ' + r.msg + '\n\nTorni al passo 4 per correggere prima di inviare.');
+  // v133.1 — Skip se incarico gratuito (IBAN row nascosta nel form)
+  if (!ibanIsHidden()) {
+    const ibanV = ($('f-iban').value || '').trim();
+    if (!ibanV && ibanIsRequired()) {
+      alert('IBAN obbligatorio: il contratto prevede un compenso. Torni al passo 4 e inserisca l\'IBAN.');
       return;
     }
-    $('f-iban').value = normalizeIban(ibanV);
+    if (ibanV) {
+      const r = validateIban(ibanV);
+      if (!r.ok) {
+        alert('IBAN non valido — ' + r.msg + '\n\nTorni al passo 4 per correggere prima di inviare.');
+        return;
+      }
+      $('f-iban').value = normalizeIban(ibanV);
+    }
   }
 
   const anag = {};
