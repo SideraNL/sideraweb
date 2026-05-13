@@ -98,6 +98,8 @@
   }
   .field input[readonly] { background: #f8fafc; color: #475569; cursor: not-allowed; }
   .field .hint { font-size: 11px; color: #94a3b8; margin-top: 3px; }
+  /* v140.8 — Auto-uppercase visivo per tutti i campi testuali (esclusa email) */
+  .field input:not([type=email]):not([type=number]):not([type=tel]):not([type=password]) { text-transform: uppercase; }
 
   /* Opzioni A/B/C */
   .opzione {
@@ -365,6 +367,9 @@
       <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:16%"></div></div>
     </div>
 
+    <!-- v141.0 — Info box per messaggi di validazione (sostituisce alert() del browser) -->
+    <div id="form-msg" style="display:none"></div>
+
     <!-- ───────── STEP 1: Dati anagrafici ───────── -->
     <div class="card step" data-step="1">
       <div class="card-icon">Passo 1</div>
@@ -373,17 +378,29 @@
       <div class="grid">
         <div class="field"><label>Cognome <span class="req">*</span></label><input id="f-cognome" required></div>
         <div class="field"><label>Nome <span class="req">*</span></label><input id="f-nome" required></div>
-        <div class="field"><label>Codice fiscale <span class="req">*</span></label><input id="f-cf" maxlength="16" style="text-transform:uppercase" required></div>
-        <div class="field">
-          <label>Data di nascita</label>
-          <input id="f-nato_il" placeholder="GG/MM/AAAA" maxlength="10" pattern="\d{2}/\d{2}/\d{4}">
-          <div class="hint">Formato: GG/MM/AAAA (es. 24/07/1986)</div>
+        <!-- v141.1 — Codice fiscale centrale + bottone "Estrai dati" (solo italiani) -->
+        <div class="field full">
+          <label>Codice fiscale <span class="req">*</span></label>
+          <div style="display:flex;gap:8px;align-items:stretch">
+            <input id="f-cf" maxlength="16" style="flex:1;text-transform:uppercase" required>
+            <button id="btn-cf-extract" type="button" onclick="onCfExtract()"
+                    style="background:#1a56db;color:#fff;border:none;border-radius:6px;padding:0 18px;font-weight:600;font-size:13px;cursor:pointer;white-space:nowrap">📋 Estrai dati</button>
+          </div>
+          <div id="cf-extract-hint" class="hint" style="margin-top:6px">Inserisca il Suo codice fiscale e clicchi <b>Estrai dati</b> per compilare automaticamente Luogo, Provincia e Data di nascita.</div>
         </div>
-        <div class="field"><label>Luogo di nascita</label><input id="f-nato_a"></div>
-        <div class="field">
-          <label>Provincia di nascita</label>
-          <select id="f-provincia"></select>
-          <div class="hint">Sigla provincia (es. SA) — selezioni "EE" se nato all'estero</div>
+        <!-- v141.1 — Luogo (largo) · Provincia (stretto) · Data di nascita (stretto) sulla stessa riga -->
+        <div style="grid-column:1/-1;display:grid;grid-template-columns:2fr 1fr 1fr;gap:14px">
+          <div class="field"><label>Luogo di nascita <span class="req">*</span></label><input id="f-nato_a" required></div>
+          <div class="field">
+            <label>Provincia di nascita <span class="req">*</span></label>
+            <select id="f-provincia" required></select>
+            <div class="hint">Sigla provincia (es. SA) — "EE" se estero</div>
+          </div>
+          <div class="field">
+            <label>Data di nascita <span class="req">*</span></label>
+            <input id="f-nato_il" placeholder="GG/MM/AAAA" maxlength="10" pattern="\d{2}/\d{2}/\d{4}" inputmode="numeric" required>
+            <div class="hint">Formato: GG/MM/AAAA</div>
+          </div>
         </div>
       </div>
     </div>
@@ -597,6 +614,23 @@
 
 </div>
 
+<!-- v141.1 — Overlay conferma dati anagrafici (estratti dal CF) -->
+<div id="anag-confirm-overlay" style="display:none;position:fixed;inset:0;z-index:1000;background:rgba(15,23,42,.55);align-items:center;justify-content:center;padding:20px">
+  <div style="background:#fff;border-radius:12px;max-width:520px;width:100%;padding:28px;box-shadow:0 24px 60px rgba(0,0,0,.4)">
+    <h3 style="margin:0 0 6px;color:#1e3a6e;font-size:19px">Confermi i Suoi dati anagrafici</h3>
+    <p style="margin:0 0 16px;color:#475569;font-size:13px">I seguenti dati sono stati derivati dal Suo codice fiscale. La preghiamo di verificare che corrispondano al Suo documento d'identità prima di procedere.</p>
+    <table id="anag-confirm-table" style="width:100%;border-collapse:collapse;font-size:14px;margin-bottom:20px">
+      <tbody></tbody>
+    </table>
+    <div style="display:flex;gap:10px;justify-content:flex-end">
+      <button type="button" onclick="anagConfirmNo()"
+              style="background:#fff;color:#475569;border:1px solid #cbd5e1;border-radius:7px;padding:10px 18px;font-weight:600;font-size:13px;cursor:pointer">✏️ Modifica</button>
+      <button type="button" onclick="anagConfirmYes()"
+              style="background:#16a34a;color:#fff;border:none;border-radius:7px;padding:10px 22px;font-weight:600;font-size:13px;cursor:pointer">✓ Sì, sono corretti</button>
+    </div>
+  </div>
+</div>
+
 <!-- v127.2 — Modale bivio Pubblica/Privata + flow strutture DBAO -->
 <div id="cm-overlay" class="cm-overlay" style="display:none">
   <div class="cm-modal">
@@ -605,6 +639,8 @@
       <button class="cm-close" onclick="closeCompanyModal()" aria-label="Chiudi">×</button>
     </div>
     <div class="cm-body">
+      <!-- v141.0 — Info box dentro modale (sostituisce alert) -->
+      <div id="cm-msg" style="display:none"></div>
 
       <!-- Step bivio Pubblica/Privata -->
       <div id="cm-step-bivio" class="cm-step active">
@@ -835,6 +871,42 @@ function normalizeDateInput(v) {
   return `${dd}/${mm}/${yy}`;
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// v141.0 — Info box per messaggi di validazione (sostituisce alert() del browser).
+// Sceglie automaticamente il contenitore: se il modale "Azienda" è aperto, scrive
+// in #cm-msg dentro al modale; altrimenti in #form-msg in cima al form principale.
+// ─────────────────────────────────────────────────────────────────────────────
+function _renderFormMsg(el, msg, type) {
+  if (!el) return;
+  const palette = ({
+    error:   { bg:'#fef2f2', bd:'#dc2626', fg:'#991b1b', icon:'⚠️' },
+    warning: { bg:'#fffbeb', bd:'#f59e0b', fg:'#92400e', icon:'⚠️' },
+    info:    { bg:'#eff6ff', bd:'#3b82f6', fg:'#1e3a6e', icon:'ℹ️' },
+    success: { bg:'#ecfdf5', bd:'#16a34a', fg:'#065f46', icon:'✓' }
+  })[type || 'error'];
+  el.style.cssText = 'display:block;margin:0 0 16px;padding:14px 18px;border-radius:8px;'
+    + 'font-size:14px;font-weight:500;background:' + palette.bg + ';'
+    + 'border:1px solid ' + palette.bd + ';color:' + palette.fg + ';white-space:pre-line';
+  el.textContent = palette.icon + '  ' + msg;
+  try { el.scrollIntoView({behavior:'smooth', block:'nearest'}); } catch(_) {}
+}
+
+function showFormMsg(msg, type) {
+  // Se il modale Azienda è aperto, mostra dentro al modale
+  const cmOv = document.getElementById('cm-overlay');
+  if (cmOv && cmOv.style.display && cmOv.style.display !== 'none') {
+    return _renderFormMsg(document.getElementById('cm-msg'), msg, type);
+  }
+  _renderFormMsg(document.getElementById('form-msg'), msg, type);
+}
+
+function clearFormMsg() {
+  const a = document.getElementById('form-msg');
+  const b = document.getElementById('cm-msg');
+  if (a) a.style.display = 'none';
+  if (b) b.style.display = 'none';
+}
+
 async function init() {
   const params = new URLSearchParams(location.search);
   TOKEN = params.get('t') || '';
@@ -843,11 +915,45 @@ async function init() {
   populateProvince();
   _populateProfDropdown();  // v128.0 — dropdown professioni AGENAS
 
-  // Auto-normalizza data nato_il su blur
+  // v140.9 — Auto-format data nato_il mentre l'utente digita: "07041973" → "07/04/1973"
   const dataEl = $('f-nato_il');
-  if (dataEl) dataEl.addEventListener('blur', () => {
-    dataEl.value = normalizeDateInput(dataEl.value);
+  if (dataEl) {
+    dataEl.addEventListener('input', () => {
+      const raw = (dataEl.value || '').replace(/\D/g, '').slice(0, 8); // solo cifre, max 8
+      let out = raw;
+      if (raw.length > 4)      out = raw.slice(0, 2) + '/' + raw.slice(2, 4) + '/' + raw.slice(4);
+      else if (raw.length > 2) out = raw.slice(0, 2) + '/' + raw.slice(2);
+      if (out !== dataEl.value) dataEl.value = out;
+    });
+    dataEl.addEventListener('blur', () => {
+      dataEl.value = normalizeDateInput(dataEl.value);
+    });
+  }
+
+  // v140.8 — Auto-uppercase su tutti i campi testuali (esclude email, telefono, numerici, IBAN già gestito).
+  // Delega globale: cattura anche input dinamici (modale azienda, ecc.).
+  document.addEventListener('input', (e) => {
+    const t = e.target;
+    if (!t || t.tagName !== 'INPUT') return;
+    const tp = (t.type || 'text').toLowerCase();
+    if (tp === 'email' || tp === 'password' || tp === 'number' || tp === 'tel' || tp === 'checkbox' || tp === 'radio' || tp === 'date') return;
+    if (t.dataset && t.dataset.noUpper === '1') return;
+    const up = (t.value || '').toUpperCase();
+    if (up !== t.value) {
+      const s = t.selectionStart, eN = t.selectionEnd;
+      t.value = up;
+      try { t.setSelectionRange(s, eN); } catch (_) {}
+    }
   });
+
+  // v141.1 — Se l'utente modifica il CF dopo aver estratto i dati, sblocca i campi
+  // anagrafici (luogo/prov/data) così deve cliccare di nuovo "Estrai dati".
+  const cfEl = $('f-cf');
+  if (cfEl) cfEl.addEventListener('input', _maybeUnlockOnCfChange);
+
+  // v141.1 — Precarica la tabella codici catastali in background (non bloccante).
+  // Verrà comunque caricata al primo click su "Estrai dati", ma così è già pronta.
+  _ensureCfCodesLoaded().catch(() => {});
 
   try {
     // v127.3 — Se aperto da localhost (testing diretto su MedFIND), bypassa GAS
@@ -950,6 +1056,15 @@ function populate(data) {
   // Aggiorna obbligatorietà visiva del campo IBAN e re-valida se già compilato
   updateIbanRequiredMark();
   if ($('f-iban').value) onIbanInput();
+
+  // v141.1 — Per stranieri il bottone "Estrai dati" non ha senso (CF italiano assente).
+  // Nascondi bottone + hint; i campi anagrafici restano sempre editabili.
+  if (CONTRATTO_INFO.straniero) {
+    const btn = document.getElementById('btn-cf-extract');
+    if (btn) btn.style.display = 'none';
+    const hint = document.getElementById('cf-extract-hint');
+    if (hint) hint.textContent = 'Compili manualmente i Suoi dati anagrafici.';
+  }
 }
 
 // v120.5 — Stato globale per logica IBAN obbligatorio
@@ -1115,12 +1230,18 @@ function getCurrentSteps() {
   //   • Pubblica → step 5 mostra solo B/C (logica esistente di getCurrentSteps);
   //                BIS/TER attivi solo se B o C scelta.
   // Step CDI sempre presente.
+  // v140.7 — Se il contratto è gratuito (importo == 0) salto interamente lo
+  // step 4 (Dati fiscali e bancari): niente IBAN, niente P.IVA, perché senza
+  // compenso non c'è accredito né necessità di partita IVA.
+  const skipStep4 = (CONTRATTO_INFO.importo === 0);
+  const step4 = skipStep4 ? [] : ['4'];
+
   const companyType = (document.getElementById('f-company-type') || {}).value || '';
   if (companyType.toLowerCase() === 'privata') {
-    return ['1','2','3','4','cdi','final'];
+    return ['1','2','3', ...step4, 'cdi','final'];
   }
   const sel = document.querySelector('input[name="opzione"]:checked');
-  const base = ['1','2','3','4','5'];
+  const base = ['1','2','3', ...step4, '5'];
   if (sel && (sel.value === 'B' || sel.value === 'C')) return [...base, '6','7','cdi','final'];
   return [...base, 'cdi', 'final'];
 }
@@ -1128,6 +1249,9 @@ function getCurrentSteps() {
 function renderStep() {
   const steps = getCurrentSteps();
   const stepKey = steps[CURRENT_STEP_INDEX];
+
+  // v141.0 — pulisci eventuali info-box quando entro in un nuovo step
+  clearFormMsg();
 
   // Mostra solo lo step corrente
   $$('.step').forEach(el => {
@@ -1180,22 +1304,317 @@ function goBack() {
   renderStep();
 }
 
+// v140.6 — Validazione rigorosa del Codice Fiscale italiano.
+// Controlli:
+//   1) Pattern 16 caratteri AAAAAA00A00A000A (6 lettere + 2 cifre + 1 lettera +
+//      2 cifre + 1 lettera + 3 alfanumerici + 1 lettera checksum)
+//   2) Checksum (carattere finale calcolato sui primi 15)
+//   3) Coerenza opzionale con Cognome/Nome/Data di nascita (se forniti, warning
+//      bloccante solo su mismatch netto; carattere "*" admin per CF anonimi non
+//      contemplati nel form pubblico).
+// Algoritmo: tabelle ufficiali Agenzia delle Entrate. La lettera finale dipende
+// da una somma pesata di valori PARI/DISPARI sui primi 15 caratteri.
+// Ritorna {ok:boolean, error?:string}.
+// v141.0 — Omocodia: quando 2 CF coinciderebbero, l'Agenzia delle Entrate sostituisce
+// le cifre con lettere secondo questa tabella. Posizioni sostituibili (1-based): 7, 8, 10, 11, 13, 14, 15.
+const OMOCODIA_MAP = {'L':'0','M':'1','N':'2','P':'3','Q':'4','R':'5','S':'6','T':'7','U':'8','V':'9'};
+function _cfDecodeChar(c) {
+  if (/\d/.test(c)) return c;
+  return Object.prototype.hasOwnProperty.call(OMOCODIA_MAP, c) ? OMOCODIA_MAP[c] : c;
+}
+
+function validateCodiceFiscale(cf, hint) {
+  if (!cf) return {ok:false, error:'Codice fiscale non inserito'};
+  cf = String(cf).toUpperCase().trim();
+  if (cf.length !== 16) {
+    return {ok:false, error:`Lunghezza errata: ${cf.length} caratteri (devono essere 16)`};
+  }
+  // Pattern: 6 lettere + (anno) + lettera mese + (giorno) + lettera prov + (seq prov) + lettera check.
+  // Nelle posizioni "numeriche" (7-8 anno, 10-11 giorno, 13-15 seq prov) sono ammesse anche
+  // lettere di omocodia (L,M,N,P,Q,R,S,T,U,V) per disambiguare CF identici.
+  const pattern = /^[A-Z]{6}[\dLMNPQRSTUV]{2}[A-Z][\dLMNPQRSTUV]{2}[A-Z][\dLMNPQRSTUV]{3}[A-Z]$/;
+  if (!pattern.test(cf)) {
+    return {ok:false, error:'Formato non valido (atteso: 6 lettere + anno + lettera-mese + giorno + lettera-provincia + 3 caratteri + 1 lettera di controllo)'};
+  }
+  // Checksum: tabella PARI/DISPARI per posizioni 1-15, lettera finale derivata
+  // dal modulo 26 della somma pesata.
+  const DISPARI = {
+    '0':1,'1':0,'2':5,'3':7,'4':9,'5':13,'6':15,'7':17,'8':19,'9':21,
+    'A':1,'B':0,'C':5,'D':7,'E':9,'F':13,'G':15,'H':17,'I':19,'J':21,
+    'K':2,'L':4,'M':18,'N':20,'O':11,'P':3,'Q':6,'R':8,'S':12,'T':14,
+    'U':16,'V':10,'W':22,'X':25,'Y':24,'Z':23
+  };
+  const PARI = {
+    '0':0,'1':1,'2':2,'3':3,'4':4,'5':5,'6':6,'7':7,'8':8,'9':9,
+    'A':0,'B':1,'C':2,'D':3,'E':4,'F':5,'G':6,'H':7,'I':8,'J':9,
+    'K':10,'L':11,'M':12,'N':13,'O':14,'P':15,'Q':16,'R':17,'S':18,'T':19,
+    'U':20,'V':21,'W':22,'X':23,'Y':24,'Z':25
+  };
+  const CHECK_LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  let sum = 0;
+  for (let i = 0; i < 15; i++) {
+    const c = cf[i];
+    // Posizione 1-based: dispari = posizione dispari (1,3,5,...)
+    sum += ((i + 1) % 2 === 1) ? DISPARI[c] : PARI[c];
+  }
+  const expectedCheck = CHECK_LETTERS[sum % 26];
+  if (cf[15] !== expectedCheck) {
+    return {ok:false, error:`Checksum errato (l'ultimo carattere dovrebbe essere "${expectedCheck}" ma è "${cf[15]}")`};
+  }
+  // Coerenza con data di nascita (se fornita in GG/MM/AAAA).
+  // Decodifica omocodia sulle posizioni "numeriche" prima del confronto.
+  if (hint && hint.natoIl) {
+    const m = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(hint.natoIl);
+    if (m) {
+      const [_, gg, mm, aaaa] = m;
+      const yyCF = _cfDecodeChar(cf[6]) + _cfDecodeChar(cf[7]);
+      const yyDate = aaaa.substring(2, 4);
+      if (yyCF !== yyDate) {
+        return {ok:false, error:`Le 2 cifre dell'anno nel CF (${yyCF}) non coincidono con la data di nascita (${aaaa})`};
+      }
+      // Mese: A=gen B=feb C=mar D=apr E=mag H=giu L=lug M=ago P=set R=ott S=nov T=dic
+      const MESI = {'A':'01','B':'02','C':'03','D':'04','E':'05','H':'06',
+                    'L':'07','M':'08','P':'09','R':'10','S':'11','T':'12'};
+      const mmCF = MESI[cf[8]];
+      if (mmCF && mmCF !== mm) {
+        return {ok:false, error:`Il mese codificato nel CF ("${cf[8]}" = ${mmCF}) non coincide con la data di nascita (${mm})`};
+      }
+      // Giorno: per femmine, giorno + 40 → range 41-71. Decodifica omocodia su pos 10-11.
+      const ggCFstr = _cfDecodeChar(cf[9]) + _cfDecodeChar(cf[10]);
+      let ggCF = parseInt(ggCFstr, 10);
+      if (Number.isNaN(ggCF)) return {ok:false, error:'Caratteri non validi nelle posizioni del giorno di nascita'};
+      if (ggCF > 40) ggCF -= 40;
+      if (ggCF !== parseInt(gg, 10)) {
+        return {ok:false, error:`Il giorno codificato nel CF (${ggCF}) non coincide con la data di nascita (${gg})`};
+      }
+    }
+  }
+  return {ok:true};
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// v141.1 — Estrazione dati anagrafici dal CF (solo italiani).
+// Workflow: l'utente digita il CF → clicca "Estrai dati" → JS valida + decodifica
+// + popola Luogo/Provincia/Data e li blocca in readonly. Prima di passare allo
+// Step 2 viene chiesta conferma esplicita che corrispondano al documento.
+// Per relatori stranieri il bottone NON viene mostrato (CONTRATTO_INFO.straniero).
+// ─────────────────────────────────────────────────────────────────────────────
+let CF_CODES_CACHE = null;            // {COD: [COMUNE, SIGLA]} caricato da /static/data/cf_codes.json
+let ANAGRAFICA_LOCKED = false;        // true → luogo/provincia/data in readonly perché derivati dal CF
+let ANAGRAFICA_CONFIRMED = false;     // true → l'utente ha confermato → goNext() può procedere
+let ANAGRAFICA_EXTRACTED_CF = '';     // CF che ha generato il lock (se cambia, sblocco)
+
+const MESI_CF_REV = {'A':'01','B':'02','C':'03','D':'04','E':'05','H':'06',
+                     'L':'07','M':'08','P':'09','R':'10','S':'11','T':'12'};
+
+async function _ensureCfCodesLoaded() {
+  if (CF_CODES_CACHE && Object.keys(CF_CODES_CACHE).length > 1000) return true;
+  // v141.4 — rimosso "force-cache" (poteva servire una risposta stale tipo 302
+  // dal login se non whitelisted). Aggiunto sanity-check sul contenuto: se il
+  // JSON è vuoto o ha pochi record, tratto come fallimento e mostro warning.
+  // Path relativo: risolve sia in locale (Flask, /cf_codes.json) sia su
+  // sideraweb (GitHub Pages root, /cf_codes.json).
+  try {
+    const r = await fetch('cf_codes.json');
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const ct = r.headers.get('content-type') || '';
+    if (!ct.toLowerCase().includes('json')) {
+      // Es. 302 → HTML di login restituito come 200 dopo redirect-follow
+      throw new Error('Risposta non-JSON (' + ct + '). Verifichi di essere autenticato o riavvii il server.');
+    }
+    const data = await r.json();
+    if (!data || typeof data !== 'object' || Object.keys(data).length < 1000) {
+      throw new Error('Tabella vuota o incompleta (' + Object.keys(data || {}).length + ' record)');
+    }
+    CF_CODES_CACHE = data;
+    return true;
+  } catch (e) {
+    CF_CODES_CACHE = null;
+    showFormMsg('Impossibile caricare la tabella comuni: ' + e.message + '. Compili manualmente luogo, provincia e data di nascita.', 'warning');
+    return false;
+  }
+}
+
+function _decodeCfData(cf) {
+  // Anno (pos 7-8 → idx 6-7), con decoder omocodia
+  const yyDec = _cfDecodeChar(cf[6]) + _cfDecodeChar(cf[7]);
+  const yi = parseInt(yyDec, 10);
+  if (Number.isNaN(yi)) return null;
+  const aaaa = yi <= 30 ? (2000 + yi) : (1900 + yi);
+  // Mese (pos 9 → idx 8)
+  const mm = MESI_CF_REV[cf[8]];
+  if (!mm) return null;
+  // Giorno + sesso (pos 10-11 → idx 9-10)
+  const ggDec = _cfDecodeChar(cf[9]) + _cfDecodeChar(cf[10]);
+  let gg = parseInt(ggDec, 10);
+  if (Number.isNaN(gg)) return null;
+  const sesso = gg > 40 ? 'F' : 'M';
+  if (gg > 40) gg -= 40;
+  if (gg < 1 || gg > 31) return null;
+  const data_nascita = String(gg).padStart(2, '0') + '/' + mm + '/' + aaaa;
+  // Codice catastale (pos 12-15 → idx 11-14)
+  const cod_comune = cf.substring(11, 15);
+  const estero = cod_comune.startsWith('Z');
+  let luogo_nascita = '';
+  let provincia = '';
+  if (estero) {
+    provincia = 'EE';
+  } else if (CF_CODES_CACHE && CF_CODES_CACHE[cod_comune]) {
+    luogo_nascita = CF_CODES_CACHE[cod_comune][0];
+    provincia     = CF_CODES_CACHE[cod_comune][1];
+  }
+  return {data_nascita, luogo_nascita, provincia, sesso, estero, cod_comune};
+}
+
+function _setAnagraficaLocked(locked) {
+  ANAGRAFICA_LOCKED = !!locked;
+  const data = $('f-nato_il'), luogo = $('f-nato_a'), prov = $('f-provincia');
+  if (data)  data.readOnly  = !!locked;
+  if (luogo) luogo.readOnly = !!locked;
+  if (prov)  prov.disabled  = !!locked;
+  // Visual hint
+  [data, luogo].forEach(el => {
+    if (!el) return;
+    if (locked) { el.style.background = '#f1f5f9'; el.style.color = '#0f172a'; }
+    else { el.style.background = ''; el.style.color = ''; }
+  });
+}
+
+async function onCfExtract() {
+  clearFormMsg();
+  const cfEl = $('f-cf');
+  const cf = (cfEl.value || '').trim().toUpperCase();
+  cfEl.value = cf;
+  // Validazione formato + checksum (riusa il validator esistente)
+  const check = validateCodiceFiscale(cf);
+  if (!check.ok) {
+    showFormMsg('Codice fiscale non valido — ' + check.error + '. Verifichi e riprovi.', 'error');
+    cfEl.focus();
+    return;
+  }
+  // Carica la tabella comuni (lazy)
+  await _ensureCfCodesLoaded();
+  // Decodifica
+  const d = _decodeCfData(cf);
+  if (!d) {
+    showFormMsg('Impossibile estrarre i dati dal codice fiscale. Verifichi i caratteri.', 'error');
+    return;
+  }
+  // Popola i campi
+  $('f-nato_il').value = d.data_nascita;
+  $('f-nato_a').value  = d.luogo_nascita;
+  const provSel = $('f-provincia');
+  if (provSel) provSel.value = d.provincia;
+  // Lock condizionale
+  if (d.estero) {
+    // Italiano nato all'estero: data + provincia="EE" bloccati, luogo editabile (lo stato estero)
+    _setAnagraficaLocked(true);
+    $('f-nato_a').readOnly = false;
+    $('f-nato_a').style.background = '';
+    $('f-nato_a').style.color = '';
+    showFormMsg('Estrazione completata. Lei risulta nato all\'estero (codice catastale ' + d.cod_comune + '): indichi il Nome dello Stato di nascita nel campo "Luogo di nascita".', 'info');
+  } else if (!d.luogo_nascita) {
+    _setAnagraficaLocked(false);
+    showFormMsg('Codice comune "' + d.cod_comune + '" non trovato in archivio. Compili manualmente Luogo e Provincia di nascita.', 'warning');
+  } else {
+    _setAnagraficaLocked(true);
+    ANAGRAFICA_EXTRACTED_CF = cf;
+    ANAGRAFICA_CONFIRMED = false;
+    showFormMsg('Dati estratti: ' + d.luogo_nascita + ' (' + d.provincia + ') — ' + d.data_nascita + '. Cliccando "Avanti" Le verrà chiesta conferma.', 'success');
+  }
+}
+
+// Se l'utente modifica il CF dopo l'estrazione → sblocca tutto e richiede nuova Estrai
+function _maybeUnlockOnCfChange() {
+  if (!ANAGRAFICA_LOCKED) return;
+  const cur = ($('f-cf').value || '').trim().toUpperCase();
+  if (cur !== ANAGRAFICA_EXTRACTED_CF) {
+    _setAnagraficaLocked(false);
+    ANAGRAFICA_CONFIRMED = false;
+    ANAGRAFICA_EXTRACTED_CF = '';
+  }
+}
+
+// Confirm overlay
+function _showAnagConfirmOverlay() {
+  const tbody = document.querySelector('#anag-confirm-table tbody');
+  const rows = [
+    ['Cognome',           $('f-cognome').value],
+    ['Nome',              $('f-nome').value],
+    ['Codice fiscale',    $('f-cf').value],
+    ['Luogo di nascita',  $('f-nato_a').value],
+    ['Provincia',         $('f-provincia').value],
+    ['Data di nascita',   $('f-nato_il').value],
+  ];
+  tbody.innerHTML = rows.map(([k, v]) =>
+    `<tr><td style="padding:8px 10px;border-bottom:1px solid #e2e8f0;color:#64748b;font-size:12.5px">${k}</td>`
+    + `<td style="padding:8px 10px;border-bottom:1px solid #e2e8f0;font-weight:600;color:#0f172a">${(v || '').replace(/[<>&]/g, '')}</td></tr>`
+  ).join('');
+  $('anag-confirm-overlay').style.display = 'flex';
+}
+
+function anagConfirmYes() {
+  $('anag-confirm-overlay').style.display = 'none';
+  ANAGRAFICA_CONFIRMED = true;
+  // Riesegue la navigazione "Avanti" che era stata bloccata
+  CURRENT_STEP_INDEX++;
+  const steps = getCurrentSteps();
+  if (CURRENT_STEP_INDEX >= steps.length) CURRENT_STEP_INDEX = steps.length - 1;
+  renderStep();
+}
+
+function anagConfirmNo() {
+  $('anag-confirm-overlay').style.display = 'none';
+  // Sblocca i campi così l'utente può correggerli a mano
+  _setAnagraficaLocked(false);
+  ANAGRAFICA_CONFIRMED = false;
+  ANAGRAFICA_EXTRACTED_CF = '';
+  showFormMsg('Modifichi i dati anagrafici che non corrispondono e clicchi nuovamente "Avanti".', 'info');
+}
+
 function validateStep() {
   const steps = getCurrentSteps();
   const stepKey = steps[CURRENT_STEP_INDEX];
 
   if (stepKey === '1') {
-    for (const req of ['cognome','nome','cf']) {
-      const el = $('f-' + req);
+    // v140.6 — Tutti i campi anagrafici obbligatori (era solo cognome/nome/cf).
+    // Caso Zeqaj 1337-20: data/luogo/provincia di nascita vuoti hanno generato
+    // un contratto firmato con ART.2 incompleto.
+    const reqFields = {
+      'cognome'  : 'Cognome',
+      'nome'     : 'Nome',
+      'cf'       : 'Codice fiscale',
+      'nato_il'  : 'Data di nascita',
+      'nato_a'   : 'Luogo di nascita',
+      'provincia': 'Provincia di nascita',
+    };
+    for (const [k, label] of Object.entries(reqFields)) {
+      const el = $('f-' + k);
       if (!(el.value || '').trim()) {
-        alert('Campo obbligatorio mancante: ' + req);
+        showFormMsg('Campo obbligatorio mancante: ' + label, 'error');
         el.focus();
         return false;
       }
     }
+    // Validazione rigorosa del Codice Fiscale (era solo lunghezza con bypass).
     const cf = $('f-cf').value.trim().toUpperCase();
-    if (cf.length !== 16) {
-      if (!confirm('Il codice fiscale non è di 16 caratteri. Continuo comunque?')) return false;
+    $('f-cf').value = cf;
+    const cfCheck = validateCodiceFiscale(cf, {
+      cognome: $('f-cognome').value.trim(),
+      nome:    $('f-nome').value.trim(),
+      natoIl:  $('f-nato_il').value.trim(),
+    });
+    if (!cfCheck.ok) {
+      showFormMsg('Codice fiscale non valido — ' + cfCheck.error + '. Verifichi i caratteri e riprovi.', 'error');
+      $('f-cf').focus();
+      return false;
+    }
+    // v141.1 — Gate di conferma anagrafica: se i dati sono stati estratti dal CF
+    // (lock attivo) e l'utente non ha ancora confermato, mostra l'overlay.
+    // Per stranieri il lock non si attiva mai → ANAGRAFICA_LOCKED resta false → procede senza chiedere.
+    if (ANAGRAFICA_LOCKED && !ANAGRAFICA_CONFIRMED) {
+      _showAnagConfirmOverlay();
+      return false; // blocca goNext; sarà anagConfirmYes() a far procedere
     }
   }
 
@@ -1204,11 +1623,11 @@ function validateStep() {
     const ente = ($('f-ente').value || '').trim();
     const ctype = ($('f-company-type').value || '').trim();
     if (!ente) {
-      alert('Indichi la Sua azienda cliccando sulla card "Azienda".');
+      showFormMsg('Indichi la Sua azienda cliccando sulla card "Azienda".', 'error');
       return false;
     }
     if (!ctype) {
-      alert('Confermi la tipologia (Pubblica oppure Privata/Altro) della Sua azienda cliccando "Modifica" sulla card.');
+      showFormMsg('Confermi la tipologia (Pubblica oppure Privata/Altro) della Sua azienda cliccando "Modifica" sulla card.', 'error');
       openCompanyModal();
       return false;
     }
@@ -1216,7 +1635,7 @@ function validateStep() {
     if (ctype === 'pubblica') {
       const pec = ($('f-pec').value || '').trim();
       if (!pec) {
-        alert('Per le aziende pubbliche la PEC è obbligatoria. Riapra il modale "Azienda" per inserirla.');
+        showFormMsg('Per le aziende pubbliche la PEC è obbligatoria. Riapra il modale "Azienda" per inserirla.', 'error');
         return false;
       }
     }
@@ -1232,12 +1651,12 @@ function validateStep() {
         const profCod = ($('f-prof-cod').value || '').trim();
         const discCod = ($('f-disc-cod').value || '').trim();
         if (!profCod) {
-          alert('Selezioni la Sua professione dall\'elenco.');
+          showFormMsg('Selezioni la Sua professione dall\'elenco.', 'error');
           $('f-prof-select').focus();
           return false;
         }
         if (!discCod) {
-          alert('Selezioni la Sua disciplina dall\'elenco.');
+          showFormMsg('Selezioni la Sua disciplina dall\'elenco.', 'error');
           $('f-disc-select').focus();
           return false;
         }
@@ -1252,7 +1671,7 @@ function validateStep() {
     const v = (ibanEl.value || '').trim();
     if (!v) {
       if (ibanIsRequired()) {
-        alert('IBAN obbligatorio: il contratto prevede un compenso e Lei non risulta tra i relatori stranieri. Inserisca l\'IBAN per procedere.');
+        showFormMsg('IBAN obbligatorio: il contratto prevede un compenso e Lei non risulta tra i relatori stranieri. Inserisca l\'IBAN per procedere.', 'error');
         ibanEl.focus();
         return false;
       }
@@ -1260,7 +1679,7 @@ function validateStep() {
     } else {
       const r = validateIban(v);
       if (!r.ok) {
-        alert('IBAN non valido — ' + r.msg + '\n\nLa preghiamo di verificare l\'IBAN inserito prima di procedere.');
+        showFormMsg('IBAN non valido — ' + r.msg + '. La preghiamo di verificare l\'IBAN inserito prima di procedere.', 'error');
         ibanEl.focus();
         return false;
       }
@@ -1272,14 +1691,14 @@ function validateStep() {
   if (stepKey === '5') {
     const sel = document.querySelector('input[name="opzione"]:checked');
     if (!sel) {
-      alert('Selezioni una delle opzioni A, B o C.');
+      showFormMsg('Selezioni una delle opzioni A, B o C.', 'error');
       return false;
     }
     // Se Opzione C: sub-tipo (SSN o UNIV) obbligatorio
     if (sel.value === 'C') {
       const subSel = document.querySelector('input[name="op-C-tipo"]:checked');
       if (!subSel) {
-        alert('Per l\'Opzione C selezioni la categoria di appartenenza (Dipendente pubblico SSN/PA oppure Professore Università Statale).');
+        showFormMsg('Per l\'Opzione C selezioni la categoria di appartenenza (Dipendente pubblico SSN/PA oppure Professore Università Statale).', 'error');
         return false;
       }
     }
@@ -1288,8 +1707,7 @@ function validateStep() {
     if (sel.value === 'B' || sel.value === 'C') {
       const pecV = (($('f-pec') || {}).value || '').trim();
       if (!pecV) {
-        alert('PEC aziendale obbligatoria per dipendenti pubblici (Opzione ' + sel.value + ').\n\n' +
-              'Torni al Passo 3 e inserisca la PEC del Suo ente di appartenenza.');
+        showFormMsg('PEC aziendale obbligatoria per dipendenti pubblici (Opzione ' + sel.value + '). Torni al Passo 3 e inserisca la PEC del Suo ente di appartenenza.', 'error');
         return false;
       }
     }
@@ -1300,15 +1718,26 @@ function validateStep() {
   }
 
   if (stepKey === '6') {
+    // v141.3 — Non si può accettare ciò che non è stato visualizzato.
+    const bisHtml = ($('bis-content') && $('bis-content').innerHTML || '').trim();
+    if (!bisHtml || !CLAUSOLE_LOADED) {
+      showFormMsg('Le clausole ART. 3 BIS non sono state caricate. Ricarichi la pagina (Ctrl+F5). Se il problema persiste contatti l\'organizzazione: non può accettare clausole che non Le sono state mostrate.', 'error');
+      return false;
+    }
     if (!$('ack-bis').checked) {
-      alert('Per procedere deve dichiarare di aver letto e accettato le clausole ART. 3 BIS.');
+      showFormMsg('Per procedere deve dichiarare di aver letto e accettato le clausole ART. 3 BIS.', 'error');
       return false;
     }
   }
 
   if (stepKey === '7') {
+    const terHtml = ($('ter-content') && $('ter-content').innerHTML || '').trim();
+    if (!terHtml || !CLAUSOLE_LOADED) {
+      showFormMsg('Gli approfondimenti ART. 3 TER non sono stati caricati. Ricarichi la pagina (Ctrl+F5). Se il problema persiste contatti l\'organizzazione: non può accettare contenuti che non Le sono stati mostrati.', 'error');
+      return false;
+    }
     if (!$('ack-ter').checked) {
-      alert('Per procedere deve dichiarare di aver preso visione degli approfondimenti ART. 3 TER.');
+      showFormMsg('Per procedere deve dichiarare di aver preso visione degli approfondimenti ART. 3 TER.', 'error');
       return false;
     }
   }
@@ -1346,16 +1775,45 @@ document.addEventListener('change', e => {
 
 async function loadClausole() {
   try {
-    // Strada B: clausole arrivano inline nel prefill (no fetch separato)
+    // 1) Best: clausole inline nel prefill (Strada B)
     if (CLAUSOLE_INLINE) {
       renderBis(CLAUSOLE_INLINE.bis);
       renderTer(CLAUSOLE_INLINE.ter);
       CLAUSOLE_LOADED = true;
       return;
     }
-    // Fallback: nessuna clausola disponibile (link generato per privato Opzione A
-    // ma utente ha selezionato B/C — caso edge, snapshot non aggiornato)
-    console.warn('Clausole non presenti nello snapshot');
+    // 2) v141.3 — Fallback statico: stesso path su Flask locale e su sideraweb
+    //    (GitHub Pages serve clausole_pubblici.json alla root, sempre online).
+    //    Risolve il caso TEST-GRAT-1: snapshot creato per Opzione A senza clausole
+    //    + relatore che durante la compilazione passa a B/C.
+    try {
+      const r = await fetch('clausole_pubblici.json', {cache: 'force-cache'});
+      if (r.ok) {
+        const j = await r.json();
+        if (j && (j.bis || j.ter)) {
+          CLAUSOLE_INLINE = j;
+          renderBis(j.bis);
+          renderTer(j.ter);
+          CLAUSOLE_LOADED = true;
+          return;
+        }
+      }
+    } catch (_) { /* prosegui col fallback API */ }
+    // 3) Ultima chance: endpoint Flask locale (utile solo in dev)
+    try {
+      const r = await fetch('/api/contratti/clausole-pubblici');
+      if (r.ok) {
+        const j = await r.json();
+        if (j && j.ok) {
+          CLAUSOLE_INLINE = { bis: j.bis, ter: j.ter };
+          renderBis(j.bis);
+          renderTer(j.ter);
+          CLAUSOLE_LOADED = true;
+          return;
+        }
+      }
+    } catch (_) { /* finita la cascata */ }
+    console.warn('Clausole non caricabili da nessuna fonte');
   } catch (e) {
     console.error('loadClausole error', e);
   }
@@ -1439,7 +1897,7 @@ function renderSummary() {
     <tr><td>Azienda / Professione</td><td>${get('f-ente')} — ${get('f-qualifica')}</td></tr>
     <tr><td>PEC aziendale</td><td>${get('f-pec')}</td></tr>
     ${ibanIsHidden() ? '' : `<tr><td>IBAN</td><td>${get('f-iban')}</td></tr>`}
-    <tr><td>P.IVA</td><td>${get('f-partita_iva')}</td></tr>
+    ${ibanIsHidden() ? '' : `<tr><td>P.IVA</td><td>${get('f-partita_iva')}</td></tr>`}
     <tr><td>Autorizzazione</td><td><b>${opTxt}</b></td></tr>
     <tr><td>Conflitto interesse</td><td>${cdiTxt}</td></tr>
   `;
@@ -1476,14 +1934,13 @@ function getCdiPayload() {
 
 async function submitForm() {
   const sel = document.querySelector('input[name="opzione"]:checked');
-  if (!sel) { alert('Selezione opzione mancante.'); return; }
+  if (!sel) { showFormMsg('Selezione opzione mancante.', 'error'); return; }
 
   // v126.8 — Final PEC check (defensive, lo step 5 dovrebbe già aver bloccato)
   if (sel.value === 'B' || sel.value === 'C') {
     const pecV = (($('f-pec') || {}).value || '').trim();
     if (!pecV) {
-      alert('PEC aziendale obbligatoria per dipendenti pubblici (Opzione ' + sel.value + ').\n\n' +
-            'Torni al Passo 3 e inserisca la PEC prima di inviare.');
+      showFormMsg('PEC aziendale obbligatoria per dipendenti pubblici (Opzione ' + sel.value + '). Torni al Passo 3 e inserisca la PEC prima di inviare.', 'error');
       return;
     }
   }
@@ -1493,13 +1950,13 @@ async function submitForm() {
   if (!ibanIsHidden()) {
     const ibanV = ($('f-iban').value || '').trim();
     if (!ibanV && ibanIsRequired()) {
-      alert('IBAN obbligatorio: il contratto prevede un compenso. Torni al passo 4 e inserisca l\'IBAN.');
+      showFormMsg('IBAN obbligatorio: il contratto prevede un compenso. Torni al passo 4 e inserisca l\'IBAN.', 'error');
       return;
     }
     if (ibanV) {
       const r = validateIban(ibanV);
       if (!r.ok) {
-        alert('IBAN non valido — ' + r.msg + '\n\nTorni al passo 4 per correggere prima di inviare.');
+        showFormMsg('IBAN non valido — ' + r.msg + '. Torni al passo 4 per correggere prima di inviare.', 'error');
         return;
       }
       $('f-iban').value = normalizeIban(ibanV);
@@ -1564,14 +2021,14 @@ async function submitForm() {
         showState('success-screen');
         return;
       }
-      alert('Errore invio: ' + msg);
+      showFormMsg('Errore invio: ' + msg, 'error');
       btn.disabled = false;
       btn.textContent = '📨 Invia PDF per la firma';
       return;
     }
     showState('success-screen');
   } catch (e) {
-    alert('Errore di rete: ' + e.message);
+    showFormMsg('Errore di rete: ' + e.message, 'error');
     btn.disabled = false;
     btn.textContent = '📨 Invia PDF per la firma';
   }
@@ -1649,7 +2106,7 @@ function cmChooseType(type) {
 function cmSubmitPrivata() {
   const nome = (_cm('cm-priv-nome').value || '').trim();
   if (!nome) {
-    alert('Indichi il nome dell’azienda.');
+    showFormMsg('Indichi il nome dell’azienda.', 'error');
     return;
   }
   cmState.privata_nome = nome;
@@ -1708,7 +2165,7 @@ function _cmFindCitta(input) {
 function cmCittaNext() {
   const inp = (_cm('cm-pub-citta').value || '').trim();
   if (!inp) {
-    alert('Indichi la città dell’azienda.');
+    showFormMsg('Indichi la città dell’azienda.', 'error');
     return;
   }
   const match = _cmFindCitta(inp);
@@ -1813,11 +2270,11 @@ function cmAltroChoice() {
 function cmSubmitPubblica() {
   const pec = (_cm('cm-pub-pec').value || '').trim();
   if (!pec) {
-    alert('La PEC è obbligatoria. Se non la conosce, la cerchi sul cedolino o sul sito dell’ente.');
+    showFormMsg('La PEC è obbligatoria. Se non la conosce, la cerchi sul cedolino o sul sito dell’ente.', 'error');
     return;
   }
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(pec)) {
-    alert('Formato PEC non valido. Esempio: protocollo@pec.ente.it');
+    showFormMsg('Formato PEC non valido. Esempio: protocollo@pec.ente.it', 'error');
     return;
   }
   const rec = cmState.struttura;
@@ -1839,11 +2296,11 @@ function cmSubmitAltro() {
   const nome = (_cm('cm-altro-nome').value || '').trim();
   const tipo = (_cm('cm-altro-tipo').value || '').trim();
   const pec = (_cm('cm-altro-pec').value || '').trim();
-  if (!nome) { alert('Indichi il nome dell’ente.'); return; }
-  if (!tipo) { alert('Selezioni la tipologia.'); return; }
-  if (!pec) { alert('La PEC è obbligatoria.'); return; }
+  if (!nome) { showFormMsg('Indichi il nome dell’ente.', 'error'); return; }
+  if (!tipo) { showFormMsg('Selezioni la tipologia.', 'error'); return; }
+  if (!pec)  { showFormMsg('La PEC è obbligatoria.', 'error'); return; }
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(pec)) {
-    alert('Formato PEC non valido. Esempio: protocollo@pec.ente.it'); return;
+    showFormMsg('Formato PEC non valido. Esempio: protocollo@pec.ente.it', 'error'); return;
   }
   cmState.altro_nome = nome;
   cmState.altro_tipo = tipo;
