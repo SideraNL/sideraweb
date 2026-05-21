@@ -217,7 +217,7 @@
     "idPgt": "1342",
     "luogo": "WEBINAR",
     "data": "22/09/2026",
-    "titolo": "GIOVANI ADULTI, PSICOPATOLOGIA E NUOVE FORME DI DIPENDENZA",
+    "titolo": "NIGUARDA FOR MENTAL HEALTH",
     "orari": [
       {
         "giorno": "1",
@@ -244,7 +244,7 @@
     "idPgt": "1343",
     "luogo": "WEBINAR",
     "data": "14/10/2026",
-    "titolo": "LA COMPLESSITA' DELLE GRAVI FORME DI DEPRESSIONE NEI GIOVANI ADULTI",
+    "titolo": "NIGUARDA FOR MENTAL HEALTH",
     "orari": [
       {
         "giorno": "1",
@@ -262,15 +262,15 @@
     "titolo": "DEPRESSIONE, DOLORE E DISTURBI CORRELATI: PERCORSI CLINICI CONDIVISI TRA PSICHIATRIA E NEUROLOGIA"
   },
   {
+    "idPgt": "1346",
+    "luogo": "L'AQUILA",
+    "data": "07/11/2026",
+    "titolo": "NUOVE FRONTIERE NELLA GESTIONE DELLA MALATTIA DI CHRON E DELLA COLITE ULCEROSA"
+  },
+  {
     "idPgt": "1345",
     "luogo": "MILANO",
     "data": "18/11/2026",
     "titolo": "MENTAL HEALTH IN THE CITIES"
-  },
-  {
-    "idPgt": "1346",
-    "luogo": "L'AQUILA",
-    "data": "01/12/2026",
-    "titolo": "NUOVE FRONTIERE NELLA GESTIONE DELLA MALATTIA DI CHRON E DELLA COLITE ULCEROSA"
   }
 ]
