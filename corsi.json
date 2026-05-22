@@ -265,5 +265,17 @@
     "luogo": "MILANO",
     "data": "18/11/2026",
     "titolo": "MENTAL HEALTH IN THE CITIES"
+  },
+  {
+    "idPgt": "1349",
+    "luogo": "webinar",
+    "data": "24/11/2026",
+    "titolo": "INSONNIA: DAL SINTOMO AL DISTURBO. DIAGNOSI DIFFERENZIALE, COMORBIDITA' NEURO PSICHIATRICHE E APPROPRIATEZZA TERAPEUTICA"
+  },
+  {
+    "idPgt": "1350",
+    "luogo": "LECCO",
+    "data": "28/11/2026",
+    "titolo": "TERAPIE ADIUVANTI E NEOADIUVANTI"
   }
 ]
