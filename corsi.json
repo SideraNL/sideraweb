@@ -276,6 +276,15 @@
     "idPgt": "1350",
     "luogo": "LECCO",
     "data": "28/11/2026",
-    "titolo": "TERAPIE ADIUVANTI E NEOADIUVANTI"
+    "titolo": "TERAPIE ADIUVANTI E NEOADIUVANTI",
+    "orari": [
+      {
+        "giorno": "1",
+        "data": "28/11/2026",
+        "ora_in": "09:00",
+        "ora_out": "13:30",
+        "pause": []
+      }
+    ]
   }
 ]
