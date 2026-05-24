@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Sidera — Iscrizione ISF per ricezione offerte ECM</title>
+<title>Sidera — Iscriviti per ricevere le offerte di eventi ECM</title>
 <meta name="robots" content="noindex, nofollow">
 <style>
   * { box-sizing: border-box; }
@@ -95,9 +95,34 @@
     font-weight: 600;
   }
 
+  /* Progress (2 step) */
+  .progress {
+    background: #fff; border: 1px solid #e2e8f0; border-radius: 10px;
+    padding: 14px 18px; margin-bottom: 18px; box-shadow: 0 1px 3px rgba(0,0,0,.04);
+  }
+  .progress-top {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 8px; font-size: 13px;
+  }
+  .progress-top .label { font-weight: 700; color: #1e3a6e; }
+  .progress-top .step-name { color: #64748b; }
+  .progress-bar {
+    background: #e2e8f0; border-radius: 999px; height: 8px; overflow: hidden;
+  }
+  .progress-fill {
+    background: linear-gradient(90deg, #3b82f6, #1a56db);
+    height: 100%; transition: width .3s ease;
+  }
+  .step { display: none; }
+  .step.active { display: block; }
+
   /* Buttons */
   .actions {
-    display: flex; justify-content: flex-end; gap: 10px; margin-top: 22px;
+    display: flex; justify-content: space-between; gap: 10px; margin-top: 22px;
+    flex-wrap: wrap;
+  }
+  .actions .left, .actions .right {
+    display: flex; gap: 10px;
   }
   .btn {
     padding: 12px 24px; font-size: 14px; font-weight: 700;
@@ -105,10 +130,15 @@
     font-family: inherit; letter-spacing: .3px;
     transition: all .15s;
   }
-  .btn-submit {
+  .btn-back {
+    background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1;
+  }
+  .btn-back:hover { background: #e2e8f0; }
+  .btn-next, .btn-submit {
     background: linear-gradient(135deg, #1a56db, #1d4ed8); color: #fff;
     box-shadow: 0 2px 6px rgba(26, 86, 219, .3);
   }
+  .btn-next:hover:not(:disabled),
   .btn-submit:hover:not(:disabled) {
     background: linear-gradient(135deg, #1d4ed8, #1e40af);
     box-shadow: 0 3px 10px rgba(26, 86, 219, .4);
@@ -157,19 +187,32 @@
       <img src="img/logo-sidera.png" alt="Sidera" class="logo" onerror="this.style.display='none'">
       <h1>Sidera</h1>
     </div>
-    <div class="sub">Provider ECM n. 84 — Iscrizione ISF per ricezione offerte</div>
+    <div class="sub">Provider ECM n. 84 — Iscriviti per ricevere le offerte di eventi ECM</div>
   </div>
 
   <!-- Intro -->
   <div class="intro-box">
     <div class="eyebrow">Form di iscrizione</div>
     <div class="titolo">Ricevi le nostre offerte di eventi ECM</div>
-    <div>Compila il form qui sotto per registrarti come <b>Informatore Scientifico</b> nei nostri elenchi.
-    Riceverai via mail le proposte di eventi e congressi ECM organizzati da Sidera nel tuo ambito terapeutico.</div>
+    <div>Compila il form qui sotto per essere inserito nei nostri elenchi.
+    Riceverai via mail le proposte di eventi e congressi ECM organizzati da Sidera nel tuo ambito di interesse.</div>
+  </div>
+
+  <!-- Progress 2 step -->
+  <div class="progress">
+    <div class="progress-top">
+      <span class="label">Passo <span id="step-num">1</span> di 2</span>
+      <span class="step-name" id="step-name">I tuoi dati</span>
+    </div>
+    <div class="progress-bar">
+      <div class="progress-fill" id="progress-fill" style="width:50%"></div>
+    </div>
   </div>
 
   <!-- Form -->
   <form id="isf-form" autocomplete="on" onsubmit="event.preventDefault(); submitForm();">
+    <!-- ─── STEP 1: I tuoi dati ─── -->
+    <div class="step active" id="step-1">
     <div class="card">
       <h2>📇 I tuoi dati</h2>
       <div class="lead">I campi contrassegnati con <span style="color:#dc2626">*</span> sono obbligatori.</div>
@@ -242,9 +285,19 @@
           <div class="hint">Se vuoi ricevere le offerte su una mail dedicata (es. quella del marketing aziendale) inseriscila qui. Altrimenti lasciala uguale a quella personale.</div>
         </div>
       </div>
-    </div>
 
-    <!-- GDPR -->
+      <div id="form-msg-1" class="msg"></div>
+      <div class="actions">
+        <div class="left"></div>
+        <div class="right">
+          <button type="button" class="btn btn-next" onclick="goToStep(2)">Avanti →</button>
+        </div>
+      </div>
+    </div>
+    </div><!-- /step-1 -->
+
+    <!-- ─── STEP 2: Privacy e consenso ─── -->
+    <div class="step" id="step-2">
     <div class="card">
       <h2>🔒 Privacy e consenso</h2>
       <div class="gdpr">
@@ -271,13 +324,18 @@
           </label>
         </div>
       </div>
-    </div>
 
-    <!-- Submit -->
-    <div id="form-msg" class="msg"></div>
-    <div class="actions">
-      <button type="submit" id="btn-submit" class="btn btn-submit">📨 Invia iscrizione</button>
+      <div id="form-msg" class="msg"></div>
+      <div class="actions">
+        <div class="left">
+          <button type="button" class="btn btn-back" onclick="goToStep(1)">← Indietro</button>
+        </div>
+        <div class="right">
+          <button type="submit" id="btn-submit" class="btn btn-submit">📨 Invia iscrizione</button>
+        </div>
+      </div>
     </div>
+    </div><!-- /step-2 -->
   </form>
 
   <!-- Success state (mostrato dopo submit OK) -->
@@ -307,18 +365,41 @@ const GAS_API_URL = 'https://script.google.com/macros/s/REPLACE_ME_DEPLOYMENT_ID
 
 function $ (id) { return document.getElementById(id); }
 
-function showMsg(text, type) {
-  const el = $('form-msg');
+// ─── Navigazione 2 step ─────────────────────────────────────────────────────
+let currentStep = 1;
+const STEP_NAMES = { 1: 'I tuoi dati', 2: 'Privacy e consenso' };
+
+function goToStep(n) {
+  // Validazione prima di avanzare dallo step 1 allo step 2
+  if (currentStep === 1 && n === 2) {
+    if (!validateStep1()) return;
+  }
+  currentStep = n;
+  document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+  const target = $('step-' + n);
+  if (target) target.classList.add('active');
+  $('step-num').textContent = n;
+  $('step-name').textContent = STEP_NAMES[n] || '';
+  $('progress-fill').style.width = (n * 50) + '%';
+  clearAllMsgs();
+  window.scrollTo({top: 0, behavior:'smooth'});
+}
+
+function showMsg(text, type, elId) {
+  elId = elId || (currentStep === 1 ? 'form-msg-1' : 'form-msg');
+  const el = $(elId);
+  if (!el) return;
   el.className = 'msg ' + type;
   el.textContent = text;
   el.style.display = 'block';
   el.scrollIntoView({behavior:'smooth', block:'center'});
 }
 
-function clearMsg() {
-  const el = $('form-msg');
-  el.style.display = 'none';
-  el.textContent = '';
+function clearAllMsgs() {
+  ['form-msg', 'form-msg-1'].forEach(id => {
+    const el = $(id);
+    if (el) { el.style.display = 'none'; el.textContent = ''; }
+  });
 }
 
 // Auto-sync: se l'utente non ha ancora editato email_offerta, la tieni
@@ -334,8 +415,9 @@ function setupOffertaAutoSync() {
   });
 }
 
-function validate() {
-  clearMsg();
+// Step 1: campi obbligatori + email valide
+function validateStep1() {
+  clearAllMsgs();
   const REQUIRED = ['f-referente', 'f-azienda', 'f-area-ter', 'f-cell', 'f-email-personale', 'f-email-offerta'];
   let firstInvalid = null;
   for (const id of REQUIRED) {
@@ -349,31 +431,41 @@ function validate() {
       el.classList.remove('invalid');
     }
   }
-  // Consent
-  const consent = $('f-consent');
-  if (!consent.checked) {
-    showMsg('⚠ Devi accettare l\'informativa privacy per inviare la richiesta.', 'error');
-    consent.focus();
-    return false;
-  }
   if (firstInvalid) {
-    showMsg('⚠ Compila tutti i campi obbligatori (in rosso).', 'error');
+    showMsg('⚠ Compila tutti i campi obbligatori (in rosso) prima di andare avanti.', 'error', 'form-msg-1');
     firstInvalid.focus();
     return false;
   }
   // Email validity (browser type=email già fa il check, ma doppio safety)
   const emailRx = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   if (!emailRx.test($('f-email-personale').value.trim())) {
-    showMsg('⚠ L\'email personale non sembra valida.', 'error');
+    showMsg('⚠ L\'email personale non sembra valida.', 'error', 'form-msg-1');
     $('f-email-personale').focus();
     return false;
   }
   if (!emailRx.test($('f-email-offerta').value.trim())) {
-    showMsg('⚠ L\'email per le offerte non sembra valida.', 'error');
+    showMsg('⚠ L\'email per le offerte non sembra valida.', 'error', 'form-msg-1');
     $('f-email-offerta').focus();
     return false;
   }
   return true;
+}
+
+// Step 2: consenso
+function validateStep2() {
+  clearAllMsgs();
+  const consent = $('f-consent');
+  if (!consent.checked) {
+    showMsg('⚠ Devi accettare l\'informativa privacy per inviare la richiesta.', 'error');
+    consent.focus();
+    return false;
+  }
+  return true;
+}
+
+// Validazione finale prima del submit (entrambi gli step)
+function validate() {
+  return validateStep1() && validateStep2();
 }
 
 async function submitForm() {
