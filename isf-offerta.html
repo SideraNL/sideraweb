@@ -17,7 +17,7 @@
   /* Header brand */
   .brand { text-align: center; margin-bottom: 18px; }
   .brand .row { display: flex; align-items: center; justify-content: center; gap: 12px; }
-  .brand .logo { height: 36px; width: auto; object-fit: contain; border-radius: 6px; background: #fff; padding: 2px 4px; }
+  .brand .logo { height: 48px; width: auto; object-fit: contain; border-radius: 6px; background: #fff; padding: 3px 6px; box-shadow: 0 1px 3px rgba(0,0,0,.08); }
   .brand h1 { color: #1e3a6e; font-size: 22px; margin: 0; }
   .brand .sub { color: #64748b; font-size: 13px; margin-top: 6px; }
 
@@ -240,7 +240,7 @@
   <!-- Header brand -->
   <div class="brand">
     <div class="row">
-      <img src="img/logo-sidera.png" alt="Sidera" class="logo" onerror="this.style.display='none'">
+      <img src="img/sidera_logo.jpg" alt="Sidera" class="logo" onerror="this.style.display='none'">
       <h1>Sidera</h1>
     </div>
     <div class="sub">Provider ECM n. 84 — Iscriviti per ricevere le offerte di eventi ECM</div>
@@ -385,7 +385,7 @@
       <div class="otp-box">
         <h3>📧 Verifica email</h3>
         <p>Per validare la firma del form, conferma che l'<b>email personale</b> indicata è
-        tua: clicca <b>Invia OTP</b>, riceverai un codice a <b>6 cifre</b> via mail; inseriscilo
+        tua: clicca <b>Invia OTP</b>, riceverai un codice a <b>4 cifre</b> via mail; inseriscilo
         qui sotto e clicca <b>Verifica</b>. Solo dopo la verifica si attiverà il bottone
         <b>Invia iscrizione</b>.</p>
 
@@ -396,8 +396,8 @@
         <div class="otp-row">
           <button type="button" class="btn btn-otp-send" id="btn-otp-send" onclick="sendOtp()">📧 Invia OTP</button>
           <button type="button" class="btn btn-otp-verify" id="btn-otp-verify" onclick="verifyOtp()" disabled>✓ Verifica</button>
-          <input type="text" id="f-otp" inputmode="numeric" pattern="[0-9]{6}" maxlength="6"
-                 placeholder="Codice 6 cifre" autocomplete="one-time-code"
+          <input type="text" id="f-otp" inputmode="numeric" pattern="[0-9]{4}" maxlength="4"
+                 placeholder="Codice 4 cifre" autocomplete="one-time-code"
                  oninput="this.value=this.value.replace(/[^0-9]/g,'')"
                  disabled>
         </div>
@@ -407,9 +407,10 @@
 
       <div id="form-msg" class="msg"></div>
 
-      <!-- Data di invio: timestamp visibile al firmatario -->
+      <!-- Data di invio: timestamp + IP visibile al firmatario -->
       <div class="signed-at">
         🕒 Data e ora compilazione: <b id="signed-at-display">—</b>
+        &nbsp;·&nbsp; 🌐 IP connessione: <b id="signed-ip-display">rilevamento…</b>
       </div>
 
       <div class="actions">
@@ -573,7 +574,7 @@ async function sendOtp() {
     _otpSentTo = email;
     $('f-otp').disabled = false;
     $('btn-otp-verify').disabled = false;
-    _setOtpStatus('🧪 Modalità prova: GAS non configurato. Inserisci qualsiasi codice di 6 cifre.', 'info');
+    _setOtpStatus('🧪 Modalità prova: GAS non configurato. Inserisci qualsiasi codice di 4 cifre.', 'info');
     btn.textContent = origText;
     btn.disabled = false;
     return;
@@ -620,8 +621,8 @@ async function sendOtp() {
 async function verifyOtp() {
   const email = ($('f-email-personale').value || '').trim().toLowerCase();
   const otp = ($('f-otp').value || '').trim();
-  if (otp.length !== 6) {
-    _setOtpStatus('⚠ Il codice OTP è di 6 cifre.', 'error');
+  if (otp.length !== 4) {
+    _setOtpStatus('⚠ Il codice OTP è di 4 cifre.', 'error');
     return;
   }
   if (!_otpSentTo || _otpSentTo !== email) {
@@ -636,7 +637,7 @@ async function verifyOtp() {
   _setOtpStatus('Verifica del codice in corso…', 'info');
 
   if (GAS_API_URL.indexOf('REPLACE_ME') >= 0) {
-    // Modalità prova: accetta qualsiasi 6 cifre
+    // Modalità prova: accetta qualsiasi 4 cifre
     _otpVerifiedFor = email;
     _setOtpStatus('🧪 Modalità prova: codice accettato (sarebbe verificato server-side). Puoi cliccare "Invia iscrizione".', 'success');
     _setSubmitEnabled(true);
@@ -681,6 +682,20 @@ function _updateSignedAt() {
   el.textContent =
     _pad(now.getDate()) + '/' + _pad(now.getMonth() + 1) + '/' + now.getFullYear() + ' ' +
     _pad(now.getHours()) + ':' + _pad(now.getMinutes()) + ':' + _pad(now.getSeconds());
+}
+
+// IP pubblico utente (rilevato lato client via ipify.org)
+let _userIp = '';
+async function _detectUserIp() {
+  const el = $('signed-ip-display');
+  try {
+    const r = await fetch('https://api.ipify.org?format=json', { cache: 'no-store' });
+    const j = await r.json();
+    _userIp = j.ip || '';
+    if (el) el.textContent = _userIp || 'non disponibile';
+  } catch (e) {
+    if (el) el.textContent = 'non disponibile';
+  }
 }
 
 // Step 1: campi obbligatori + email valide
@@ -758,6 +773,7 @@ async function submitForm() {
     consent_ts:       new Date().toISOString(),
     otp:              ($('f-otp').value || '').trim(),
     user_agent:       navigator.userAgent.substring(0, 200),
+    user_ip:          _userIp || '',
   };
 
   const btn = $('btn-submit');
@@ -803,6 +819,7 @@ async function submitForm() {
 setupOffertaAutoSync();
 _updateSignedAt();
 setInterval(_updateSignedAt, 1000);   // aggiorna la data live ogni secondo
+_detectUserIp();
 </script>
 </body>
 </html>
