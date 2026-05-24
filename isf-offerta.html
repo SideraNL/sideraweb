@@ -95,6 +95,62 @@
     font-weight: 600;
   }
 
+  /* OTP box (verifica email) */
+  .otp-box {
+    background: #eff6ff; border: 1px solid #3b82f6; border-radius: 10px;
+    padding: 14px 18px; margin-top: 14px;
+  }
+  .otp-box h3 {
+    color: #1e3a6e; font-size: 14px; margin: 0 0 8px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: .3px;
+  }
+  .otp-box p { margin: 0 0 10px; font-size: 13px; color: #1e293b; line-height: 1.5; }
+  .otp-target {
+    background: #fff; border: 1px solid #cbd5e1; border-radius: 6px;
+    padding: 7px 10px; font-size: 12px; color: #475569; margin-bottom: 10px;
+  }
+  .otp-target code { background: #f1f5f9; padding: 1px 6px; border-radius: 3px; color: #1e3a6e; font-weight: 600; }
+  .otp-row {
+    display: flex; gap: 8px; align-items: stretch; flex-wrap: wrap;
+  }
+  .otp-row input {
+    flex: 1; min-width: 140px;
+    border: 1px solid #cbd5e1; border-radius: 6px; padding: 9px 11px;
+    font-size: 16px; font-family: monospace; letter-spacing: 4px; text-align: center;
+    background: #fff;
+  }
+  .otp-row input:disabled { background: #f1f5f9; cursor: not-allowed; }
+  .otp-row input:focus { outline: none; border-color: #1a56db; box-shadow: 0 0 0 3px rgba(26,86,219,.15); }
+  .btn-otp-send {
+    background: #1a56db; color: #fff; padding: 9px 14px; font-size: 13px;
+    border-radius: 6px; border: none; cursor: pointer; font-weight: 600;
+    white-space: nowrap;
+  }
+  .btn-otp-send:hover:not(:disabled) { background: #1d4ed8; }
+  .btn-otp-send:disabled { background: #94a3b8; cursor: wait; }
+  .btn-otp-verify {
+    background: #16a34a; color: #fff; padding: 9px 14px; font-size: 13px;
+    border-radius: 6px; border: none; cursor: pointer; font-weight: 600;
+    white-space: nowrap;
+  }
+  .btn-otp-verify:hover:not(:disabled) { background: #15803d; }
+  .btn-otp-verify:disabled { background: #94a3b8; cursor: not-allowed; }
+  .otp-status {
+    margin-top: 10px; padding: 8px 12px; border-radius: 6px; font-size: 13px;
+    display: none;
+  }
+  .otp-status.info    { display: block; background: #dbeafe; color: #1e3a6e; border: 1px solid #93c5fd; }
+  .otp-status.success { display: block; background: #dcfce7; color: #166534; border: 1px solid #86efac; font-weight: 600; }
+  .otp-status.error   { display: block; background: #fef2f2; color: #991b1b; border: 1px solid #fca5a5; }
+
+  /* Data e ora compilazione (signed-at) */
+  .signed-at {
+    margin-top: 16px; padding: 8px 12px; background: #f8fafc;
+    border: 1px solid #e2e8f0; border-radius: 6px;
+    font-size: 12px; color: #475569; text-align: center;
+  }
+  .signed-at b { color: #1e293b; font-family: monospace; }
+
   /* Progress (2 step) */
   .progress {
     background: #fff; border: 1px solid #e2e8f0; border-radius: 10px;
@@ -325,13 +381,43 @@
         </div>
       </div>
 
+      <!-- ── Sezione VERIFICA EMAIL (OTP) ── -->
+      <div class="otp-box">
+        <h3>📧 Verifica email</h3>
+        <p>Per validare la firma del form, conferma che l'<b>email personale</b> indicata è
+        tua: clicca <b>Invia OTP</b>, riceverai un codice a <b>6 cifre</b> via mail; inseriscilo
+        qui sotto e clicca <b>Verifica</b>. Solo dopo la verifica si attiverà il bottone
+        <b>Invia iscrizione</b>.</p>
+
+        <div class="otp-target" id="otp-target">
+          OTP verrà inviato a: <code id="otp-email-display">—</code>
+        </div>
+
+        <div class="otp-row">
+          <button type="button" class="btn btn-otp-send" id="btn-otp-send" onclick="sendOtp()">📧 Invia OTP</button>
+          <button type="button" class="btn btn-otp-verify" id="btn-otp-verify" onclick="verifyOtp()" disabled>✓ Verifica</button>
+          <input type="text" id="f-otp" inputmode="numeric" pattern="[0-9]{6}" maxlength="6"
+                 placeholder="Codice 6 cifre" autocomplete="one-time-code"
+                 oninput="this.value=this.value.replace(/[^0-9]/g,'')"
+                 disabled>
+        </div>
+
+        <div id="otp-status" class="otp-status"></div>
+      </div>
+
       <div id="form-msg" class="msg"></div>
+
+      <!-- Data di invio: timestamp visibile al firmatario -->
+      <div class="signed-at">
+        🕒 Data e ora compilazione: <b id="signed-at-display">—</b>
+      </div>
+
       <div class="actions">
         <div class="left">
           <button type="button" class="btn btn-back" onclick="goToStep(1)">← Indietro</button>
         </div>
         <div class="right">
-          <button type="submit" id="btn-submit" class="btn btn-submit">📨 Invia iscrizione</button>
+          <button type="submit" id="btn-submit" class="btn btn-submit" disabled>📨 Invia iscrizione</button>
         </div>
       </div>
     </div>
@@ -382,6 +468,8 @@ function goToStep(n) {
   $('step-name').textContent = STEP_NAMES[n] || '';
   $('progress-fill').style.width = (n * 50) + '%';
   clearAllMsgs();
+  // Quando entriamo nello step 2 (privacy + OTP): aggiorna display email OTP
+  if (n === 2) _updateOtpEmailDisplay();
   window.scrollTo({top: 0, behavior:'smooth'});
 }
 
@@ -412,7 +500,187 @@ function setupOffertaAutoSync() {
   off.addEventListener('input', () => { _offertaTouched = true; });
   pe.addEventListener('input', () => {
     if (!_offertaTouched) off.value = pe.value;
+    // Se l'utente cambia email personale dopo aver verificato OTP, invalida la verifica
+    if (_otpVerifiedFor && _otpVerifiedFor !== pe.value.trim().toLowerCase()) {
+      _resetOtpState('email_changed');
+    }
+    _updateOtpEmailDisplay();
   });
+}
+
+// ─── OTP STATE + UI ─────────────────────────────────────────────────────────
+let _otpSentTo = '';           // email per cui ho mandato l'OTP attivo
+let _otpVerifiedFor = '';      // email per cui la verifica server-side è stata OK
+let _otpSendCooldown = null;   // setInterval handle per countdown re-invio
+
+function _updateOtpEmailDisplay() {
+  const e = ($('f-email-personale').value || '').trim().toLowerCase();
+  const el = $('otp-email-display');
+  if (!el) return;
+  el.textContent = e || '—';
+}
+
+function _setOtpStatus(text, type) {
+  const el = $('otp-status');
+  if (!el) return;
+  if (!text) { el.className = 'otp-status'; el.textContent = ''; el.style.display = 'none'; return; }
+  el.className = 'otp-status ' + (type || 'info');
+  el.textContent = text;
+}
+
+function _setSubmitEnabled(enabled) {
+  const btn = $('btn-submit');
+  if (!btn) return;
+  btn.disabled = !enabled;
+}
+
+function _resetOtpState(reason) {
+  _otpSentTo = '';
+  _otpVerifiedFor = '';
+  $('f-otp').value = '';
+  $('f-otp').disabled = true;
+  $('btn-otp-verify').disabled = true;
+  _setSubmitEnabled(false);
+  if (reason === 'email_changed') {
+    _setOtpStatus('⚠ Hai cambiato l\'email personale. Richiedi un nuovo OTP per la nuova email.', 'error');
+  } else {
+    _setOtpStatus('', '');
+  }
+}
+
+async function sendOtp() {
+  const email = ($('f-email-personale').value || '').trim().toLowerCase();
+  if (!email) {
+    _setOtpStatus('⚠ Compila prima l\'email personale (passo 1).', 'error');
+    return;
+  }
+  // Validate email format
+  const emailRx = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRx.test(email)) {
+    _setOtpStatus('⚠ L\'email personale non sembra valida.', 'error');
+    return;
+  }
+
+  const btn = $('btn-otp-send');
+  btn.disabled = true;
+  const origText = btn.textContent;
+  btn.textContent = '⏳ Invio in corso…';
+  _setOtpStatus('Invio del codice in corso…', 'info');
+
+  if (GAS_API_URL.indexOf('REPLACE_ME') >= 0) {
+    // Modalità prova: simula
+    console.warn('[OTP TEST] simulato send_otp per', email);
+    _otpSentTo = email;
+    $('f-otp').disabled = false;
+    $('btn-otp-verify').disabled = false;
+    _setOtpStatus('🧪 Modalità prova: GAS non configurato. Inserisci qualsiasi codice di 6 cifre.', 'info');
+    btn.textContent = origText;
+    btn.disabled = false;
+    return;
+  }
+
+  try {
+    const res = await fetch(GAS_API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ action: 'send_otp', email: email }),
+    });
+    const data = await res.json();
+    if (!data.ok) {
+      _setOtpStatus('⚠ ' + (data.error || 'invio OTP fallito'), 'error');
+      btn.disabled = false;
+      btn.textContent = origText;
+      return;
+    }
+    _otpSentTo = email;
+    $('f-otp').disabled = false;
+    $('f-otp').focus();
+    $('btn-otp-verify').disabled = false;
+    _setOtpStatus('✓ Codice inviato a ' + email + '. Controlla la posta (anche spam) e inseriscilo qui sotto.', 'success');
+    // Cooldown 30s sul re-invio
+    let secs = 30;
+    if (_otpSendCooldown) clearInterval(_otpSendCooldown);
+    btn.textContent = '🕒 Re-invia tra ' + secs + 's';
+    _otpSendCooldown = setInterval(() => {
+      secs -= 1;
+      if (secs <= 0) {
+        clearInterval(_otpSendCooldown); _otpSendCooldown = null;
+        btn.disabled = false; btn.textContent = '🔁 Re-invia OTP';
+        return;
+      }
+      btn.textContent = '🕒 Re-invia tra ' + secs + 's';
+    }, 1000);
+  } catch (e) {
+    _setOtpStatus('⚠ Errore di rete: ' + (e.message || e), 'error');
+    btn.disabled = false;
+    btn.textContent = origText;
+  }
+}
+
+async function verifyOtp() {
+  const email = ($('f-email-personale').value || '').trim().toLowerCase();
+  const otp = ($('f-otp').value || '').trim();
+  if (otp.length !== 6) {
+    _setOtpStatus('⚠ Il codice OTP è di 6 cifre.', 'error');
+    return;
+  }
+  if (!_otpSentTo || _otpSentTo !== email) {
+    _setOtpStatus('⚠ Richiedi prima l\'OTP cliccando "Invia OTP" (l\'email corrente non corrisponde).', 'error');
+    return;
+  }
+
+  const btn = $('btn-otp-verify');
+  btn.disabled = true;
+  const orig = btn.textContent;
+  btn.textContent = '⏳ Verifica…';
+  _setOtpStatus('Verifica del codice in corso…', 'info');
+
+  if (GAS_API_URL.indexOf('REPLACE_ME') >= 0) {
+    // Modalità prova: accetta qualsiasi 6 cifre
+    _otpVerifiedFor = email;
+    _setOtpStatus('🧪 Modalità prova: codice accettato (sarebbe verificato server-side). Puoi cliccare "Invia iscrizione".', 'success');
+    _setSubmitEnabled(true);
+    btn.textContent = '✓ Verificato';
+    return;
+  }
+
+  try {
+    const res = await fetch(GAS_API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ action: 'verify_otp', email: email, otp: otp }),
+    });
+    const data = await res.json();
+    if (!data.ok) {
+      const rem = (typeof data.remaining_attempts === 'number')
+        ? ' — Tentativi rimasti: ' + data.remaining_attempts
+        : '';
+      _setOtpStatus('⚠ ' + (data.error || 'verifica fallita') + rem, 'error');
+      btn.disabled = false;
+      btn.textContent = orig;
+      return;
+    }
+    _otpVerifiedFor = email;
+    _setOtpStatus('✓ Codice corretto. Ora puoi cliccare "Invia iscrizione".', 'success');
+    _setSubmitEnabled(true);
+    btn.textContent = '✓ Verificato';
+  } catch (e) {
+    _setOtpStatus('⚠ Errore di rete: ' + (e.message || e), 'error');
+    btn.disabled = false;
+    btn.textContent = orig;
+  }
+}
+
+// Pad two digits utility
+function _pad(n) { return (n < 10 ? '0' : '') + n; }
+
+function _updateSignedAt() {
+  const el = $('signed-at-display');
+  if (!el) return;
+  const now = new Date();
+  el.textContent =
+    _pad(now.getDate()) + '/' + _pad(now.getMonth() + 1) + '/' + now.getFullYear() + ' ' +
+    _pad(now.getHours()) + ':' + _pad(now.getMinutes()) + ':' + _pad(now.getSeconds());
 }
 
 // Step 1: campi obbligatori + email valide
@@ -451,13 +719,18 @@ function validateStep1() {
   return true;
 }
 
-// Step 2: consenso
+// Step 2: consenso + OTP verificato
 function validateStep2() {
   clearAllMsgs();
   const consent = $('f-consent');
   if (!consent.checked) {
     showMsg('⚠ Devi accettare l\'informativa privacy per inviare la richiesta.', 'error');
     consent.focus();
+    return false;
+  }
+  const email = ($('f-email-personale').value || '').trim().toLowerCase();
+  if (!_otpVerifiedFor || _otpVerifiedFor !== email) {
+    showMsg('⚠ Devi verificare l\'email con il codice OTP prima di inviare l\'iscrizione.', 'error');
     return false;
   }
   return true;
@@ -479,10 +752,11 @@ async function submitForm() {
     area_terapeutica: $('f-area-ter').value.trim(),
     area_geografica:  $('f-area-geo').value.trim().toUpperCase(),
     cell:             $('f-cell').value.trim(),
-    email_personale:  $('f-email-personale').value.trim(),
+    email_personale:  $('f-email-personale').value.trim().toLowerCase(),
     email_offerta:    $('f-email-offerta').value.trim(),
     consent:          $('f-consent').checked ? 'Si' : 'No',
     consent_ts:       new Date().toISOString(),
+    otp:              ($('f-otp').value || '').trim(),
     user_agent:       navigator.userAgent.substring(0, 200),
   };
 
@@ -527,6 +801,8 @@ async function submitForm() {
 
 // Init
 setupOffertaAutoSync();
+_updateSignedAt();
+setInterval(_updateSignedAt, 1000);   // aggiorna la data live ogni secondo
 </script>
 </body>
 </html>
