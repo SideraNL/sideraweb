@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sidera — Iscrizione ISF per ricezione offerte ECM</title>
+<meta name="robots" content="noindex, nofollow">
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #f1f5f9; color: #1e293b; line-height: 1.5;
+  }
+  .wrap { max-width: 760px; margin: 0 auto; padding: 24px 16px 80px; }
+
+  /* Header brand */
+  .brand { text-align: center; margin-bottom: 18px; }
+  .brand .row { display: flex; align-items: center; justify-content: center; gap: 12px; }
+  .brand .logo { height: 36px; width: auto; object-fit: contain; border-radius: 6px; background: #fff; padding: 2px 4px; }
+  .brand h1 { color: #1e3a6e; font-size: 22px; margin: 0; }
+  .brand .sub { color: #64748b; font-size: 13px; margin-top: 6px; }
+
+  /* Intro box */
+  .intro-box {
+    background: #eef2ff; border-left: 4px solid #1e3a6e; border-radius: 10px;
+    padding: 14px 18px; margin-bottom: 22px;
+    box-shadow: 0 1px 3px rgba(0,0,0,.04); font-size: 14px;
+  }
+  .intro-box .eyebrow {
+    font-size: 11px; color: #64748b; text-transform: uppercase;
+    letter-spacing: .5px; font-weight: 700; margin-bottom: 6px;
+  }
+  .intro-box .titolo { font-size: 16px; color: #1e3a6e; font-weight: 700; line-height: 1.3; margin-bottom: 8px; }
+
+  /* Card */
+  .card {
+    background: #fff; border: 1px solid #e2e8f0; border-radius: 12px;
+    padding: 26px 28px; margin-bottom: 18px;
+    box-shadow: 0 2px 8px rgba(0,0,0,.05);
+  }
+  .card h2 {
+    color: #1e3a6e; font-size: 17px; margin: 0 0 6px; font-weight: 700;
+  }
+  .card .lead { color: #64748b; font-size: 13px; margin: 0 0 18px; }
+
+  /* Form */
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  @media (max-width: 600px) { .grid { grid-template-columns: 1fr; } }
+  .field { display: flex; flex-direction: column; min-width: 0; }
+  .field.full { grid-column: 1/-1; }
+  .field label {
+    font-size: 12px; font-weight: 600; color: #334155; margin-bottom: 4px;
+  }
+  .field label .req { color: #dc2626; margin-left: 2px; }
+  .field input, .field select, .field textarea {
+    width: 100%; box-sizing: border-box;
+    border: 1px solid #cbd5e1; border-radius: 6px; padding: 9px 11px;
+    font-size: 14px; font-family: inherit; background: #fff;
+  }
+  .field input:focus, .field select:focus, .field textarea:focus {
+    outline: none; border-color: #1a56db;
+    box-shadow: 0 0 0 3px rgba(26, 86, 219, .15);
+  }
+  .field .hint {
+    font-size: 11px; color: #64748b; margin-top: 4px; line-height: 1.4;
+  }
+  .field input.invalid, .field select.invalid {
+    border-color: #dc2626; background: #fef2f2;
+  }
+
+  /* GDPR section */
+  .gdpr {
+    background: #fffbeb; border: 1px solid #f59e0b; border-radius: 10px;
+    padding: 14px 18px; margin-top: 8px; font-size: 13px; line-height: 1.5;
+    color: #78350f;
+  }
+  .gdpr h3 {
+    color: #92400e; font-size: 14px; margin: 0 0 8px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: .3px;
+  }
+  .gdpr p { margin: 0 0 8px; }
+  .gdpr a { color: #78350f; text-decoration: underline; }
+  .gdpr .consent {
+    background: #fff; border: 1px solid #f59e0b; border-radius: 6px;
+    padding: 10px 14px; margin-top: 10px;
+    display: flex; align-items: flex-start; gap: 10px;
+  }
+  .gdpr .consent input[type="checkbox"] {
+    margin-top: 2px; flex-shrink: 0; width: 18px; height: 18px;
+    accent-color: #1a56db; cursor: pointer;
+  }
+  .gdpr .consent label {
+    flex: 1; cursor: pointer; font-size: 13px; color: #1e293b;
+    font-weight: 600;
+  }
+
+  /* Buttons */
+  .actions {
+    display: flex; justify-content: flex-end; gap: 10px; margin-top: 22px;
+  }
+  .btn {
+    padding: 12px 24px; font-size: 14px; font-weight: 700;
+    border-radius: 8px; border: none; cursor: pointer;
+    font-family: inherit; letter-spacing: .3px;
+    transition: all .15s;
+  }
+  .btn-submit {
+    background: linear-gradient(135deg, #1a56db, #1d4ed8); color: #fff;
+    box-shadow: 0 2px 6px rgba(26, 86, 219, .3);
+  }
+  .btn-submit:hover:not(:disabled) {
+    background: linear-gradient(135deg, #1d4ed8, #1e40af);
+    box-shadow: 0 3px 10px rgba(26, 86, 219, .4);
+  }
+  .btn-submit:disabled {
+    background: #94a3b8; cursor: wait; box-shadow: none;
+  }
+
+  /* Messages */
+  .msg {
+    padding: 12px 16px; border-radius: 8px; font-size: 14px;
+    margin-bottom: 16px; display: none;
+  }
+  .msg.error {
+    background: #fef2f2; border: 1px solid #dc2626; color: #991b1b;
+  }
+  .msg.success {
+    background: #f0fdf4; border: 1px solid #16a34a; color: #166534;
+  }
+  .msg.info {
+    background: #eff6ff; border: 1px solid #3b82f6; color: #1e40af;
+  }
+
+  /* Success state */
+  .success-box {
+    background: #f0fdf4; border: 2px solid #16a34a; border-radius: 12px;
+    padding: 30px; text-align: center; margin-top: 20px; display: none;
+  }
+  .success-box .icon { font-size: 48px; margin-bottom: 12px; }
+  .success-box h2 { color: #166534; font-size: 22px; margin: 0 0 10px; }
+  .success-box p { color: #14532d; font-size: 14px; margin: 0 0 6px; }
+
+  /* Footer */
+  .footer {
+    text-align: center; color: #94a3b8; font-size: 11px; margin-top: 24px;
+  }
+  .footer a { color: #64748b; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- Header brand -->
+  <div class="brand">
+    <div class="row">
+      <img src="img/logo-sidera.png" alt="Sidera" class="logo" onerror="this.style.display='none'">
+      <h1>Sidera</h1>
+    </div>
+    <div class="sub">Provider ECM n. 84 — Iscrizione ISF per ricezione offerte</div>
+  </div>
+
+  <!-- Intro -->
+  <div class="intro-box">
+    <div class="eyebrow">Form di iscrizione</div>
+    <div class="titolo">Ricevi le nostre offerte di eventi ECM</div>
+    <div>Compila il form qui sotto per registrarti come <b>Informatore Scientifico</b> nei nostri elenchi.
+    Riceverai via mail le proposte di eventi e congressi ECM organizzati da Sidera nel tuo ambito terapeutico.</div>
+  </div>
+
+  <!-- Form -->
+  <form id="isf-form" autocomplete="on" onsubmit="event.preventDefault(); submitForm();">
+    <div class="card">
+      <h2>📇 I tuoi dati</h2>
+      <div class="lead">I campi contrassegnati con <span style="color:#dc2626">*</span> sono obbligatori.</div>
+
+      <div class="grid">
+        <div class="field full">
+          <label for="f-referente">Nome e Cognome<span class="req">*</span></label>
+          <input type="text" id="f-referente" name="referente" required maxlength="120"
+                 placeholder="Es. Mario Rossi" autocomplete="name">
+        </div>
+
+        <div class="field full">
+          <label for="f-azienda">Azienda farmaceutica<span class="req">*</span></label>
+          <input type="text" id="f-azienda" name="azienda" required maxlength="200"
+                 placeholder="Ragione sociale completa (es. NOVARTIS FARMA S.P.A.)"
+                 autocomplete="organization" style="text-transform:uppercase">
+          <div class="hint">Scrivi la ragione sociale completa. Sidera collegherà internamente al codice DBCLIENT.</div>
+        </div>
+
+        <div class="field">
+          <label for="f-area-ter">Area terapeutica<span class="req">*</span></label>
+          <select id="f-area-ter" name="area_terapeutica" required>
+            <option value="">— seleziona —</option>
+            <option value="ONCOLOGIA">Oncologia</option>
+            <option value="PSICHIATRIA">Psichiatria</option>
+            <option value="GASTROENTEROLOGIA">Gastroenterologia</option>
+            <option value="PNEUMOLOGIA">Pneumologia</option>
+            <option value="CARDIOLOGIA">Cardiologia</option>
+            <option value="DIABETOLOGIA">Diabetologia</option>
+            <option value="REUMATOLOGIA">Reumatologia</option>
+            <option value="ENDOCRINOLOGIA">Endocrinologia</option>
+            <option value="NEFROLOGIA">Nefrologia</option>
+            <option value="EMATOLOGIA">Ematologia</option>
+            <option value="NEUROLOGIA">Neurologia</option>
+            <option value="DERMATOLOGIA">Dermatologia</option>
+            <option value="GINECOLOGIA">Ginecologia</option>
+            <option value="UROLOGIA">Urologia</option>
+            <option value="MEDICINA INTERNA">Medicina Interna</option>
+            <option value="MEDICINA GENERALE">Medicina Generale</option>
+            <option value="ALTRO">Altro / Più aree</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="f-area-geo">Area geografica</label>
+          <input type="text" id="f-area-geo" name="area_geografica" maxlength="100"
+                 placeholder="Es. LOMBARDIA, MILANO, NORD ITALIA…"
+                 style="text-transform:uppercase">
+        </div>
+
+        <div class="field">
+          <label for="f-cell">Telefono / Cellulare<span class="req">*</span></label>
+          <input type="tel" id="f-cell" name="cell" required maxlength="30"
+                 placeholder="Es. 3471234567"
+                 autocomplete="tel" pattern="[0-9 +\-/().]{6,}">
+          <div class="hint">Numero a cui possiamo contattarti.</div>
+        </div>
+
+        <div class="field">
+          <label for="f-email-personale">Email personale<span class="req">*</span></label>
+          <input type="email" id="f-email-personale" name="email_personale" required maxlength="120"
+                 placeholder="nome.cognome@azienda.com" autocomplete="email">
+          <div class="hint">Email di contatto diretto.</div>
+        </div>
+
+        <div class="field full">
+          <label for="f-email-offerta">Email per ricevere le offerte<span class="req">*</span></label>
+          <input type="email" id="f-email-offerta" name="email_offerta" required maxlength="120"
+                 placeholder="Lascia uguale all'email personale, oppure indicane una dedicata">
+          <div class="hint">Se vuoi ricevere le offerte su una mail dedicata (es. quella del marketing aziendale) inseriscila qui. Altrimenti lasciala uguale a quella personale.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- GDPR -->
+    <div class="card">
+      <h2>🔒 Privacy e consenso</h2>
+      <div class="gdpr">
+        <h3>Informativa sintetica sul trattamento dei dati personali</h3>
+        <p>I dati personali raccolti (nome, azienda, contatti telefonici ed email) sono trattati da
+        <b>Sidera S.r.l.</b> in qualità di Titolare del trattamento, con sede legale in Chiari (BS).</p>
+        <p><b>Finalità del trattamento:</b> invio via email di offerte commerciali e proposte di
+        partecipazione a eventi ECM (Educazione Continua in Medicina) organizzati da Sidera nel
+        tuo ambito di interesse terapeutico.</p>
+        <p><b>Base giuridica:</b> consenso dell'interessato (art. 6, par. 1, lett. a GDPR).</p>
+        <p><b>Conservazione:</b> i dati sono conservati per il tempo strettamente necessario alla
+        finalità sopra indicata e comunque non oltre la revoca del consenso.</p>
+        <p><b>Diritti dell'interessato:</b> potrai in qualsiasi momento revocare il consenso,
+        richiedere accesso, rettifica, cancellazione o portabilità dei dati scrivendo a
+        <a href="mailto:sidera@sideraweb.com">sidera@sideraweb.com</a>.</p>
+        <p>Informativa estesa: <a href="privacy.html" target="_blank">privacy.html</a></p>
+
+        <div class="consent">
+          <input type="checkbox" id="f-consent" name="consent" required>
+          <label for="f-consent">
+            ✅ Acconsento al trattamento dei miei dati personali da parte di Sidera S.r.l.
+            per la finalità di invio di offerte e proposte di partecipazione a eventi ECM,
+            come descritto sopra.
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <!-- Submit -->
+    <div id="form-msg" class="msg"></div>
+    <div class="actions">
+      <button type="submit" id="btn-submit" class="btn btn-submit">📨 Invia iscrizione</button>
+    </div>
+  </form>
+
+  <!-- Success state (mostrato dopo submit OK) -->
+  <div id="success-box" class="success-box">
+    <div class="icon">✅</div>
+    <h2>Iscrizione ricevuta!</h2>
+    <p>Grazie per esserti registrato. Riceverai a breve le nostre offerte di eventi ECM all'indirizzo email indicato.</p>
+    <p style="color:#64748b;font-size:12px;margin-top:14px">Per qualsiasi domanda: <a href="mailto:sidera@sideraweb.com">sidera@sideraweb.com</a></p>
+  </div>
+
+  <!-- Footer -->
+  <div class="footer">
+    Sidera S.r.l. — Provider ECM n. 84 — <a href="https://sideraweb.com">sideraweb.com</a>
+  </div>
+</div>
+
+<script>
+// ─────────────────────────────────────────────────────────────────────────────
+// ISF — Form di iscrizione per ricezione offerte ECM
+// Submit → GAS Web App pubblico (TO BE CONFIGURED)
+// GAS scrive in foglio Google "ISF_RICHIESTE" + invia mail a sidera@sideraweb.com
+// MedFIND poi importa/crea record DBISF
+// ─────────────────────────────────────────────────────────────────────────────
+
+// TODO: configurare l'URL del GAS Web App quando lo deployamo.
+const GAS_API_URL = 'https://script.google.com/macros/s/REPLACE_ME_DEPLOYMENT_ID/exec';
+
+function $ (id) { return document.getElementById(id); }
+
+function showMsg(text, type) {
+  const el = $('form-msg');
+  el.className = 'msg ' + type;
+  el.textContent = text;
+  el.style.display = 'block';
+  el.scrollIntoView({behavior:'smooth', block:'center'});
+}
+
+function clearMsg() {
+  const el = $('form-msg');
+  el.style.display = 'none';
+  el.textContent = '';
+}
+
+// Auto-sync: se l'utente non ha ancora editato email_offerta, la tieni
+// allineata a email_personale (UX: caso più comune = stesse email)
+let _offertaTouched = false;
+function setupOffertaAutoSync() {
+  const pe = $('f-email-personale');
+  const off = $('f-email-offerta');
+  if (!pe || !off) return;
+  off.addEventListener('input', () => { _offertaTouched = true; });
+  pe.addEventListener('input', () => {
+    if (!_offertaTouched) off.value = pe.value;
+  });
+}
+
+function validate() {
+  clearMsg();
+  const REQUIRED = ['f-referente', 'f-azienda', 'f-area-ter', 'f-cell', 'f-email-personale', 'f-email-offerta'];
+  let firstInvalid = null;
+  for (const id of REQUIRED) {
+    const el = $(id);
+    if (!el) continue;
+    const v = (el.value || '').trim();
+    if (!v) {
+      el.classList.add('invalid');
+      if (!firstInvalid) firstInvalid = el;
+    } else {
+      el.classList.remove('invalid');
+    }
+  }
+  // Consent
+  const consent = $('f-consent');
+  if (!consent.checked) {
+    showMsg('⚠ Devi accettare l\'informativa privacy per inviare la richiesta.', 'error');
+    consent.focus();
+    return false;
+  }
+  if (firstInvalid) {
+    showMsg('⚠ Compila tutti i campi obbligatori (in rosso).', 'error');
+    firstInvalid.focus();
+    return false;
+  }
+  // Email validity (browser type=email già fa il check, ma doppio safety)
+  const emailRx = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRx.test($('f-email-personale').value.trim())) {
+    showMsg('⚠ L\'email personale non sembra valida.', 'error');
+    $('f-email-personale').focus();
+    return false;
+  }
+  if (!emailRx.test($('f-email-offerta').value.trim())) {
+    showMsg('⚠ L\'email per le offerte non sembra valida.', 'error');
+    $('f-email-offerta').focus();
+    return false;
+  }
+  return true;
+}
+
+async function submitForm() {
+  if (!validate()) return;
+
+  const payload = {
+    action: 'submit',
+    timestamp_client: new Date().toISOString(),
+    referente:        $('f-referente').value.trim(),
+    azienda:          $('f-azienda').value.trim().toUpperCase(),
+    area_terapeutica: $('f-area-ter').value.trim(),
+    area_geografica:  $('f-area-geo').value.trim().toUpperCase(),
+    cell:             $('f-cell').value.trim(),
+    email_personale:  $('f-email-personale').value.trim(),
+    email_offerta:    $('f-email-offerta').value.trim(),
+    consent:          $('f-consent').checked ? 'Si' : 'No',
+    consent_ts:       new Date().toISOString(),
+    user_agent:       navigator.userAgent.substring(0, 200),
+  };
+
+  const btn = $('btn-submit');
+  btn.disabled = true;
+  btn.textContent = '⏳ Invio in corso…';
+
+  // Configurazione GAS non ancora fatta → mostra avviso e logga payload
+  if (GAS_API_URL.indexOf('REPLACE_ME') >= 0) {
+    console.warn('GAS endpoint non configurato. Payload pronto:', payload);
+    showMsg(
+      'Form di prova: endpoint GAS non ancora configurato. ' +
+      'Apri la console del browser (F12) per vedere il payload che sarebbe inviato.',
+      'info'
+    );
+    btn.disabled = false;
+    btn.textContent = '📨 Invia iscrizione';
+    return;
+  }
+
+  try {
+    const res = await fetch(GAS_API_URL, {
+      method: 'POST',
+      // text/plain evita preflight CORS (GAS Web App accetta solo simple requests)
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(payload),
+    });
+    const data = await res.json();
+    if (!data || !data.ok) {
+      throw new Error((data && data.error) || ('HTTP ' + res.status));
+    }
+    // Successo: nascondi form, mostra success-box
+    $('isf-form').style.display = 'none';
+    $('success-box').style.display = 'block';
+    $('success-box').scrollIntoView({behavior:'smooth'});
+  } catch (e) {
+    btn.disabled = false;
+    btn.textContent = '📨 Invia iscrizione';
+    showMsg('⚠ Errore durante l\'invio: ' + (e.message || e) + '. Riprova tra qualche minuto oppure scrivi a sidera@sideraweb.com.', 'error');
+  }
+}
+
+// Init
+setupOffertaAutoSync();
+</script>
+</body>
+</html>
