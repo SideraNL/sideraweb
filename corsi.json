@@ -1,21 +1,5 @@
 [
   {
-    "idPgt": "1326",
-    "luogo": "ORTA SAN GIULIO",
-    "data": "26/05/2026",
-    "titolo": "RUOLO DELLE TERAPIE FAST LAI ED EVIDENZE DI REAL WORLD",
-    "ssId": "1D4iK_Um6B9sQFAVVlxzOpeF0900uoNLA62DehHLQRj4",
-    "orari": [
-      {
-        "giorno": "1",
-        "data": "26/05/2026",
-        "ora_in": "17:00",
-        "ora_out": "21:00",
-        "pause": []
-      }
-    ]
-  },
-  {
     "idPgt": "1333",
     "luogo": "WEBINAR",
     "data": "27/05/2026",
