@@ -343,7 +343,18 @@ function startTimer() {
     const bar = document.getElementById('timer-bar');
     bar.style.width = pct + '%';
     bar.className = 'progress-bar ' + (pct<10?'bg-danger':pct<50?'bg-warning':'bg-success');
-    if (diff <= 0) { clearInterval(timerInterval); document.getElementById('timer-disp').innerText='00:00'; bar.style.width='0%'; alert('Tempo scaduto!'); submitTest(true); localStorage.removeItem('ecm_end_'+corso); return; }
+    if (diff <= 0) {
+      // 2026-05-30 — NESSUN invio automatico allo scadere del tempo. Il test
+      // viene inviato SOLO quando il partecipante clicca "INVIA TEST". Il timer
+      // resta indicativo: alla scadenza si ferma a 00:00 e mostra un avviso non
+      // bloccante, ma non invia nulla (evita submission vuote da timeout, es.
+      // caso BRULETTI: SCORE 0 senza risposte perché la tab era rimasta aperta).
+      clearInterval(timerInterval);
+      document.getElementById('timer-disp').innerText = '00:00';
+      bar.style.width = '0%';
+      showMsg('Tempo esaurito: completa le risposte e premi INVIA TEST per inviare.', 'err');
+      return;
+    }
     const m = Math.floor((diff%(3600000))/60000), s = Math.floor((diff%60000)/1000);
     document.getElementById('timer-disp').innerText = (m<10?'0'+m:m)+':'+(s<10?'0'+s:s);
   }, 1000);
