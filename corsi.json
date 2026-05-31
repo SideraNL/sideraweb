@@ -1,53 +1,5 @@
 [
   {
-    "idPgt": "1333",
-    "luogo": "WEBINAR",
-    "data": "27/05/2026",
-    "titolo": "ANSIA E DEPRESSIONE NELLA DONNA CON TUMORE GINECOLOGICO: IL MOVIMENTO COME TERAPIA COMPLEMENTARE",
-    "ssId": "1dm_7GrRYCgQBkdXvh4ckatR1RG8msFB7ZxIvIrlyhHI",
-    "orari": [
-      {
-        "giorno": "1",
-        "data": "27/05/2026",
-        "ora_in": "16:00",
-        "ora_out": "18:00",
-        "pause": []
-      }
-    ]
-  },
-  {
-    "idPgt": "1327",
-    "luogo": "PRESEZZO",
-    "data": "27/05/2026",
-    "titolo": "RUOLO DELLE TERAPIE FAST LAI ED EVIDENZE DI REAL WORLD",
-    "ssId": "1WA1FXWlUup0piBceNH_H3x3UcvaGctxqgViCF-VSW7U",
-    "orari": [
-      {
-        "giorno": "1",
-        "data": "27/05/2026",
-        "ora_in": "17:00",
-        "ora_out": "21:00",
-        "pause": []
-      }
-    ]
-  },
-  {
-    "idPgt": "1332",
-    "luogo": "TORINO",
-    "data": "28/05/2026",
-    "titolo": "RUOLO DELLE TERAPIE FAST LAI ED EVIDENZE DI REAL WORLD",
-    "ssId": "1r1htbXXWE7q-4oekLCFei5nU_UWuw69MRlzn7sreLJk",
-    "orari": [
-      {
-        "giorno": "1",
-        "data": "28/05/2026",
-        "ora_in": "17:00",
-        "ora_out": "21:00",
-        "pause": []
-      }
-    ]
-  },
-  {
     "idPgt": "1337",
     "luogo": "CASALE MONFERRATO",
     "data": "08/06/2026",
@@ -230,7 +182,33 @@
     "idPgt": "1341",
     "luogo": "COCCAGLIO",
     "data": "20/10/2026",
-    "titolo": "DEPRESSIONE, DOLORE E DISTURBI CORRELATI: PERCORSI CLINICI CONDIVISI TRA PSICHIATRIA E NEUROLOGIA"
+    "titolo": "DEPRESSIONE, DOLORE E DISTURBI CORRELATI: PERCORSI CLINICI CONDIVISI TRA PSICHIATRIA E NEUROLOGIA",
+    "orari": [
+      {
+        "giorno": "1",
+        "data": "20/10/2026",
+        "ora_in": "14:30",
+        "ora_out": "19:30",
+        "pause": [
+          {
+            "in": "16:45",
+            "out": "17:15"
+          }
+        ]
+      },
+      {
+        "giorno": "2",
+        "data": "21/10/2026",
+        "ora_in": "09:05",
+        "ora_out": "13:30",
+        "pause": [
+          {
+            "in": "10:45",
+            "out": "11:05"
+          }
+        ]
+      }
+    ]
   },
   {
     "idPgt": "1344",
