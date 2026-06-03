@@ -411,9 +411,9 @@
       <h2>Residenza e contatti</h2>
       <p class="lead">Indirizzo di residenza e recapiti per le comunicazioni.</p>
       <div class="grid">
-        <div class="field full"><label>Indirizzo</label><input id="f-indirizzo"></div>
-        <div class="field"><label>CAP</label><input id="f-cap" maxlength="5"></div>
-        <div class="field"><label>Città</label><input id="f-citta"></div>
+        <div class="field full"><label>Indirizzo <span class="req">*</span></label><input id="f-indirizzo" required></div>
+        <div class="field"><label>CAP <span class="req">*</span></label><input id="f-cap" maxlength="5" inputmode="numeric" required></div>
+        <div class="field"><label>Città <span class="req">*</span></label><input id="f-citta" required></div>
         <div class="field"><label>Cellulare</label><input id="f-cellulare"></div>
         <div class="field"><label>Email</label><input id="f-email" type="email"></div>
       </div>
@@ -1615,6 +1615,33 @@ function validateStep() {
     if (ANAGRAFICA_LOCKED && !ANAGRAFICA_CONFIRMED) {
       _showAnagConfirmOverlay();
       return false; // blocca goNext; sarà anagConfirmYes() a far procedere
+    }
+  }
+
+  // v208.3 — Step 2: Indirizzo/CAP/Città residenza obbligatori.
+  // Caso Pasinelli 1334-1 (29/05/2026): contratto firmato con righe Indirizzo/CAP/Città
+  // vuote in ART.2 perché il form non bloccava il passaggio allo step successivo.
+  // Cellulare resta facoltativo (scelta esplicita).
+  if (stepKey === '2') {
+    const reqFields = {
+      'indirizzo': 'Indirizzo',
+      'cap'      : 'CAP',
+      'citta'    : 'Città',
+    };
+    for (const [k, label] of Object.entries(reqFields)) {
+      const el = $('f-' + k);
+      if (!(el.value || '').trim()) {
+        showFormMsg('Campo obbligatorio mancante: ' + label, 'error');
+        el.focus();
+        return false;
+      }
+    }
+    // CAP italiano: 5 cifre numeriche.
+    const cap = ($('f-cap').value || '').trim();
+    if (!/^\d{5}$/.test(cap)) {
+      showFormMsg('CAP non valido: deve essere di 5 cifre numeriche.', 'error');
+      $('f-cap').focus();
+      return false;
     }
   }
 
