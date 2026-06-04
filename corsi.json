@@ -131,7 +131,16 @@
     "idPgt": "1330",
     "luogo": "WEBINAR",
     "data": "21/09/2026",
-    "titolo": "ANSIA ACUTA E DISTURBO DI PANICO"
+    "titolo": "ANSIA ACUTA E DISTURBO DI PANICO",
+    "orari": [
+      {
+        "giorno": "1",
+        "data": "21/09/2026",
+        "ora_in": "16:00",
+        "ora_out": "18:00",
+        "pause": []
+      }
+    ]
   },
   {
     "idPgt": "1342",
@@ -214,7 +223,7 @@
     "idPgt": "1344",
     "luogo": "WEBINAR",
     "data": "27/10/2026",
-    "titolo": "DEPRESSIONE, DOLORE E DISTURBI CORRELATI: PERCORSI CLINICI CONDIVISI TRA PSICHIATRIA E NEUROLOGIA"
+    "titolo": "DEPRESSIONE, DOLORE E DISTURBI CORRELATI"
   },
   {
     "idPgt": "1346",
