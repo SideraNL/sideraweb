@@ -4,6 +4,7 @@
     "luogo": "CASALE MONFERRATO",
     "data": "08/06/2026",
     "titolo": "RUOLO DEL TEAM MULTIDISCIPLINARE E DELLA RETE TERRITORIALE NELLA DIAGNOSI E CURA DELLE INTERSTIZIOPATIE POLMONARI",
+    "ssId": "1ava_sgTb132PHnk9kHfLE6Vhl-I7udC8bG89-a8C0-w",
     "orari": [
       {
         "giorno": "1",
@@ -117,6 +118,7 @@
     "luogo": "WEBINAR",
     "data": "30/06/2026",
     "titolo": "NIGUARDA FOR MENTAL HEALTH",
+    "ssId": "1kZ-Q8LpSjo1IQkVXunr_OAyuQI52oRT4fCKfALO_TBo",
     "orari": [
       {
         "giorno": "1",
@@ -132,6 +134,7 @@
     "luogo": "WEBINAR",
     "data": "21/09/2026",
     "titolo": "ANSIA ACUTA E DISTURBO DI PANICO",
+    "ssId": "1jCPXdjziWZZtiz81c-VuwpeHlpt2YsnJhKMZl5pKkEo",
     "orari": [
       {
         "giorno": "1",
@@ -147,6 +150,7 @@
     "luogo": "WEBINAR",
     "data": "22/09/2026",
     "titolo": "NIGUARDA FOR MENTAL HEALTH",
+    "ssId": "1uQXMwvvSwIkIdm7A3kZdXQADnXscdRBybnUJ8rgZUx0",
     "orari": [
       {
         "giorno": "1",
@@ -177,6 +181,7 @@
     "luogo": "WEBINAR",
     "data": "14/10/2026",
     "titolo": "NIGUARDA FOR MENTAL HEALTH",
+    "ssId": "1h7ea1SjWao1X13l6yzJ-IOcEQAm1tL2wUlCNJEh7cM0",
     "orari": [
       {
         "giorno": "1",
@@ -223,7 +228,17 @@
     "idPgt": "1344",
     "luogo": "WEBINAR",
     "data": "27/10/2026",
-    "titolo": "DEPRESSIONE, DOLORE E DISTURBI CORRELATI"
+    "titolo": "DEPRESSIONE, DOLORE E DISTURBI CORRELATI",
+    "ssId": "1RybBZGaEYaHa22CJAf-0Puzi11l8gGXiyYtZzx8bFYc",
+    "orari": [
+      {
+        "giorno": "1",
+        "data": "27/10/2026",
+        "ora_in": "16:00",
+        "ora_out": "18:00",
+        "pause": []
+      }
+    ]
   },
   {
     "idPgt": "1346",
