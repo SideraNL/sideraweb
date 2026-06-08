@@ -338,7 +338,7 @@
         <span class="material-icons" style="vertical-align:middle;font-size:18px">login</span>
         Accedi
       </button>
-      <div class="login-ver">Scanner Presenze ECM — v2.8</div>
+      <div class="login-ver">Scanner Presenze ECM — v2.9</div>
     </div>
   </div>
 
@@ -347,7 +347,7 @@
     <img src="img/sidera_logo.jpg" alt="Sidera" style="border-radius:6px" onerror="this.style.display='none'">
     <div style="flex:1">
       <div class="title">SideraDA10</div>
-      <div class="ver">Scanner Presenze ECM — v2.8</div>
+      <div class="ver">Scanner Presenze ECM — v2.9</div>
     </div>
     <button class="logout-btn" onclick="logout()" title="Esci" id="btn-logout" style="display:none">
       <span class="material-icons">logout</span>
@@ -1014,7 +1014,9 @@ function caricaScansECalcola() {
     .then(result => {
       if (_handleAuthFail(result)) return;
       scansCache = result.ok ? (result.scans || []) : [];
-      renderPaxList(_calcolaPresenzePax(scansCache));
+      const pctMap = _calcolaPresenzePax(scansCache);
+      renderPaxList(pctMap);
+      return pctMap !== null;  // false = orari evento non configurati
     });
 }
 
@@ -1022,7 +1024,8 @@ function aggiornaPax() {
   const btn = document.getElementById('pax-refresh-btn');
   if (btn) { btn.classList.add('spinning'); btn.disabled = true; }
   caricaScansECalcola()
-    .then(() => toast('Percentuali aggiornate', 'success'))
+    .then(ok => toast(ok === false ? 'Orari evento non configurati' : 'Percentuali aggiornate',
+                      ok === false ? 'warning' : 'success'))
     .catch(() => toast('Errore aggiornamento', 'error'))
     .finally(() => { if (btn) { btn.classList.remove('spinning'); btn.disabled = false; } });
 }
@@ -1039,7 +1042,7 @@ function renderPaxList(pctMap) {
     let badge = '';
     if (pctMap) {
       const pct = pctMap[p.cf];
-      if (pct === null) {
+      if (pct === null || pct === undefined) {
         badge = '<span class="pax-pct abs">0%</span>';
       } else {
         badge = '<span class="pax-pct ' + (pct >= 90 ? 'ok' : 'no') + '">' + pct + '%</span>';
@@ -1096,7 +1099,9 @@ function _nowMin() {
 }
 
 function _calcolaPresenzePax(scans) {
-  if (!currentOrari.length) return {};
+  // null = impossibile calcolare (orari evento mancanti/invalidi) → niente badge,
+  // mai 'undefined%'. Diverso da {} che renderebbe undefined per ogni CF.
+  if (!currentOrari.length) return null;
   const today = _todayStr();
   const nowMin = _nowMin();
 
@@ -1109,7 +1114,7 @@ function _calcolaPresenzePax(scans) {
     dayInfo[g.data] = { oIn, oOut, pause: g.pause || [], planned: Math.max(0, oOut - oIn - pauseMins) };
     plannedTotal += dayInfo[g.data].planned;
   });
-  if (plannedTotal === 0) return {};
+  if (plannedTotal === 0) return null;
 
   const byDay = {};
   scans.forEach(s => {
