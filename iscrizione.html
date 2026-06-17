@@ -775,6 +775,31 @@
 const GAS_API = 'https://script.google.com/macros/s/AKfycbzmAHe6n0kLk7N-cXGEBKSGsSDAF32ZtkQ-Lu19UNut3k_Bb00ueHajWubZr9wpNZEd/exec';
 
 // ─────────────────────────────────────────────────────────────────────────────
+// BACKEND BILINGUE — Google (default) oppure Hostinger LAMP per i nuovi eventi.
+// Lo switch è guidato dal LINK di iscrizione: ?backend=hostinger&token=...
+// Se backend !== 'hostinger' tutto resta IDENTICO al flusso Google storico.
+//   - Su Hostinger migrano SOLO le azioni-dati (getEvent/sendOtp/verifyOtp/
+//     saveRegistration/checkDuplicate*).
+//   - OCR tessera (Google Vision) e validateManual (validazione CF) restano
+//     SEMPRE su Google: sono servizi stateless, non archiviano dati.
+//   - L'auto-cancellazione su Hostinger è gestita da unsub.php (link nella mail
+//     di conferma), quindi loadUnsub/executeUnsub non vengono instradati.
+// ─────────────────────────────────────────────────────────────────────────────
+const HOSTINGER_BASE = 'https://sideraecm.eu';
+const _qp_     = new URLSearchParams(window.location.search);
+const BACKEND  = (_qp_.get('backend') || 'google').toLowerCase();
+const EVENT_TOKEN = _qp_.get('token') || '';
+// Azioni instradate a Hostinger → file PHP. Le altre restano su GAS.
+const _H_ROUTES = {
+  getEvent:                  'get_event.php',
+  sendOtp:                   'send_otp.php',
+  verifyOtp:                 'verify_otp.php',
+  saveRegistration:          'submit_iscrizione.php',
+  checkDuplicateCF:          'check_duplicate.php',
+  checkDuplicateNomeCognome: 'check_duplicate.php',
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
 // STATO
 // ─────────────────────────────────────────────────────────────────────────────
 let idPgt = '';
@@ -836,12 +861,76 @@ function spin(btn, on) {
 }
 
 async function gasPost(action, body) {
+  // Router bilingue: se l'evento è su Hostinger e l'azione è migrata → PHP.
+  if (BACKEND === 'hostinger' && _H_ROUTES[action]) {
+    return hostingerPost(action, body || {});
+  }
   const r = await fetch(GAS_API + '?action=' + action, {
     method: 'POST',
     headers: { 'Content-Type': 'text/plain' },
     body: JSON.stringify(body)
   });
   return r.json();
+}
+
+// Instrada un'azione verso il backend Hostinger (endpoint PHP dedicati).
+async function hostingerPost(action, body) {
+  // getEvent = sola lettura via GET (nessun token).
+  if (action === 'getEvent') {
+    const idpgt = body.idpgt || idPgt;
+    const r = await fetch(HOSTINGER_BASE + '/get_event.php?idpgt=' + encodeURIComponent(idpgt));
+    return r.json();
+  }
+
+  // Costruzione payload: token per-evento iniettato + (per il submit) mappatura
+  // dei nomi-campo GAS-style → snake_case attesi da submit_iscrizione.php.
+  let payload;
+  if (action === 'saveRegistration') {
+    payload = _hMapRegistration(body);
+  } else {
+    payload = Object.assign({}, body, { idpgt: body.idpgt || idPgt, token: EVENT_TOKEN });
+  }
+
+  const r = await fetch(HOSTINGER_BASE + '/' + _H_ROUTES[action], {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  });
+  const d = await r.json();
+
+  // submit_iscrizione.php non restituisce eventData: lo ricostruisco dal titolo
+  // già mostrato nell'header, così il messaggio di successo resta identico.
+  if (action === 'saveRegistration' && d && d.ok && !d.eventData) {
+    const t = document.getElementById('evt-titolo');
+    d.eventData = { titolo: t ? t.textContent : '' };
+  }
+  return d;
+}
+
+// Traduce il formData GAS-style del submit nei campi snake_case del PHP.
+function _hMapRegistration(f) {
+  const isEcm = (f.tipoIscrizione === 'ECM');
+  return {
+    idpgt:                f.IDPGT || idPgt,
+    token:                EVENT_TOKEN,
+    website:              '',                       // honeypot anti-bot (vuoto)
+    email:                f.Email || '',
+    cognome:              f.Cognome || '',
+    nome:                 f.Nome || '',
+    tipo_iscrizione:      f.tipoIscrizione || '',
+    professione:          f.Professione || '',
+    cf:                   f.CodiceFiscale || '',
+    nato_a:               f.NatoA || '',
+    nato_il:              f.NatoIl || '',
+    occupazione:          f.Occupazione || '',
+    sponsor:              f.Sponsor || '',
+    dichiarazione_invito: f.DichiarazioneInvito || '',
+    consenso_ecm:         f.ConsensoECM || '',
+    albo:                 f.Albo || '',
+    n_iscrizione:         f.NumIscrizione || '',
+    informativa:          isEcm ? 'Sì' : '',
+    consenso_privacy:     'Sì',
+  };
 }
 
 // getEvent con retry automatico: se sponsor arriva vuoto ritenta fino a 2 volte
