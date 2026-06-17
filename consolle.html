@@ -137,6 +137,15 @@ const URL_RICADUTE = "https://script.google.com/macros/s/AKfycbyt7cjcmSqPi_j2x7e
 const params = new URLSearchParams(window.location.search);
 const corso = params.get('corso');
 
+// ── Backend bilingue (Fase D): default Google (GAS), Hostinger se ?backend=hostinger ──
+// Il contratto degli endpoint Hostinger è 1:1 con le action GAS (info/otp/verify/
+// submitTest/submitCs), stessi parametri e stesse risposte → cambia solo la URL.
+const BACKEND = (params.get('backend') || '').toLowerCase();
+const IS_HOSTINGER = BACKEND === 'hostinger';
+const HOST_BASE = "https://sideraecm.eu";
+const HOST_MAP = { info:'test_info.php', otp:'test_otp.php', verify:'test_verify.php',
+                   submitTest:'submit_test.php', submitCs:'submit_cs.php' };
+
 let META = {}, APP = {}, USER_EMAIL = '';
 let csSection = 0, csQIdx = 0, csAnswers = [];
 let tIdx = 0, tAnswers = [], timerInterval = null;
@@ -170,10 +179,24 @@ function showView(name) {
   if (el) el.classList.remove('hidden');
 }
 async function gasGet(params) {
+  if (IS_HOSTINGER) {
+    const action = params.action;
+    const q = Object.assign({}, params); delete q.action;
+    if (!q.idpgt) q.idpgt = q.corso || corso;
+    const url = HOST_BASE + '/' + (HOST_MAP[action] || '') + '?' + new URLSearchParams(q).toString();
+    const r = await fetch(url); return r.json();
+  }
   const url = GAS_URL + '?' + new URLSearchParams(params).toString();
   const r = await fetch(url); return r.json();
 }
 async function gasPost(action, body) {
+  if (IS_HOSTINGER) {
+    const b = Object.assign({}, body); if (!b.idpgt) b.idpgt = b.corso || corso;
+    // text/plain: niente preflight (come GAS); il backend legge comunque il JSON da php://input.
+    const r = await fetch(HOST_BASE + '/' + (HOST_MAP[action] || ''),
+      { method:'POST', headers:{'Content-Type':'text/plain'}, body: JSON.stringify(b) });
+    return r.json();
+  }
   const r = await fetch(GAS_URL + '?action=' + action, { method:'POST', headers:{'Content-Type':'text/plain'}, body: JSON.stringify(body) });
   return r.json();
 }
