@@ -1,55 +1,5 @@
 [
   {
-    "idPgt": "1337",
-    "luogo": "CASALE MONFERRATO",
-    "data": "08/06/2026",
-    "titolo": "RUOLO DEL TEAM MULTIDISCIPLINARE E DELLA RETE TERRITORIALE NELLA DIAGNOSI E CURA DELLE INTERSTIZIOPATIE POLMONARI",
-    "ssId": "1ava_sgTb132PHnk9kHfLE6Vhl-I7udC8bG89-a8C0-w",
-    "orari": [
-      {
-        "giorno": "1",
-        "data": "08/06/2026",
-        "ora_in": "09:15",
-        "ora_out": "17:35",
-        "pause": [
-          {
-            "in": "11:00",
-            "out": "11:15"
-          },
-          {
-            "in": "13:00",
-            "out": "13:55"
-          }
-        ]
-      }
-    ]
-  },
-  {
-    "idPgt": "1329",
-    "luogo": "NAPOLI",
-    "data": "10/06/2026",
-    "titolo": "RE-THINK TRD - RETE DI ESPERIENZA, TERAPIA E HUMAN INNOVATION NELLA DEPRESSIONE RESISTENTE",
-    "ssId": "1P747k22Mdwiewy2COZZcNNLYuzVFbZ-TULtV_VIeJQY",
-    "orari": [
-      {
-        "giorno": "1",
-        "data": "10/06/2026",
-        "ora_in": "09:30",
-        "ora_out": "16:00",
-        "pause": [
-          {
-            "in": "11:00",
-            "out": "11:30"
-          },
-          {
-            "in": "13:00",
-            "out": "14:00"
-          }
-        ]
-      }
-    ]
-  },
-  {
     "idPgt": "1328",
     "luogo": "GENOVA",
     "data": "17/06/2026",
@@ -114,54 +64,6 @@
     ]
   },
   {
-    "idPgt": "1348",
-    "luogo": "WEBINAR",
-    "data": "30/06/2026",
-    "titolo": "NIGUARDA FOR MENTAL HEALTH",
-    "ssId": "1kZ-Q8LpSjo1IQkVXunr_OAyuQI52oRT4fCKfALO_TBo",
-    "orari": [
-      {
-        "giorno": "1",
-        "data": "30/06/2026",
-        "ora_in": "14:00",
-        "ora_out": "16:30",
-        "pause": []
-      }
-    ]
-  },
-  {
-    "idPgt": "1330",
-    "luogo": "WEBINAR",
-    "data": "21/09/2026",
-    "titolo": "ANSIA ACUTA E DISTURBO DI PANICO",
-    "ssId": "1jCPXdjziWZZtiz81c-VuwpeHlpt2YsnJhKMZl5pKkEo",
-    "orari": [
-      {
-        "giorno": "1",
-        "data": "21/09/2026",
-        "ora_in": "16:00",
-        "ora_out": "18:00",
-        "pause": []
-      }
-    ]
-  },
-  {
-    "idPgt": "1342",
-    "luogo": "WEBINAR",
-    "data": "22/09/2026",
-    "titolo": "NIGUARDA FOR MENTAL HEALTH",
-    "ssId": "1uQXMwvvSwIkIdm7A3kZdXQADnXscdRBybnUJ8rgZUx0",
-    "orari": [
-      {
-        "giorno": "1",
-        "data": "22/09/2026",
-        "ora_in": "14:00",
-        "ora_out": "16:30",
-        "pause": []
-      }
-    ]
-  },
-  {
     "idPgt": "1347",
     "luogo": "MILANO",
     "data": "24/09/2026",
@@ -177,20 +79,16 @@
     ]
   },
   {
-    "idPgt": "1343",
-    "luogo": "WEBINAR",
-    "data": "14/10/2026",
-    "titolo": "NIGUARDA FOR MENTAL HEALTH",
-    "ssId": "1h7ea1SjWao1X13l6yzJ-IOcEQAm1tL2wUlCNJEh7cM0",
-    "orari": [
-      {
-        "giorno": "1",
-        "data": "14/10/2026",
-        "ora_in": "14:00",
-        "ora_out": "16:30",
-        "pause": []
-      }
-    ]
+    "idPgt": "1351",
+    "luogo": "PADOVA",
+    "data": "09/10/2026",
+    "titolo": "TDB"
+  },
+  {
+    "idPgt": "1353",
+    "luogo": "VICENZA",
+    "data": "16/10/2026",
+    "titolo": "TDB"
   },
   {
     "idPgt": "1341",
@@ -225,22 +123,6 @@
     ]
   },
   {
-    "idPgt": "1344",
-    "luogo": "WEBINAR",
-    "data": "27/10/2026",
-    "titolo": "DEPRESSIONE, DOLORE E DISTURBI CORRELATI",
-    "ssId": "1RybBZGaEYaHa22CJAf-0Puzi11l8gGXiyYtZzx8bFYc",
-    "orari": [
-      {
-        "giorno": "1",
-        "data": "27/10/2026",
-        "ora_in": "16:00",
-        "ora_out": "18:00",
-        "pause": []
-      }
-    ]
-  },
-  {
     "idPgt": "1346",
     "luogo": "L'AQUILA",
     "data": "07/11/2026",
@@ -251,12 +133,6 @@
     "luogo": "MILANO",
     "data": "18/11/2026",
     "titolo": "MENTAL HEALTH IN THE CITIES"
-  },
-  {
-    "idPgt": "1349",
-    "luogo": "webinar",
-    "data": "24/11/2026",
-    "titolo": "INSONNIA: DAL SINTOMO AL DISTURBO. DIAGNOSI DIFFERENZIALE, COMORBIDITA' NEURO PSICHIATRICHE E APPROPRIATEZZA TERAPEUTICA"
   },
   {
     "idPgt": "1350",
