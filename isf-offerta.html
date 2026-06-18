@@ -442,13 +442,14 @@
 <script>
 // ─────────────────────────────────────────────────────────────────────────────
 // ISF — Form di iscrizione per ricezione offerte ECM
-// Submit → GAS Web App pubblico (TO BE CONFIGURED)
-// GAS scrive in foglio Google "ISF_RICHIESTE" + invia mail a sidera@sideraweb.com
-// MedFIND poi importa/crea record DBISF
+// Backend: Hostinger PHP (sideraecm.eu/isf.php) — dispatcher action=send_otp|verify_otp|submit.
+// Scrive in MySQL isf_richieste (stato 'pending'); OTP via SMTP sideraweb.com (mailer.php).
+// MedFIND poi importa/crea record DBISF (DB ISF → Importazioni, via api/isf_richieste.php).
+// Migrato dal GAS Sidera_ISF_Offerte (2026-06-18) per deliverability + always-on.
 // ─────────────────────────────────────────────────────────────────────────────
 
-// TODO: configurare l'URL del GAS Web App quando lo deployamo.
-const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbz__d-67Ni9bSQolQ76CM-Hc0IytsSPhxLblxOlMGCxSGbmY4x3Bdv8WhZFC2fP57m3/exec';
+// Endpoint pubblico Hostinger (un solo URL, dispatch su `action`).
+const GAS_API_URL = 'https://sideraecm.eu/isf.php';
 
 function $ (id) { return document.getElementById(id); }
 
