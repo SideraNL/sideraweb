@@ -1,21 +1,5 @@
 [
   {
-    "idPgt": "1334",
-    "luogo": "CAGLIARI",
-    "data": "18/06/2026",
-    "titolo": "RUOLO DELLE TERAPIE FAST LAI ED EVIDENZE DI REAL WORLD",
-    "ssId": "1T5znVetRc7kOfrCU6GJE3XwA5WcsF3-nu-0Pi280L2g",
-    "orari": [
-      {
-        "giorno": "1",
-        "data": "18/06/2026",
-        "ora_in": "17:00",
-        "ora_out": "21:00",
-        "pause": []
-      }
-    ]
-  },
-  {
     "idPgt": "1338",
     "luogo": "MONTANO LUCINO",
     "data": "19/06/2026",
