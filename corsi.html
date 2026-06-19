@@ -344,12 +344,29 @@
         err.style.display = 'block';
       }
 
+      // Catalogo da MedFIND/Hostinger (sostituisce Google Sheets/gviz).
+      var CORSI_API = 'https://sideraecm.eu/corsi.php';
       function fetchFromNetwork() {
-        return fetch(GVIZ_URL)
-          .then(function(r) { return r.text(); })
-          .then(function(text) {
-            var data = parseGviz(text);
-            var corsi = gvizToCorsi(data.table);
+        return fetch(CORSI_API, { cache: 'no-store' })
+          .then(function(r) { return r.json(); })
+          .then(function(data) {
+            if (!data || !data.ok) throw new Error('catalogo non disponibile');
+            var corsi = (data.corsi || []).map(function(c) {
+              return {
+                id:             c.id || '',
+                titolo:         c.titolo || '',
+                sottotitolo:    c.sottotitolo || '',
+                data:           c.data || '',
+                dataFin:        c.dataFin || '',
+                luogo:          c.luogo || '',
+                crediti:        c.crediti || '',
+                costo:          c.costo || '',
+                img:            convertDriveLink(c.img || ''),
+                linkIscrizione: c.linkIscrizione || '',
+                linkPdf:        c.linkPdf || '',
+                area:           c.area || ''
+              };
+            });
             saveToCache(corsi);
             return corsi;
           });
