@@ -1,21 +1,5 @@
 [
   {
-    "idPgt": "1338",
-    "luogo": "MONTANO LUCINO",
-    "data": "19/06/2026",
-    "titolo": "TUMORE DELLA MAMMELLA LUMINALE: STRATEGIE INTEGRATE TRA FASE PRECOCE E MALATTIA AVANZATA",
-    "ssId": "1CZrlaGLDV7-GDI-u6nWK5NF-lqUvaU-Z6HKq3s24VhQ",
-    "orari": [
-      {
-        "giorno": "1",
-        "data": "19/06/2026",
-        "ora_in": "14:00",
-        "ora_out": "18:00",
-        "pause": []
-      }
-    ]
-  },
-  {
     "idPgt": "1336",
     "luogo": "GENOVA",
     "data": "25/06/2026",
