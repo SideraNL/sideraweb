@@ -761,6 +761,12 @@
           📧 Riceverai una <strong>email di conferma</strong> con il riepilogo dell'iscrizione.<br>
           Controlla anche la cartella <strong>Spam</strong> se non la ricevi entro pochi minuti.
         </div>
+        <!-- Invito App Sidera Corsi — solo eventi Hostinger (rivelato via JS se BACKEND==='hostinger') -->
+        <div id="s-success-app" style="display:none;background:#eef4ff;border:1px solid #c7dbff;border-radius:8px;padding:16px 18px;margin-top:16px">
+          <p style="margin:0 0 12px;color:#1e3a6e;font-size:.9rem;line-height:1.5">📲 <strong>Installa l'App Sidera Corsi</strong><br><span style="color:#475569;font-size:.82rem">App gratuita: ricevi le notifiche sui nuovi corsi ECM e su quelli in partenza, direttamente sul tuo smartphone.</span></p>
+          <a href="https://app.sideraecm.eu/installa.html" target="_blank" rel="noopener" style="display:inline-block;padding:11px 24px;background:#1e3a6e;color:#fff;text-decoration:none;border-radius:8px;font-size:.9rem;font-weight:bold">Installa l'App</a>
+          <div style="margin-top:14px"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMYAAADGCAIAAAAG+WgKAAAEEElEQVR4nO3d0Y2kRhRA0V3LeXQgDsqxOCgHQiTtAPgwQreox+ic79lhtH1VrSeg6vf3+/0FnT/C3wWSomeVIiYpYpIiJilikiImKWKSIiYpYpIi9ueVH/r89fevfY5///nfv+fKz1TXqn7PcfqZN34WZ1YpYpIiJilikiImKXZMfGf3ppVqonny6tW1jluz5JWr7/0szqxSxCRFTFLEJEVMUsyY+M6qe2FPunL1e3PZZ+uduL2fhVWKmKSISYqYpIhJiqkT35PWTWHVpHYsu6M3n1WKmKSISYqYpIhJitgrJ751z2dWc+Jx+j337ie+cQa0ShGTFDFJEZMUMUkxdeKbNptU+6L8jHcGn2SVIiYpYpIiJilikmLGxLf3PbV1+3nO/5n5n4VVipikiEmKmKSISYodE9+0+3eVJ5/zrMz/LKxSxCRFTFLEJEVMUsw4j2/dM5Pr9k658vdU1/pEv3nv5Hjvc7dKEZMUMUkRkxQxSRH7/f1+f+SkNv+ZyeOFT2ya+NjAFx8xSRGTFDFJMfWpzuqeUXWW3JNT6r2/Z/6zoE5gZwRffMQkRUxSxCTFe3ZuuTdlPLk35t5Z6bNsr87zb35y/rVKEZMUMUkRkxQxSTHjqc75pt09PJb9PZVqArVKEZMUMUkRkxQxSbFj4jvbO9FUV39yKjybv/vNmff42MAXHzFJEZMUMUkx46nOdRNWdadp3bWenGTP1t1PrCZHqxQxSRGTFDFJEZMUMya+dU8bVnNHdZet2nHlc2u63Hvn9B6rFDFJEZMUMUkRkxRTd25Zd19p2ml3Tz53+hn/DOeZVYqYpIhJipikiEmKGSewr7Pu7bZKdc/xeHAX0DMnsPMavviISYqYpIhJiqnn8d27G7Vup5S9+4sey+7o3bv6vWt5j48RfPERkxQxSRGTFFPf45t2DviVqz/53Onx4Ft7VziPj9fwxUdMUsQkRUxSvOepznXz1D1734k7W3ete//z7vExlC8+YpIiJilikmLGeXx7PXlq3j3HsrMY9r4z6Dw+NvDFR0xSxCRFTFL89J1bzqrnIZ88r2GddWcIVvdSrVLEJEVMUsQkRUxSTD2BvVLNJtXzok+eXX7F3r1crrBKEZMUMUkRkxQxSTF155Z1Z9utu9beUyc+0TkL006vsEoRkxQxSRGTFDFJ8ea9Oivr9s+szpg4ojtx6/YFra5+ZpUiJikkxWxWKWKSIvbKie9s7/kI1b+6Z9q7h1YpYpIiJilikiImKaZOfOueEryiekLy3pkFT06Fnwfv6N1jlSImKWKSIiYpYpJixsT3xv0qn7zWJ5rm1l39Cju3MIIvPmKSIiYpYpIi9srz+JjMKkVMUsQkRUxSxCRFTFLEJEVMUsQkRUxSxCTFr9Z/0eAhsk2S0BsAAAAASUVORK5CYII=" alt="QR per installare l'App Sidera Corsi" width="150" height="150" style="width:150px;height:150px;border:1px solid #c7dbff;border-radius:10px;background:#fff;padding:8px"><br><span style="color:#64748b;font-size:.78rem">Oppure inquadra il QR Code con il telefono</span></div>
+        </div>
         <p style="color:#777;font-size:.8rem;margin-top:20px">Puoi chiudere questa pagina.</p>
       </div>
     </div>
@@ -2074,6 +2080,11 @@ async function doSubmit(btn) {
         'Iscrizione di <strong>' + cognome + ' ' + nome + '</strong> al corso <em>' +
         (ev.titolo || idPgt) + '</em> registrata con successo.';
       showStep('s-success');
+      // Invito App Sidera Corsi: solo sui nuovi eventi Hostinger (non sui Google legacy).
+      if (BACKEND === 'hostinger') {
+        var _appBox = document.getElementById('s-success-app');
+        if (_appBox) _appBox.style.display = '';
+      }
     } else {
       showMsg('msg-submit', '❌ ' + (d.error || 'Errore durante il salvataggio. Riprova o contatta direzione@sideraweb.it'), 'err');
       spin(btn, false);
