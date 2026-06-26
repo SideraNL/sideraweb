@@ -1,21 +1,5 @@
 [
   {
-    "idPgt": "1336",
-    "luogo": "GENOVA",
-    "data": "25/06/2026",
-    "titolo": "RE-THINK TRD - RETE DI ESPERIENZA, TERAPIA E HUMAN INNOVATION NELLA DEPRESSIONE RESISTENTE",
-    "ssId": "1q4AznTo2sVC417MbNSII5CCcjUIHvV07_FxwB8Nq4ZA",
-    "orari": [
-      {
-        "giorno": "1",
-        "data": "25/06/2026",
-        "ora_in": "13:30",
-        "ora_out": "17:30",
-        "pause": []
-      }
-    ]
-  },
-  {
     "idPgt": "1347",
     "luogo": "MILANO",
     "data": "24/09/2026",
