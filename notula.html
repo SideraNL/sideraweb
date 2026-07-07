@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sidera — Compilazione notula</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #f1f5f9; color: #1e293b; line-height: 1.5;
+  }
+  .wrap { max-width: 640px; margin: 0 auto; padding: 24px 16px 60px; }
+
+  .brand { text-align: center; margin-bottom: 18px; }
+  .brand .row { display: flex; align-items: center; justify-content: center; gap: 12px; }
+  .brand .logo { height: 36px; width: auto; object-fit: contain; border-radius: 6px; background: #fff; padding: 2px 4px; }
+  .brand h1 { color: #1e3a6e; font-size: 22px; margin: 0; }
+  .brand .sub { color: #64748b; font-size: 13px; margin-top: 6px; }
+
+  .evento-box {
+    background: #eef2ff; border-left: 4px solid #1e3a6e; border-radius: 10px;
+    padding: 14px 18px; margin-bottom: 18px;
+    box-shadow: 0 1px 3px rgba(0,0,0,.04);
+  }
+  .evento-box .eyebrow {
+    font-size: 11px; color: #64748b; text-transform: uppercase;
+    letter-spacing: .5px; font-weight: 700; margin-bottom: 6px;
+  }
+  .evento-box .titolo { font-size: 16px; color: #1e3a6e; font-weight: 700; line-height: 1.3; margin-bottom: 8px; }
+  .evento-box .meta { font-size: 13px; color: #475569; }
+  .evento-box .meta b { color: #1e293b; }
+
+  .card {
+    background: #fff; border: 1px solid #e2e8f0; border-radius: 12px;
+    padding: 22px 24px; margin-bottom: 18px;
+    box-shadow: 0 2px 8px rgba(0,0,0,.05);
+  }
+  .card h2 { color: #1e3a6e; font-size: 16px; margin: 0 0 6px; font-weight: 700; }
+  .card .lead { color: #64748b; font-size: 13px; margin: 0 0 16px; }
+
+  .summary table { width: 100%; font-size: 13px; }
+  .summary td { padding: 6px 8px; border-bottom: 1px solid #e2e8f0; }
+  .summary td:first-child { color: #64748b; font-weight: 600; width: 45%; }
+  .summary td:last-child { color: #1e293b; font-weight: 500; }
+  .summary tr:last-child td { border-bottom: none; font-weight: 700; }
+
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  @media (max-width: 480px) { .grid { grid-template-columns: 1fr; } }
+  .field { display: flex; flex-direction: column; min-width: 0; }
+  .field label { font-size: 12px; font-weight: 600; color: #334155; margin-bottom: 4px; }
+  .field input {
+    width: 100%; box-sizing: border-box;
+    border: 1px solid #cbd5e1; border-radius: 6px; padding: 9px 11px;
+    font-size: 14px; font-family: inherit; background: #fff;
+  }
+  .field input:focus { outline: none; border-color: #1a56db; box-shadow: 0 0 0 2px rgba(26,86,219,.15); }
+
+  .accept-box {
+    background: #fffbeb; border: 1px solid #fde68a;
+    border-radius: 10px; padding: 14px 18px; margin-top: 16px;
+    display: flex; align-items: flex-start; gap: 10px;
+  }
+  .accept-box input[type=checkbox] {
+    width: 18px; height: 18px; flex-shrink: 0; margin-top: 2px;
+    accent-color: #16a34a;
+  }
+  .accept-box label { font-size: 13px; color: #78350f; line-height: 1.5; cursor: pointer; }
+  .accept-box label b { color: #78350f; }
+
+  #form-msg {
+    background: #fef2f2; border: 1px solid #fecaca; color: #991b1b;
+    border-radius: 8px; padding: 10px 14px; font-size: 13px; margin-bottom: 14px;
+  }
+
+  .btn-submit {
+    width: 100%; background: #16a34a; color: #fff; border: none;
+    padding: 14px 24px; font-size: 16px; font-weight: 700; border-radius: 8px;
+    cursor: pointer; margin-top: 18px; box-shadow: 0 2px 6px rgba(22,163,74,.3);
+    transition: all .15s;
+  }
+  .btn-submit:hover { background: #15803d; }
+  .btn-submit:disabled { background: #cbd5e1; color: #94a3b8; cursor: not-allowed; box-shadow: none; }
+
+  .state {
+    background: #fff; border-radius: 12px; padding: 50px 30px;
+    text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,.05);
+  }
+  .state .spinner {
+    display: inline-block; width: 36px; height: 36px;
+    border: 3px solid #e2e8f0; border-top-color: #1a56db;
+    border-radius: 50%; animation: spin .8s linear infinite;
+    margin-bottom: 14px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .state .icon { font-size: 48px; margin-bottom: 14px; }
+  .state h2 { color: #1e3a6e; margin: 0 0 10px; font-size: 20px; }
+  .state p { color: #475569; font-size: 14px; margin: 0; line-height: 1.6; }
+
+  .footer { text-align: center; color: #94a3b8; font-size: 11px; margin-top: 26px; line-height: 1.6; }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <div class="brand">
+    <div class="row">
+      <img class="logo" src="img/sidera_logo.jpg" onerror="this.onerror=null;this.src='/static/sidera_logo.jpg'" alt="Sidera">
+      <h1>Sidera — Provider ECM n. 84</h1>
+    </div>
+    <div class="sub">Compilazione notula</div>
+  </div>
+
+  <div id="loading-screen" class="state">
+    <div class="spinner"></div>
+    <p>Caricamento dati in corso…</p>
+  </div>
+
+  <div id="error-screen" class="state" style="display:none">
+    <div class="icon">⚠</div>
+    <h2>Errore</h2>
+    <p id="error-msg">—</p>
+  </div>
+
+  <div id="success-screen" class="state" style="display:none">
+    <div class="icon" style="color:#16a34a">✓</div>
+    <h2>Notula inviata</h2>
+    <p>
+      I dati sono stati ricevuti correttamente. A breve riceverà una email dal
+      servizio di firma elettronica <b>iLovePDF</b> con il pulsante per apporre
+      la Sua firma sul documento.
+    </p>
+    <p style="margin-top:14px;font-size:12px;color:#94a3b8">
+      In genere arriva entro pochi minuti; in caso di carico operativo può
+      richiedere alcune ore. Controlli anche lo spam. Se non riceve nulla entro
+      qualche giorno, scriva a <b>sidera@sideraweb.com</b>.
+    </p>
+  </div>
+
+  <div id="form-screen" style="display:none">
+
+    <div class="evento-box">
+      <div class="eyebrow">Evento ECM</div>
+      <div class="titolo" id="ev-titolo">—</div>
+      <div class="meta">
+        Data: <b id="ev-data">—</b> &nbsp;·&nbsp;
+        Luogo: <b id="ev-luogo">—</b> &nbsp;·&nbsp;
+        Cod. ECM: <b id="ev-cod">—</b>
+      </div>
+    </div>
+
+    <div id="form-msg" style="display:none"></div>
+
+    <div class="card">
+      <h2>Percipiente e compenso</h2>
+      <p class="lead">Dati già registrati — non modificabili da questo modulo.</p>
+      <div class="summary">
+        <table>
+          <tr><td>Percipiente</td><td id="perc-nome">—</td></tr>
+          <tr><td>Compenso lordo</td><td id="imp-lordo">—</td></tr>
+          <tr><td>Ritenuta d'acconto 20%</td><td id="imp-ritenuta">—</td></tr>
+          <tr><td>Netto a pagare</td><td id="imp-netto">—</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Dati notula</h2>
+      <p class="lead">Indichi il numero e la data della notula.</p>
+      <div class="grid">
+        <div class="field">
+          <label>N° notula</label>
+          <input id="f-numero" placeholder="es. 12">
+        </div>
+        <div class="field">
+          <label>Data notula</label>
+          <input id="f-data" type="date">
+        </div>
+      </div>
+
+      <div class="accept-box">
+        <input type="checkbox" id="chk-no-piva">
+        <label for="chk-no-piva">
+          <b>Dichiaro</b> di non essere titolare di Partita IVA e che il compenso
+          sopra indicato è soggetto alla <b>sola ritenuta d'acconto del 20%</b>
+          (art. 25 DPR 600/1973). Se la Sua situazione fiscale è diversa, non
+          prosegua e contatti Sidera prima di inviare il modulo.
+        </label>
+      </div>
+
+      <button class="btn-submit" id="btn-submit" disabled>Invia notula</button>
+    </div>
+
+  </div>
+
+  <div class="footer">
+    Sidera s.r.l. · Vicolo Tonale, 4 · 25032 Chiari (BS) · P.IVA 02893270120<br>
+    PEC sidera.srl@pec.it · www.sideraweb.com
+  </div>
+
+</div>
+
+<script>
+// ── Strada B — backend GAS Web App (stesso Web App/URL del contratto,
+// azioni separate action=notula-prefill/notula-submit — vedi
+// CONTRATTI/.clasp/Code.js). Il form è statico su sideraweb.com (GitHub
+// Pages, sempre online) così funziona anche a PC di Nicola spento; MedFIND
+// polla il foglio "NotulaPipeline" quando è acceso e processa i submit.
+const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbxUciq4e30VetpXvNSqfv3d0axKCh8G65JMHTx2YTDuXolEUJMTIbwdOWrFX850yhM0/exec';
+
+let TOKEN = '';
+
+function $(id) { return document.getElementById(id); }
+
+function showState(which) {
+  ['loading-screen', 'error-screen', 'success-screen', 'form-screen'].forEach(id => {
+    $(id).style.display = (id === which) ? 'block' : 'none';
+  });
+  if (which === 'success-screen') window.scrollTo(0, 0);
+}
+
+function showError(msg) { $('error-msg').textContent = msg; showState('error-screen'); }
+
+function showFormMsg(msg) {
+  const el = $('form-msg');
+  el.textContent = msg;
+  el.style.display = msg ? 'block' : 'none';
+}
+
+function euro(x) {
+  const v = Number(x) || 0;
+  return '€ ' + v.toLocaleString('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+// yyyy-mm-dd (input type=date) → dd/mm/yyyy (convenzione MedFIND)
+function toItalianDate(iso) {
+  if (!iso) return '';
+  const m = iso.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  return m ? `${m[3]}/${m[2]}/${m[1]}` : iso;
+}
+
+function populate(data) {
+  const ev = data.evento || {};
+  $('ev-titolo').textContent = ev.titolo || '—';
+  $('ev-data').textContent = ev.data_inizio || '—';
+  $('ev-luogo').textContent = ev.luogo || '—';
+  $('ev-cod').textContent = ev.codice_ecm || '—';
+
+  const perc = data.percipiente || {};
+  $('perc-nome').textContent = perc.nome_completo || '—';
+
+  const imp = data.importo || {};
+  $('imp-lordo').textContent = euro(imp.lordo);
+  $('imp-ritenuta').textContent = '− ' + euro(imp.ritenuta);
+  $('imp-netto').textContent = euro(imp.netto);
+}
+
+async function doSubmit() {
+  showFormMsg('');
+  const numero = ($('f-numero').value || '').trim();
+  const dataIso = $('f-data').value || '';
+  const confermaNoPiva = $('chk-no-piva').checked;
+
+  if (!confermaNoPiva) {
+    showFormMsg('Deve confermare la dichiarazione su assenza di Partita IVA e ritenuta d\'acconto prima di inviare.');
+    return;
+  }
+
+  const btn = $('btn-submit');
+  btn.disabled = true;
+  btn.textContent = 'Invio in corso…';
+
+  const body = {
+    action: 'notula-submit',
+    token: TOKEN,
+    numero: numero,
+    data_notula: toItalianDate(dataIso),
+    conferma_no_piva: true,
+  };
+
+  try {
+    const isLocal = ['localhost', '127.0.0.1'].includes(window.location.hostname);
+    let res, data;
+    if (isLocal) {
+      res = await fetch('/api/contratti/notula/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      data = await res.json();
+    } else {
+      res = await fetch(GAS_API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify(body),
+      });
+      data = await res.json();
+    }
+    if (!data.ok) {
+      if (data.already_submitted) { showState('success-screen'); return; }
+      showFormMsg(data.error || 'Invio non riuscito, riprovi.');
+      btn.disabled = false;
+      btn.textContent = 'Invia notula';
+      return;
+    }
+    showState('success-screen');
+  } catch (err) {
+    showFormMsg('Errore di rete: ' + err.message + '. Riprovi.');
+    btn.disabled = false;
+    btn.textContent = 'Invia notula';
+  }
+}
+
+async function init() {
+  const params = new URLSearchParams(window.location.search);
+  TOKEN = params.get('t') || '';
+  if (!TOKEN) { showError('Link non valido: token mancante.'); return; }
+
+  $('chk-no-piva').addEventListener('change', () => {
+    $('btn-submit').disabled = !$('chk-no-piva').checked;
+  });
+  $('btn-submit').addEventListener('click', doSubmit);
+
+  try {
+    // Se aperto da localhost (test diretto su MedFIND), bypassa GAS e chiama
+    // l'endpoint Flask locale — in produzione (sideraweb.com) chiama sempre GAS.
+    const isLocal = ['localhost', '127.0.0.1'].includes(window.location.hostname);
+    const url = isLocal
+      ? ('/api/contratti/notula/prefill/' + encodeURIComponent(TOKEN))
+      : (GAS_API_URL + '?action=notula-prefill&t=' + encodeURIComponent(TOKEN));
+    const res = await fetch(url);
+    const data = await res.json();
+    if (!data.ok) { showError(data.error || 'Errore caricamento dati.'); return; }
+    if (data.submitted) { showState('success-screen'); return; }
+    populate(data);
+    showState('form-screen');
+  } catch (err) {
+    showError('Errore di rete: ' + err.message);
+  }
+}
+
+init();
+</script>
+
+</body>
+</html>
