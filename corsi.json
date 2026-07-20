@@ -33,7 +33,21 @@
     "idPgt": "1355",
     "luogo": "MILANO",
     "data": "13/10/2026",
-    "titolo": "EVIDENZE IN SCHIZOFRENIA"
+    "titolo": "EVIDENZE IN SCHIZOFRENIA",
+    "orari": [
+      {
+        "giorno": "1",
+        "data": "13/10/2026",
+        "ora_in": "13:30",
+        "ora_out": "18:30",
+        "pause": [
+          {
+            "in": "16:15",
+            "out": "16:45"
+          }
+        ]
+      }
+    ]
   },
   {
     "idPgt": "1353",
