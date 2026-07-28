@@ -136,6 +136,20 @@
     "idPgt": "1356",
     "luogo": "LECCO",
     "data": "16/12/2026",
-    "titolo": "ILRUOLO STRATEGICO DEL GRUPPO MULTIDISCIPLINARE"
+    "titolo": "IL RUOLO STRATEGICO DEL GRUPPO MULTIDISCIPLINARE",
+    "orari": [
+      {
+        "giorno": "1",
+        "data": "16/12/2026",
+        "ora_in": "13:30",
+        "ora_out": "19:00",
+        "pause": [
+          {
+            "in": "16:30",
+            "out": "16:45"
+          }
+        ]
+      }
+    ]
   }
 ]
