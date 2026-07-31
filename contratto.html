@@ -53,6 +53,31 @@
     height: 100%; transition: width .3s ease;
   }
 
+  /* v288.0 — Informativa art. 13 al punto di raccolta. Chiusa di default per
+     non allungare il modulo, ma presente su ogni passo (sta fuori dai .step). */
+  .privacy-box {
+    background: #fff; border: 1px solid #e2e8f0; border-left: 4px solid #475569;
+    border-radius: 10px; margin-bottom: 18px; box-shadow: 0 1px 3px rgba(0,0,0,.04);
+  }
+  .privacy-box > summary {
+    cursor: pointer; padding: 13px 18px; font-size: 13px; font-weight: 600;
+    color: #334155; list-style: none; display: flex; align-items: center; gap: 8px;
+  }
+  .privacy-box > summary::-webkit-details-marker { display: none; }
+  .privacy-box > summary::after {
+    content: '▾'; margin-left: auto; color: #64748b; font-size: 12px;
+    transition: transform .2s ease;
+  }
+  .privacy-box[open] > summary::after { transform: rotate(180deg); }
+  .privacy-box > summary:hover { color: #1a56db; }
+  .privacy-box .privacy-body { padding: 0 18px 16px; }
+  .privacy-box .privacy-body p {
+    font-size: 12.5px; line-height: 1.6; color: #475569; margin: 0 0 9px;
+  }
+  .privacy-box .privacy-body p:last-child { margin-bottom: 0; }
+  .privacy-box .privacy-body b { color: #334155; }
+  .privacy-box .privacy-body a { color: #1a56db; }
+
   /* Card (cartolina) */
   .card {
     background: #fff; border: 1px solid #e2e8f0; border-radius: 12px;
@@ -367,6 +392,46 @@
       <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:16%"></div></div>
     </div>
 
+    <!-- v288.0 — Informativa privacy al punto di raccolta (art. 13 GDPR).
+         Prima di questa versione i dati (CF, IBAN, residenza) venivano chiesti
+         qui e l'informativa arrivava solo dopo, dentro il contratto da firmare:
+         cioè a raccolta già avvenuta. -->
+    <details class="privacy-box">
+      <summary>🔒 Informativa privacy — come trattiamo i dati che sta per inserire</summary>
+      <div class="privacy-body">
+        <p><b>Titolare del trattamento:</b> Sidera S.r.l., Vicolo Tonale 4, 25032 Chiari (BS),
+          P.IVA 02893270120 — <a href="mailto:sidera@sideraweb.com">sidera@sideraweb.com</a>,
+          tel. 030 7778630.</p>
+        <p><b>Finalità e base giuridica.</b> I dati che inserisce in questo modulo — anagrafica,
+          residenza e recapiti, dati professionali, codice fiscale, IBAN ed eventuale partita IVA —
+          servono a predisporre il contratto di incarico e a darvi esecuzione: liquidazione del
+          compenso, adempimenti fiscali e previdenziali, e documentazione dei requisiti dei docenti
+          richiesta dall'accreditamento ECM. Il trattamento si fonda sull'esecuzione del contratto e
+          su obblighi di legge (art. 6.1 lett. b e c del Regolamento 679/2016/UE): per questo
+          <b>non Le viene chiesto alcun consenso</b>. Il conferimento non è facoltativo — senza
+          questi dati l'incarico non può essere conferito.</p>
+        <p><b>A chi vengono comunicati.</b> I dati non sono diffusi. Sono comunicati ad AGE.NA.S per
+          l'accreditamento ECM; al fornitore del servizio di firma elettronica presso cui raccoglierà
+          la Sua firma; al consulente fiscale e agli istituti bancari per il pagamento del compenso;
+          e, se Lei è dipendente pubblico, alla Sua amministrazione di appartenenza ai sensi
+          dell'art. 53 del D.Lgs. 165/2001. Il Titolare si avvale inoltre di fornitori di servizi
+          informatici per la conservazione e l'elaborazione dei documenti, alcuni dei quali con sede
+          fuori dall'Unione europea.</p>
+        <p><b>Il Suo IBAN.</b> Nel contratto che riceverà per la firma l'IBAN compare in forma
+          parziale (solo le ultime quattro cifre): il dato completo resta negli archivi del Titolare
+          ed è usato unicamente per l'accredito del compenso.</p>
+        <p><b>Per quanto tempo.</b> I dati sono conservati per i termini imposti dalla normativa ECM
+          e da quella fiscale e civilistica — di norma cinque anni per la documentazione ECM e dieci
+          per quella contabile — e comunque per il tempo necessario alla difesa dei diritti del
+          Titolare in sede giudiziaria.</p>
+        <p><b>I Suoi diritti.</b> Può chiedere in ogni momento accesso, rettifica, cancellazione,
+          limitazione e portabilità dei dati che La riguardano, e opporsi al trattamento nei casi
+          previsti, scrivendo a <a href="mailto:sidera@sideraweb.com">sidera@sideraweb.com</a>.
+          Ha inoltre diritto di proporre reclamo al Garante per la protezione dei dati personali
+          (<a href="https://www.garanteprivacy.it" target="_blank" rel="noopener">garanteprivacy.it</a>).</p>
+      </div>
+    </details>
+
     <!-- v141.0 — Info box per messaggi di validazione (sostituisce alert() del browser) -->
     <div id="form-msg" style="display:none"></div>
 
@@ -485,6 +550,11 @@
           <input id="f-iban" maxlength="34" style="text-transform:uppercase"
                  oninput="onIbanInput()" onblur="onIbanBlur()">
           <div id="iban-feedback" class="hint" style="margin-top:5px">Inserisca l'IBAN per l'accredito del compenso</div>
+          <!-- v288.0 — richiamo dell'informativa nel punto in cui il dato più
+               sensibile viene effettivamente chiesto. -->
+          <div class="hint" style="margin-top:7px;color:#475569">🔒 L'IBAN è usato solo per
+            l'accredito del compenso. Nel contratto che riceverà per la firma comparirà in forma
+            parziale (ultime quattro cifre); il dato completo resta negli archivi di Sidera.</div>
         </div>
         <div class="field full">
           <label>Partita IVA <small style="color:#94a3b8">(facoltativa)</small></label>
