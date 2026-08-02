@@ -289,16 +289,13 @@
         grid.style.display = 'grid';
         grid.innerHTML = '';
         corsi.forEach(function(c) {
-          var card = document.createElement('div');
+          // Card interamente cliccabile \u2192 pagina di dettaglio corso.html.
+          // ISCRIVITI/LOCANDINA vivono ora li', non piu' qui sulla card.
+          var card = document.createElement('a');
           card.className = 'corso-card';
+          card.href = 'corso.html?id=' + encodeURIComponent(c.id || '');
           var imgTag = c.img
             ? '<img class="corso-card-img" src="' + c.img + '" alt="" loading="lazy" decoding="async" onerror="this.style.display=\'none\'">'
-            : '';
-          var iscr = c.linkIscrizione
-            ? '<a class="corso-btn-iscriviti" href="' + c.linkIscrizione + '" target="_blank">ISCRIVITI</a>'
-            : '<span class="corso-btn-iscriviti disabled">ISCRIVITI</span>';
-          var locan = c.linkPdf
-            ? '<a class="corso-btn-locandina" href="' + c.linkPdf + '" target="_blank">LOCANDINA</a>'
             : '';
           var dataTxt = c.data || '';
           if (c.dataFin && c.dataFin !== c.data) dataTxt += ' \u2013 ' + c.dataFin;
@@ -315,7 +312,7 @@
                 ecmHtml(c.crediti) +
                 (c.costo && c.costo !== '0' ? '<span style="font-weight:600;color:#0f766e">\u20ac ' + c.costo + '</span>' : '<span style="color:#16a34a;font-weight:600">Gratuito</span>') +
               '</div>' +
-              '<div class="corso-card-actions">' + iscr + locan + '</div>' +
+              '<div class="corso-card-cta">Scopri il programma \u2192</div>' +
             '</div>';
           grid.appendChild(card);
         });
