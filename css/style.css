@@ -1290,6 +1290,44 @@ img { max-width: 100%; display: block; }
   font-size: 13px;
 }
 
+/* Discipline accreditate ECM — box colorato con pillole, deliberatamente
+   diverso dalla lista testuale del programma sotto: sono due contenuti di
+   natura diversa (chi puo' partecipare vs cosa succede) e devono leggersi
+   come due blocchi distinti a colpo d'occhio, non come continuazione. */
+.corso-discipline {
+  display: none;
+  background: var(--accent-light);
+  border-radius: var(--radius);
+  padding: 20px 24px;
+  margin-bottom: 40px;
+}
+
+.corso-discipline-title {
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--primary);
+  margin-bottom: 12px;
+}
+
+.corso-discipline-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.corso-discipline-chip {
+  background: var(--white);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 999px;
+  padding: 6px 14px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text);
+}
+
 .corso-programma-title {
   font-family: 'Playfair Display', serif;
   font-size: 22px;

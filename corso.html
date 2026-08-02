@@ -53,6 +53,8 @@
         <div class="corso-detail-meta" id="corso-detail-meta"></div>
         <div class="corso-detail-actions" id="corso-detail-actions"></div>
 
+        <div class="corso-discipline" id="corso-discipline"></div>
+
         <h2 class="corso-programma-title">Programma</h2>
         <div class="corso-programma-list" id="corso-programma-list"></div>
       </div>
@@ -202,6 +204,22 @@
           ? '<a class="corso-btn-locandina" href="' + c.linkPdf + '" target="_blank">LOCANDINA</a>'
           : '';
         document.getElementById('corso-detail-actions').innerHTML = iscr + locan;
+
+        // Discipline accreditate ECM: stringa pipe-separated (vedi
+        // dbcorsi_sync_full → "prof"). Sezione a se', pillole colorate,
+        // volutamente diversa dalla lista testuale del programma sotto.
+        var disciplineBox = document.getElementById('corso-discipline');
+        var discipline = String(c.destinatari || '').split('|').map(function(s) { return s.trim(); }).filter(Boolean);
+        if (discipline.length) {
+          disciplineBox.style.display = 'block';
+          disciplineBox.innerHTML =
+            '<h3 class="corso-discipline-title">Discipline accreditate ECM</h3>' +
+            '<div class="corso-discipline-chips">' +
+              discipline.map(function(d) { return '<span class="corso-discipline-chip">' + d + '</span>'; }).join('') +
+            '</div>';
+        } else {
+          disciplineBox.style.display = 'none';
+        }
 
         var list = document.getElementById('corso-programma-list');
         var sessioni = c.programma || [];
