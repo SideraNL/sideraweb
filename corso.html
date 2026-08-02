@@ -205,7 +205,10 @@
         var locan = c.linkPdf
           ? '<a class="corso-btn-locandina" href="' + c.linkPdf + '" target="_blank">LOCANDINA</a>'
           : '';
-        document.getElementById('corso-detail-actions').innerHTML = iscr + locan;
+        var video = c.videoUrl
+          ? '<a class="corso-btn-video" href="' + c.videoUrl + '" target="_blank">🎬 VIDEO</a>'
+          : '';
+        document.getElementById('corso-detail-actions').innerHTML = iscr + locan + video;
 
         // Destinatari: raggruppati per professione (c.discipline, array di
         // {professione, discipline:[...]} — vedi dbcorsi_sync_full), non piu'
