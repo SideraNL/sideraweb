@@ -57,6 +57,8 @@
 
         <h2 class="corso-programma-title">Programma</h2>
         <div class="corso-programma-list" id="corso-programma-list"></div>
+
+        <div class="corso-sponsor" id="corso-sponsor"></div>
       </div>
     </div>
   </section>
@@ -205,17 +207,31 @@
           : '';
         document.getElementById('corso-detail-actions').innerHTML = iscr + locan;
 
-        // Discipline accreditate ECM: stringa pipe-separated (vedi
-        // dbcorsi_sync_full → "prof"). Sezione a se', pillole colorate,
-        // volutamente diversa dalla lista testuale del programma sotto.
+        // Destinatari: raggruppati per professione (c.discipline, array di
+        // {professione, discipline:[...]} — vedi dbcorsi_sync_full), non piu'
+        // una lista piatta "Professione - Disciplina" ripetuta per ogni riga.
+        // + badge iscrizioni non ECM (c.iscrNonEcm), stessa fonte della BROCHURE
+        // (flag __NON_ECM_ENABLED__ in DESKI_CONFIG).
         var disciplineBox = document.getElementById('corso-discipline');
-        var discipline = String(c.destinatari || '').split('|').map(function(s) { return s.trim(); }).filter(Boolean);
-        if (discipline.length) {
+        var gruppi = Array.isArray(c.discipline) ? c.discipline : [];
+        var nonEcmAmmesse = String(c.iscrNonEcm || 'AMMESSE').toUpperCase() !== 'NON_AMMESSE';
+        if (gruppi.length) {
           disciplineBox.style.display = 'block';
           disciplineBox.innerHTML =
-            '<h3 class="corso-discipline-title">Discipline accreditate ECM</h3>' +
-            '<div class="corso-discipline-chips">' +
-              discipline.map(function(d) { return '<span class="corso-discipline-chip">' + d + '</span>'; }).join('') +
+            '<h3 class="corso-discipline-title">Destinatari</h3>' +
+            '<div class="corso-discipline-groups">' +
+              gruppi.map(function(g) {
+                var elenco = (g.discipline || []).join(', ');
+                return '<div class="corso-discipline-group">' +
+                  '<div class="corso-discipline-prof">' + (g.professione || '') + '</div>' +
+                  (elenco ? '<div class="corso-discipline-list">' + elenco + '</div>' : '') +
+                '</div>';
+              }).join('') +
+            '</div>' +
+            '<div class="corso-discipline-ecm ' + (nonEcmAmmesse ? 'is-open' : 'is-closed') + '">' +
+              (nonEcmAmmesse
+                ? 'Aperto anche a chi partecipa senza necessità di crediti ECM'
+                : 'Riservato ai professionisti che partecipano per l’accreditamento ECM') +
             '</div>';
         } else {
           disciplineBox.style.display = 'none';
@@ -225,52 +241,69 @@
         var sessioni = c.programma || [];
         if (!sessioni.length) {
           list.innerHTML = '<p style="color:var(--text-muted);font-size:14px">Programma in via di definizione.</p>';
-          return;
+        } else {
+          // Eventi su piu' giornate: senza un'intestazione di giorno il lettore
+          // passa dalle 17:00 alle 08:30 senza capire che e' il giorno dopo.
+          // GIORNO in DESKOFFER e' un indice ("1","2"), non una data: la data si
+          // ricava da data_in + (n-1) solo se le giornate coprono esattamente
+          // l'intervallo data_in..data_fin; altrimenti si mostra il solo numero.
+          var giorni = [];
+          sessioni.forEach(function(s) {
+            var g = String(s.giorno || '').trim();
+            if (g && giorni.indexOf(g) < 0) giorni.push(g);
+          });
+          var multiGiorno = giorni.length > 1;
+          var dateGiorno = {};
+          if (multiGiorno) {
+            var d0 = parseDateIT(c.data), d1 = parseDateIT(c.dataFin);
+            if (d0 && d1 && Math.round((d1 - d0) / 86400000) + 1 === giorni.length) {
+              giorni.forEach(function(g, i) {
+                dateGiorno[g] = formatDateIT(new Date(d0.getTime() + i * 86400000));
+              });
+            }
+          }
+
+          var progHtml = '', giornoCorrente = null;
+          sessioni.forEach(function(s) {
+            var g = String(s.giorno || '').trim();
+            if (multiGiorno && g && g !== giornoCorrente) {
+              giornoCorrente = g;
+              progHtml += '<div class="corso-programma-giorno">Giorno ' + g +
+                      (dateGiorno[g] ? ' &middot; ' + dateGiorno[g] : '') + '</div>';
+            }
+            if ((s.tipo || '').toUpperCase() === 'BLOCCO') {
+              progHtml += '<div class="corso-programma-blocco">' + (s.titolo || '') + '</div>';
+              return;
+            }
+            var orario = (s.oraIn || '') + (s.oraFin ? ' – ' + s.oraFin : '');
+            progHtml += '<div class="corso-programma-item">' +
+                      '<div class="corso-programma-orario">' + orario + '</div>' +
+                      '<div class="corso-programma-testo">' +
+                        '<div class="corso-programma-sessione">' + (s.titolo || '') + '</div>' +
+                        (s.relatori ? '<div class="corso-programma-relatori">' + s.relatori + '</div>' : '') +
+                      '</div>' +
+                    '</div>';
+          });
+          list.innerHTML = progHtml;
         }
 
-        // Eventi su piu' giornate: senza un'intestazione di giorno il lettore
-        // passa dalle 17:00 alle 08:30 senza capire che e' il giorno dopo.
-        // GIORNO in DESKOFFER e' un indice ("1","2"), non una data: la data si
-        // ricava da data_in + (n-1) solo se le giornate coprono esattamente
-        // l'intervallo data_in..data_fin; altrimenti si mostra il solo numero.
-        var giorni = [];
-        sessioni.forEach(function(s) {
-          var g = String(s.giorno || '').trim();
-          if (g && giorni.indexOf(g) < 0) giorni.push(g);
-        });
-        var multiGiorno = giorni.length > 1;
-        var dateGiorno = {};
-        if (multiGiorno) {
-          var d0 = parseDateIT(c.data), d1 = parseDateIT(c.dataFin);
-          if (d0 && d1 && Math.round((d1 - d0) / 86400000) + 1 === giorni.length) {
-            giorni.forEach(function(g, i) {
-              dateGiorno[g] = formatDateIT(new Date(d0.getTime() + i * 86400000));
-            });
-          }
+        // Sponsor: stessa dicitura e stesso principio della brochure (loghi
+        // in card bianche), vedi blueprints/brochure.py riga "Con la
+        // sponsorizzazione non condizionante di:".
+        var sponsorBox = document.getElementById('corso-sponsor');
+        var loghi = Array.isArray(c.sponsorLogos) ? c.sponsorLogos.filter(Boolean) : [];
+        if (loghi.length) {
+          sponsorBox.style.display = 'block';
+          sponsorBox.innerHTML =
+            '<p class="corso-sponsor-label">Con la sponsorizzazione non condizionante di:</p>' +
+            '<div class="corso-sponsor-logos">' +
+              loghi.map(function(url) {
+                return '<div class="corso-sponsor-card"><img src="' + convertDriveLink(url) + '" alt="" loading="lazy"></div>';
+              }).join('') +
+            '</div>';
+        } else {
+          sponsorBox.style.display = 'none';
         }
-
-        var html = '', giornoCorrente = null;
-        sessioni.forEach(function(s) {
-          var g = String(s.giorno || '').trim();
-          if (multiGiorno && g && g !== giornoCorrente) {
-            giornoCorrente = g;
-            html += '<div class="corso-programma-giorno">Giorno ' + g +
-                    (dateGiorno[g] ? ' &middot; ' + dateGiorno[g] : '') + '</div>';
-          }
-          if ((s.tipo || '').toUpperCase() === 'BLOCCO') {
-            html += '<div class="corso-programma-blocco">' + (s.titolo || '') + '</div>';
-            return;
-          }
-          var orario = (s.oraIn || '') + (s.oraFin ? ' – ' + s.oraFin : '');
-          html += '<div class="corso-programma-item">' +
-                    '<div class="corso-programma-orario">' + orario + '</div>' +
-                    '<div class="corso-programma-testo">' +
-                      '<div class="corso-programma-sessione">' + (s.titolo || '') + '</div>' +
-                      (s.relatori ? '<div class="corso-programma-relatori">' + s.relatori + '</div>' : '') +
-                    '</div>' +
-                  '</div>';
-        });
-        list.innerHTML = html;
       }
 
       var id = qs('id');

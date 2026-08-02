@@ -1312,21 +1312,57 @@ img { max-width: 100%; display: block; }
   margin-bottom: 12px;
 }
 
-.corso-discipline-chips {
+/* Un blocco per professione: nome in evidenza, discipline sotto in un unico
+   rigo scorrevole — sostituisce le pillole "Professione - Disciplina"
+   ripetute (illeggibili quando una professione ha 5+ discipline). */
+.corso-discipline-groups {
   display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
+  flex-direction: column;
+  gap: 10px;
 }
 
-.corso-discipline-chip {
+.corso-discipline-group {
   background: var(--white);
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  border-radius: 999px;
-  padding: 6px 14px;
-  font-size: 12.5px;
-  font-weight: 600;
+  border-radius: 8px;
+  padding: 10px 14px;
+}
+
+.corso-discipline-prof {
+  font-size: 13.5px;
+  font-weight: 700;
   color: var(--text);
 }
+
+.corso-discipline-list {
+  font-size: 12.5px;
+  color: var(--text-light);
+  margin-top: 2px;
+  line-height: 1.5;
+}
+
+/* Iscrizioni non ECM: nota fattuale, non un errore — mai rosso allarmante
+   nemmeno quando "chiuso": solo il tono cambia (verde=aperto, neutro=riservato). */
+.corso-discipline-ecm {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+  font-size: 12.5px;
+  font-weight: 600;
+}
+.corso-discipline-ecm::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.corso-discipline-ecm.is-open { color: #15803d; }
+.corso-discipline-ecm.is-open::before { background: #16a34a; }
+.corso-discipline-ecm.is-closed { color: var(--text-light); }
+.corso-discipline-ecm.is-closed::before { background: var(--text-muted); }
 
 .corso-programma-title {
   font-family: 'Playfair Display', serif;
@@ -1394,6 +1430,45 @@ img { max-width: 100%; display: block; }
   font-size: 13px;
   color: var(--text-light);
   margin-top: 3px;
+}
+
+/* Sponsor — stesso principio della brochure stampata (blueprints/brochure.py:
+   "Con la sponsorizzazione non condizionante di:" + loghi in card bianche). */
+.corso-sponsor {
+  display: none;
+  margin-top: 40px;
+  padding-top: 24px;
+  border-top: 1px solid var(--accent-light);
+}
+
+.corso-sponsor-label {
+  font-size: 12.5px;
+  font-style: italic;
+  color: var(--text-muted);
+  margin-bottom: 14px;
+}
+
+.corso-sponsor-logos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.corso-sponsor-card {
+  background: var(--white);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 8px;
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+}
+
+.corso-sponsor-card img {
+  height: 32px;
+  width: auto;
+  max-width: 160px;
+  object-fit: contain;
+  display: block;
 }
 
 #corso-detail-loading, #corso-detail-error {
