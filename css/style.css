@@ -1293,6 +1293,20 @@ img { max-width: 100%; display: block; }
   gap: 2px;
 }
 
+/* Intestazione di giornata (solo eventi su piu' giorni). Piu' forte del
+   blocco/sessione: e' il livello gerarchico superiore del programma. */
+.corso-programma-giorno {
+  font-family: 'Playfair Display', serif;
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text);
+  background: var(--accent-light);
+  border-radius: 8px;
+  padding: 10px 14px;
+  margin: 26px 0 6px;
+}
+.corso-programma-giorno:first-child { margin-top: 0; }
+
 .corso-programma-blocco {
   font-weight: 700;
   font-size: 14px;

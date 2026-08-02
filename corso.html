@@ -133,6 +133,18 @@
         return AREA_COLORS[(area || '').toUpperCase()] || '#1a7a9c';
       }
 
+      // "20/10/2026" -> Date (null se non parsabile); e ritorno.
+      function parseDateIT(str) {
+        var p = String(str || '').split('/');
+        if (p.length < 3) return null;
+        var d = new Date(Number(p[2]), Number(p[1]) - 1, Number(p[0]));
+        return isNaN(d.getTime()) ? null : d;
+      }
+      function formatDateIT(d) {
+        function pad(n) { return (n < 10 ? '0' : '') + n; }
+        return pad(d.getDate()) + '/' + pad(d.getMonth() + 1) + '/' + d.getFullYear();
+      }
+
       function ecmHtml(crediti) {
         if (!crediti || crediti === '0' || /no.?ecm/i.test(crediti))
           return '<span class="corso-ecm none">NO ECM</span>';
@@ -197,8 +209,36 @@
           list.innerHTML = '<p style="color:var(--text-muted);font-size:14px">Programma in via di definizione.</p>';
           return;
         }
-        var html = '';
+
+        // Eventi su piu' giornate: senza un'intestazione di giorno il lettore
+        // passa dalle 17:00 alle 08:30 senza capire che e' il giorno dopo.
+        // GIORNO in DESKOFFER e' un indice ("1","2"), non una data: la data si
+        // ricava da data_in + (n-1) solo se le giornate coprono esattamente
+        // l'intervallo data_in..data_fin; altrimenti si mostra il solo numero.
+        var giorni = [];
         sessioni.forEach(function(s) {
+          var g = String(s.giorno || '').trim();
+          if (g && giorni.indexOf(g) < 0) giorni.push(g);
+        });
+        var multiGiorno = giorni.length > 1;
+        var dateGiorno = {};
+        if (multiGiorno) {
+          var d0 = parseDateIT(c.data), d1 = parseDateIT(c.dataFin);
+          if (d0 && d1 && Math.round((d1 - d0) / 86400000) + 1 === giorni.length) {
+            giorni.forEach(function(g, i) {
+              dateGiorno[g] = formatDateIT(new Date(d0.getTime() + i * 86400000));
+            });
+          }
+        }
+
+        var html = '', giornoCorrente = null;
+        sessioni.forEach(function(s) {
+          var g = String(s.giorno || '').trim();
+          if (multiGiorno && g && g !== giornoCorrente) {
+            giornoCorrente = g;
+            html += '<div class="corso-programma-giorno">Giorno ' + g +
+                    (dateGiorno[g] ? ' &middot; ' + dateGiorno[g] : '') + '</div>';
+          }
           if ((s.tipo || '').toUpperCase() === 'BLOCCO') {
             html += '<div class="corso-programma-blocco">' + (s.titolo || '') + '</div>';
             return;
