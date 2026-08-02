@@ -1016,6 +1016,10 @@ img { max-width: 100%; display: block; }
   transition: transform var(--transition), box-shadow var(--transition);
   color: inherit;
   text-decoration: none;
+  /* Il colore lo imposta il JS con la tinta dell'area terapeutica (stessa
+     palette della brochure); qui solo lo spessore, cosi' la card non "salta"
+     di dimensione tra il render iniziale e quello colorato. */
+  border: 2px solid var(--accent-light);
 }
 
 .corso-card:hover {
@@ -1121,18 +1125,24 @@ img { max-width: 100%; display: block; }
   padding-top: 14px;
 }
 
-/* CTA della card verso corso.html — ISCRIVITI/LOCANDINA vivono nel dettaglio. */
-.corso-card-cta {
-  margin-top: auto;
-  padding-top: 14px;
-  font-size: 13px;
+/* Tasto "Dettagli" della card — ISCRIVITI/LOCANDINA vivono nel dettaglio.
+   E' uno <span> (la card e' gia' un <a>), colorato inline con la tinta
+   dell'area terapeutica: qui solo forma e comportamento. */
+.corso-btn-dettagli {
+  flex: 1;
+  padding: 10px 12px;
+  border-radius: 8px;
+  color: var(--white);
+  font-size: 12px;
   font-weight: 700;
-  color: var(--primary);
-  transition: transform var(--transition);
+  letter-spacing: 0.5px;
+  text-align: center;
+  font-family: 'Inter', sans-serif;
+  transition: filter var(--transition);
 }
-.corso-card:hover .corso-card-cta,
-.corso-card:focus-within .corso-card-cta {
-  transform: translateX(4px);
+.corso-card:hover .corso-btn-dettagli,
+.corso-card:focus-within .corso-btn-dettagli {
+  filter: brightness(1.15);
 }
 
 .corso-btn-iscriviti {

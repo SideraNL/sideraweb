@@ -101,7 +101,7 @@
 
       <!-- Privacy ECM -->
       <div class="privacy-ecm fade-in">
-        <p>I dati personali raccolti durante l'iscrizione ai corsi sono trattati in conformit&agrave; con il GDPR e la normativa ECM vigente.
+        <p>I dati personali raccolti durante l'iscrizione ai corsi sono trattati in conformit&agrave; con il GDPR e la normativa ECM vigente.<br>
         Per maggiori informazioni, consulta la nostra <a href="privacy.html">informativa sulla privacy</a>.</p>
       </div>
     </div>
@@ -166,11 +166,14 @@
                   CREDITI:6, COSTO:7, DEST:8, IMG:9, ISCR:10,
                   PDF:11, AREA:12, IMGNUM:13, STATO:14 };
 
+      // Palette AREA TERAPEUTICA — allineata a MedFIND/BROCHURE (_BR_AREA_COLORS
+      // in blueprints/brochure.py): la card del sito e la brochure stampata dello
+      // stesso evento devono avere lo stesso colore. Fallback = "altro".
       var AREA_COLORS = {
-        'PNEUMOLOGIA': '#0077aa', 'PSICHIATRIA': '#6a0dad',
-        'ONCOLOGIA': '#8e44ad',   'CARDIOLOGIA': '#c0392b',
-        'NEUROLOGIA': '#16a085'
+        'PSICHIATRIA': '#1565C0', 'ONCOLOGIA': '#C2185B',
+        'PNEUMOLOGIA': '#00897B', 'GASTROENTEROLOGIA': '#E65100'
       };
+      var AREA_COLOR_DEFAULT = '#1D3557';   // "altro" in BROCHURE
 
       var allCorsi = [];
 
@@ -241,7 +244,7 @@
       }
 
       function areaColor(area) {
-        return AREA_COLORS[(area || '').toUpperCase()] || '#1a7a9c';
+        return AREA_COLORS[(area || '').toUpperCase()] || AREA_COLOR_DEFAULT;
       }
 
       function ecmHtml(crediti) {
@@ -294,11 +297,16 @@
           var card = document.createElement('a');
           card.className = 'corso-card';
           card.href = 'corso.html?id=' + encodeURIComponent(c.id || '');
+          // Bordo per area terapeutica (stessa palette della brochure).
+          card.style.borderColor = areaColor(c.area);
           var imgTag = c.img
             ? '<img class="corso-card-img" src="' + c.img + '" alt="" loading="lazy" decoding="async" onerror="this.style.display=\'none\'">'
             : '';
           var dataTxt = c.data || '';
           if (c.dataFin && c.dataFin !== c.data) dataTxt += ' \u2013 ' + c.dataFin;
+          // Il tasto "Dettagli" e' uno <span>, non un <a>: la card e' gia' un
+          // link e annidarne un altro sarebbe HTML non valido. Il click sul
+          // tasto ricade comunque sulla card, che naviga.
           card.innerHTML = imgTag +
             '<div class="corso-card-body">' +
               '<div style="display:flex;justify-content:space-between;align-items:center">' +
@@ -312,7 +320,9 @@
                 ecmHtml(c.crediti) +
                 (c.costo && c.costo !== '0' ? '<span style="font-weight:600;color:#0f766e">\u20ac ' + c.costo + '</span>' : '<span style="color:#16a34a;font-weight:600">Gratuito</span>') +
               '</div>' +
-              '<div class="corso-card-cta">Scopri il programma \u2192</div>' +
+              '<div class="corso-card-actions">' +
+                '<span class="corso-btn-dettagli" style="background:' + areaColor(c.area) + '">Dettagli</span>' +
+              '</div>' +
             '</div>';
           grid.appendChild(card);
         });
