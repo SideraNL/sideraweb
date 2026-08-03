@@ -206,7 +206,7 @@
           ? '<a class="corso-btn-locandina" href="' + c.linkPdf + '" target="_blank">LOCANDINA</a>'
           : '';
         var video = c.videoUrl
-          ? '<a class="corso-btn-video" href="' + c.videoUrl + '" target="_blank">🎬 VIDEO</a>'
+          ? '<a class="corso-btn-video" href="https://sideraecm.eu/video_hit.php?idpgt=' + encodeURIComponent(c.id) + '" target="_blank">🎬 VIDEO</a>'
           : '';
         document.getElementById('corso-detail-actions').innerHTML = iscr + locan + video;
 
