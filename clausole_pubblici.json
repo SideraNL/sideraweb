@@ -1,72 +1,27 @@
 {
-  "bis": {
-    "titolo_norme": "(Art. 53 D.Lgs. 165/2001 - Art. 18 D.Lgs. 33/2013 - L. 190/2012)",
-    "clausole": [
-      {
-        "titolo": "CLAUSOLA A - OBBLIGO DI AUTORIZZAZIONE E COMUNICAZIONE",
-        "testo": "Per i dipendenti pubblici, i casi esimenti l'obbligo autorizzativo NON escludono l'obbligo di informazione alla propria azienda in merito agli estremi dell'incarico e ai compensi percepiti. Per i dipendenti di amministrazioni pubbliche sussiste l'obbligo di richiesta dell'autorizzazione allo svolgimento dell'incarico (art. 53 D.Lgs. 165/2001) e in base alla L. 190/2012 è obbligatorio richiedere l'autorizzazione o dare informativa anche per incarichi non retribuiti."
-      },
-      {
-        "titolo": "CLAUSOLA B - CONDIZIONE SOSPENSIVA DEL PAGAMENTO",
-        "testo": "SE PREVISTO DALLA NORMA VIGENTE, IN ASSENZA DI APPOSITA AUTORIZZAZIONE E/O COMUNICAZIONE PROTOCOLLATA SIDERA NON POTRA' PROCEDERE AL PAGAMENTO DIRETTO AI DOCENTI"
-      }
-    ],
-    "dichiarazione": {
-      "titolo": "DICHIARAZIONE DI ACCETTAZIONE SPECIFICA",
-      "testo": "Il sottoscritto dichiara di aver letto, compreso e accettato integralmente le \"CLAUSOLE DI CONFORMITÀ NORMATIVA PER DIPENDENTI PUBBLICI\" sopra riportate, con particolare riferimento agli obblighi di autorizzazione, comunicazione e alle condizioni sospensive del pagamento ivi previste.",
-      "impegno": "Il sottoscritto si impegna espressamente a: Richiedere preventivamente le autorizzazioni necessarie secondo la normativa vigente; Fornire tempestivamente copia protocollata della documentazione autorizzativa; Comunicare ogni variazione dello status giuridico che possa incidere sugli obblighi contrattuali."
-    }
-  },
-  "ter": {
-    "titolo": "ART. 3 TER — APPROFONDIMENTI NORMATIVI AUTORIZZAZIONE PER I DIPENDENTI PUBBLICI ART. 53 D.Lgs. 165/01",
-    "blocchi": [
-      {
-        "titolo": "ART. 3 TER.1 — Il Meccanismo del Silenzio-Diniego per Incarichi da Soggetti Privati",
-        "testi": [
-          "\"Decorso il termine per provvedere, l'autorizzazione, se richiesta per incarichi da conferirsi da amministrazioni pubbliche, si intende accordata; in ogni altro caso, si intende definitivamente negata.\"",
-          "Questo significa che per gli incarichi conferiti da soggetti privati come Sidera:",
-          "• Se l'amministrazione non risponde entro 30 giorni dalla richiesta di autorizzazione",
-          "• L'autorizzazione si intende DEFINITIVAMENTE NEGATA",
-          "• Il dipendente NON può svolgere l'incarico",
-          "• Eventuali compensi devono essere restituiti"
-        ]
-      },
-      {
-        "titolo": "ART. 3 TER.2 — Responsabilità in Caso di Svolgimento Senza Autorizzazione o Comunicazione",
-        "testi": [
-          "Per il Dipendente Pubblico:",
-          "1. Responsabilità Disciplinare",
-          "2. Obbligo di Restituzione dei Compensi",
-          "Come stabilito dall'art. 53, comma 7, del D.Lgs. 165/2001: \"il compenso dovuto per le prestazioni eventualmente svolte deve essere versato, a cura dell'erogante o, in difetto, del percettore, nel conto dell'entrata del bilancio dell'amministrazione di appartenenza del dipendente\".",
-          "La Cassazione Civile ha chiarito che \"L'autorizzazione rilasciata successivamente allo svolgimento dell'attività non sana la violazione già consumata e non esclude il diritto dell'amministrazione al recupero delle somme percepite anteriormente\"."
-        ]
-      },
-      {
-        "titolo": "ART. 3 TER.3 — Obbligo di Verifica Attiva da parte di Sidera",
-        "testi": [
-          "La Cassazione Civile (Cassazione Civile, Sez. II, ordinanza n. 1680 del 19 gennaio 2022; Cassazione Civile, Sez. II, ordinanza n. 1681 del 19 gennaio 2022; Cassazione Civile, Sez. II, sentenza n. 38314 del 3 dicembre 2021) ha stabilito che sussiste \"un obbligo di verifica attiva delle condizioni che escludono la richiesta di autorizzazione, non potendosi lo stesso rimettere unicamente a quanto dichiarato spontaneamente dal lavoratore\"."
-        ]
-      },
-      {
-        "titolo": "ART. 3 TER.4 — Protocollo della Comunicazione informativa",
-        "testi": [
-          "Non è una formalità burocratica, ma un obbligo derivante dalla normativa anticorruzione per garantire trasparenza e tracciabilità. Solo la comunicazione protocollata ha valore probatorio pieno in caso di verifiche o contestazioni."
-        ]
-      },
-      {
-        "titolo": "ART. 3 TER.5 — Termini di pagamento",
-        "testi": [
-          "Sidera effettua il pagamento del compenso esclusivamente a fronte dell'autorizzazione o comunicazione protocollata prevista dall'art. 53 del D.Lgs. 165/2001, ove richiesta dalla normativa vigente, e della documentazione completa di cui all'Art. 3 TER.6."
-        ]
-      },
-      {
-        "titolo": "ART. 3 TER.6 — Termini per l'invio della documentazione e conseguenze dell'inadempimento",
-        "testi": [
-          "L'invio della modulistica completa deve avvenire entro 30 giorni dalla conclusione dell'evento formativo. Decorso tale termine, Sidera comunicherà al relatore tramite PEC un termine di grazia di ulteriori 15 giorni consecutivi per regolarizzare la documentazione. Il mancato invio entro il termine di grazia comporta la definitiva perdita del diritto al compenso."
-        ]
-      }
-    ],
-    "presa_visione": "Per presa visione e accettazione",
-    "presa_visione_spec": "Per presa visione e accettazione specifica dell'art. 3 TER.6 — Termini di invio della documentazione e conseguenze dell'inadempimento."
-  }
+ "bis": {
+  "titolo": "ART. 3 BIS — PAGAMENTO DEL COMPENSO E TERMINI PER LA DOCUMENTAZIONE",
+  "blocchi": [
+   {
+    "titolo": "ART. 3 BIS.1 — Documentazione da trasmettere",
+    "testi": [
+     "Il Provider è tenuto a verificare direttamente i presupposti dichiarati nell'ART. 3 e non può fondarsi sulla sola dichiarazione dell'interessato. Chiede pertanto copia dell'autorizzazione, ovvero della comunicazione protocollata dall'amministrazione, prevista dall'art. 53 del D.Lgs. 165/2001 ove dovuta: solo l'atto protocollato ha valore probatorio in caso di verifica."
+    ]
+   },
+   {
+    "titolo": "ART. 3 BIS.2 — Condizione di pagamento",
+    "testi": [
+     "Il compenso è corrisposto a fronte della documentazione di cui al punto 3 BIS.1, ove richiesta dalla normativa vigente, e della modulistica contrattuale completa. In loro assenza il pagamento resta sospeso."
+    ]
+   },
+   {
+    "titolo": "ART. 3 BIS.3 — Termine per l'invio e decadenza dal compenso",
+    "testi": [
+     "Vale il termine dell'ART. 1, lett. a): la modulistica completa — compresa l'autorizzazione o la comunicazione protocollata di cui al punto 3 BIS.1 — deve pervenire entro trenta giorni dalla conclusione dell'evento formativo; decorso tale termine il Provider assegna via PEC un termine di grazia di ulteriori quindici giorni consecutivi, scaduto il quale si ha <b>decadenza dal diritto al compenso</b> per l'attività eventualmente svolta."
+    ]
+   }
+  ],
+  "presa_visione": "Per presa visione e accettazione",
+  "presa_visione_spec": "Ai sensi degli artt. 1341 e 1342 del codice civile il dichiarante approva specificamente la clausola di cui al punto 3 BIS.3 (termine per l'invio della documentazione e decadenza dal diritto al compenso)."
+ }
 }

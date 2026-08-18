@@ -1,0 +1,354 @@
+/* static/css/contratto.css — form pubblico Fase 2 (contratto.html)
+   v306.9: estratto dal <style> inline di contratto.html (era 3320 righe) per R09. */
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #f1f5f9; color: #1e293b; line-height: 1.5;
+  }
+  .wrap { max-width: 800px; margin: 0 auto; padding: 24px 16px 80px; }
+
+  /* Header brand */
+  .brand { text-align: center; margin-bottom: 18px; }
+  .brand .row { display: flex; align-items: center; justify-content: center; gap: 12px; }
+  .brand .logo { height: 36px; width: auto; object-fit: contain; border-radius: 6px; background: #fff; padding: 2px 4px; }
+  .brand h1 { color: #1e3a6e; font-size: 22px; margin: 0; }
+  .brand .sub { color: #64748b; font-size: 14px; margin-top: 6px; }
+
+  /* Box evento */
+  .evento-box {
+    background: #eef2ff; border-left: 4px solid #1e3a6e; border-radius: 10px;
+    padding: 14px 18px; margin-bottom: 22px;
+    box-shadow: 0 1px 3px rgba(0,0,0,.04);
+  }
+  .evento-box .eyebrow {
+    font-size: 14px; color: #64748b; text-transform: uppercase;
+    letter-spacing: .5px; font-weight: 700; margin-bottom: 6px;
+  }
+  .evento-box .titolo { font-size: 16px; color: #1e3a6e; font-weight: 700; line-height: 1.3; margin-bottom: 8px; }
+  .evento-box .meta { font-size: 14px; color: #475569; }
+  .evento-box .meta b { color: #1e293b; }
+
+  /* Progress */
+  .progress {
+    background: #fff; border: 1px solid #e2e8f0; border-radius: 10px;
+    padding: 14px 18px; margin-bottom: 18px; box-shadow: 0 1px 3px rgba(0,0,0,.04);
+  }
+  .progress-top {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 8px; font-size: 14px;
+  }
+  .progress-top .label { font-weight: 600; color: #1e3a6e; }
+  .progress-top .step-name { color: #64748b; }
+  .progress-bar {
+    background: #e2e8f0; border-radius: 999px; height: 8px; overflow: hidden;
+  }
+  .progress-fill {
+    background: linear-gradient(90deg, #3b82f6, #1a56db);
+    height: 100%; transition: width .3s ease;
+  }
+
+  /* v288.0 — Informativa art. 13 al punto di raccolta. Chiusa di default per
+     non allungare il modulo, ma presente su ogni passo (sta fuori dai .step). */
+  .privacy-box {
+    background: #fff; border: 1px solid #e2e8f0; border-left: 4px solid #475569;
+    border-radius: 10px; margin-bottom: 18px; box-shadow: 0 1px 3px rgba(0,0,0,.04);
+  }
+  .privacy-box > summary {
+    cursor: pointer; padding: 13px 18px; font-size: 14px; font-weight: 600;
+    color: #334155; list-style: none; display: flex; align-items: center; gap: 8px;
+  }
+  .privacy-box > summary::-webkit-details-marker { display: none; }
+  .privacy-box > summary::after {
+    content: '▾'; margin-left: auto; color: #64748b; font-size: 14px;
+    transition: transform .2s ease;
+  }
+  .privacy-box[open] > summary::after { transform: rotate(180deg); }
+  .privacy-box > summary:hover { color: #1a56db; }
+  .privacy-box .privacy-body { padding: 0 18px 16px; }
+  .privacy-box .privacy-body p {
+    font-size: 14px; line-height: 1.6; color: #475569; margin: 0 0 9px;
+  }
+  .privacy-box .privacy-body p:last-child { margin-bottom: 0; }
+  .privacy-box .privacy-body b { color: #334155; }
+  .privacy-box .privacy-body a { color: #1a56db; }
+
+  /* Card (cartolina) */
+  .card {
+    background: #fff; border: 1px solid #e2e8f0; border-radius: 12px;
+    padding: 26px 28px; margin-bottom: 18px;
+    box-shadow: 0 2px 8px rgba(0,0,0,.05);
+    animation: slideIn .25s ease;
+  }
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .card-icon {
+    display: inline-block; background: #eef2ff; color: #1e3a6e;
+    border-radius: 10px; padding: 6px 12px; font-size: 14px;
+    font-weight: 700; letter-spacing: .5px; margin-bottom: 10px;
+    text-transform: uppercase;
+  }
+  .card h2 {
+    color: #1e3a6e; font-size: 18px; margin: 0 0 6px; font-weight: 700;
+  }
+  .card .lead { color: #64748b; font-size: 14px; margin: 0 0 18px; }
+
+  /* Form */
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  @media (max-width: 600px) { .grid { grid-template-columns: 1fr; } }
+  .field { display: flex; flex-direction: column; min-width: 0; }
+  .field.full { grid-column: 1/-1; }
+  .field label {
+    font-size: 14px; font-weight: 600; color: #334155; margin-bottom: 4px;
+  }
+  .field label .req { color: #dc2626; }
+  /* v298.5 — Numerazione stabile di sezioni e punti. I numeri sono legati alla
+     sezione, non alla posizione nel percorso: gli step visibili cambiano da un
+     relatore all'altro (gratuito salta il 4, privato salta 5-7), ma "punto 5.3"
+     deve indicare sempre la stessa domanda in assistenza. */
+  .pn { color: #94a3b8; font-weight: 700; font-size: .92em; margin-right: 6px;
+        font-variant-numeric: tabular-nums; }
+  h2 .pn { color: #7d9bd1; font-size: .8em; }
+  .field input, .field select, .field textarea {
+    width: 100%; box-sizing: border-box;
+    border: 1px solid #cbd5e1; border-radius: 6px; padding: 9px 11px;
+    font-size: 14px; font-family: inherit; background: #fff;
+    transition: border-color .15s, box-shadow .15s;
+  }
+  /* v128.2 — Long option text in select: clip lo standard browser display, ma le voci nel dropdown aperto
+     restano leggibili (overflow del browser native widget). text-overflow ellipsis per fallback testo. */
+  .field select { text-overflow: ellipsis; }
+  .field input:focus, .field select:focus, .field textarea:focus {
+    outline: none; border-color: #1a56db; box-shadow: 0 0 0 2px rgba(26,86,219,.15);
+  }
+  .field input[readonly] { background: #f8fafc; color: #475569; cursor: not-allowed; }
+  .field .hint { font-size: 14px; color: #94a3b8; margin-top: 3px; }
+  /* v140.8 — Auto-uppercase visivo per tutti i campi testuali (esclusa email) */
+  .field input:not([type=email]):not([type=number]):not([type=tel]):not([type=password]) { text-transform: uppercase; }
+
+  /* Opzioni A/B/C */
+  /* v297.6 — Nessun testo sotto i 14px in tutto il form. `small` senza questa
+     regola scende a 0.83em ed è l'ultimo residuo di caratteri minuti. */
+  small { font-size: 14px; }
+
+  /* v296.2 — Sequenza di domande dell'ART. 3 (sostituisce le opzioni a scelta) */
+  .a3-q { margin-top: 18px; padding-top: 16px; border-top: 1px solid #e2e8f0; }
+  .a3-q:first-of-type { border-top: none; padding-top: 0; }
+  .a3-dom { font-size: 17px; font-weight: 600; color: #0f172a; line-height: 1.45; }
+  .a3-note { font-size: 14.5px; color: #64748b; margin-top: 5px; line-height: 1.5; }
+  .a3-scelte { display: flex; gap: 10px; margin-top: 10px; flex-wrap: wrap; }
+  .a3-scelte.a3-col { flex-direction: column; gap: 6px; }
+  .a3-opt { display: flex; align-items: flex-start; gap: 9px; padding: 10px 12px;
+            border: 1.5px solid #cbd5e1; border-radius: 7px; cursor: pointer;
+            font-size: 16px; color: #0f172a; line-height: 1.45; background: #fff;
+            transition: border-color .12s, background .12s; }
+  .a3-opt:hover { border-color: #94a3b8; background: #f8fafc; }
+  /* width:auto neutralizza `.field input { width:100% }`, che dentro una .field
+     gonfiava il radio fino a occupare tutta l'opzione e spingeva fuori la
+     scritta (caso del punto 3.2, unico gruppo a3-opt dentro una .field). */
+  .a3-opt input { margin-top: 3px; flex: none; width: auto; }
+  .a3-opt:has(input:checked) { border-color: #1a56db; background: #eff6ff; }
+  .a3-scelte:not(.a3-col) .a3-opt { min-width: 110px; justify-content: center; }
+
+  .opzione {
+    display: block; margin-bottom: 10px; padding: 14px 16px;
+    border: 2px solid #e2e8f0; border-radius: 10px; cursor: pointer;
+    transition: all .15s;
+  }
+  .opzione:hover { border-color: #cbd5e1; background: #f8fafc; }
+  .opzione input { margin-right: 8px; }
+  .opzione.selected { border-color: #1a56db; background: #eef2ff; }
+  .opzione .titolo { font-weight: 700; color: #1e293b; font-size: 14px; }
+  .opzione .desc { font-size: 14px; color: #64748b; margin-top: 5px; line-height: 1.5; }
+
+  /* Clausole BIS/TER */
+  .clausola {
+    background: #f8fafc; border-left: 3px solid #94a3b8;
+    border-radius: 6px; padding: 14px 16px; margin-bottom: 14px;
+  }
+  .clausola h3 {
+    color: #1e3a6e; font-size: 14px; font-weight: 700; margin: 0 0 8px;
+    text-transform: uppercase; letter-spacing: .3px;
+  }
+  .clausola p { font-size: 14px; color: #334155; margin: 0 0 8px; line-height: 1.6; }
+  .clausola p:last-child { margin-bottom: 0; }
+  .norme-cit {
+    font-size: 14px; color: #64748b; font-style: italic; margin-bottom: 14px;
+  }
+
+  /* Checkbox accettazione */
+  .accept-box {
+    background: #fffbeb; border: 1px solid #fde68a;
+    border-radius: 10px; padding: 14px 18px; margin-top: 18px;
+    display: flex; align-items: flex-start; gap: 10px;
+  }
+  .accept-box input[type=checkbox] {
+    width: 18px; height: 18px; flex-shrink: 0; margin-top: 2px;
+    accent-color: #16a34a;
+  }
+  .accept-box label { font-size: 14px; color: #78350f; line-height: 1.5; cursor: pointer; }
+  .accept-box label b { color: #78350f; }
+
+  /* Riepilogo */
+  .summary { background: #f8fafc; border-radius: 8px; padding: 16px 18px; }
+  .summary table { width: 100%; font-size: 14px; }
+  .summary td { padding: 6px 8px; border-bottom: 1px solid #e2e8f0; }
+  .summary td:first-child { color: #64748b; font-weight: 600; width: 40%; }
+  .summary td:last-child { color: #1e293b; font-weight: 500; }
+  .summary tr:last-child td { border-bottom: none; }
+
+  /* Navigazione step */
+  .nav-row {
+    display: flex; gap: 12px; justify-content: space-between;
+    align-items: center; margin-top: 22px;
+  }
+  .btn {
+    border: none; border-radius: 8px; padding: 12px 22px;
+    font-size: 14px; font-weight: 700; cursor: pointer;
+    transition: all .15s; font-family: inherit;
+  }
+  .btn-back { background: #e2e8f0; color: #475569; }
+  .btn-back:hover { background: #cbd5e1; }
+  .btn-next { background: #1a56db; color: #fff; }
+  .btn-next:hover { background: #1e40af; }
+  .btn-submit {
+    background: #16a34a; color: #fff; padding: 14px 32px; font-size: 16px;
+    box-shadow: 0 2px 6px rgba(22,163,74,.3);
+  }
+  .btn-submit:hover { background: #15803d; transform: translateY(-1px); }
+  .btn:disabled { background: #cbd5e1; color: #94a3b8; cursor: not-allowed; transform: none; box-shadow: none; }
+
+  /* Stati pagina (loading/error/success) */
+  .state {
+    background: #fff; border-radius: 12px; padding: 50px 30px;
+    text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,.05);
+  }
+  .state .spinner {
+    display: inline-block; width: 36px; height: 36px;
+    border: 3px solid #e2e8f0; border-top-color: #1a56db;
+    border-radius: 50%; animation: spin .8s linear infinite;
+    margin-bottom: 14px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .state .icon { font-size: 48px; margin-bottom: 14px; }
+  .state h2 { color: #1e3a6e; margin: 0 0 10px; font-size: 20px; }
+  .state p { color: #475569; font-size: 14px; margin: 0; line-height: 1.6; }
+
+  .footer { text-align: center; color: #94a3b8; font-size: 14px; margin-top: 30px; line-height: 1.6; }
+
+  /* v127.2 — Card riassunto Azienda + Modale bivio Pubblica/Privata */
+  .azienda-summary {
+    border: 2px solid #1a56db; border-radius: 8px; padding: 14px 18px; cursor: pointer;
+    background: #fff; transition: background .15s; min-height: 60px;
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  }
+  .azienda-summary:hover { background: #eff6ff; }
+  /* v128.3 — Stato "tipologia da confermare" (pre-fill DBDOC senza dbao_id) */
+  .azienda-summary-pending { border-color: #f59e0b; background: #fff7ed; }
+  .azienda-summary-pending:hover { background: #fef3c7; }
+  .azienda-summary-empty {
+    border: 2px dashed #cbd5e1; border-radius: 8px; padding: 18px; cursor: pointer;
+    background: #f8fafc; text-align: center; color: #64748b; transition: all .15s;
+  }
+  .azienda-summary-empty:hover { border-color: #1a56db; color: #1a56db; background: #eff6ff; }
+  .azienda-summary-info { flex: 1; }
+  .azienda-summary-info .name { font-weight: 700; color: #1e3a6e; font-size: 15px; }
+  .azienda-summary-info .meta { color: #64748b; font-size: 14px; margin-top: 4px; }
+  .azienda-summary-info .pec { font-family: monospace; font-size: 14px; color: #1a56db; margin-top: 4px; word-break: break-all; }
+  .azienda-summary .edit-btn {
+    background: #1a56db; color: #fff; border: none; border-radius: 6px;
+    padding: 6px 12px; font-size: 14px; font-weight: 600; cursor: pointer; white-space: nowrap;
+  }
+
+  .cm-overlay {
+    position: fixed; inset: 0; background: rgba(15,23,42,.55); z-index: 999;
+    display: flex; align-items: center; justify-content: center; padding: 20px;
+    animation: cmFade .15s ease-out;
+  }
+  @keyframes cmFade { from { opacity: 0 } to { opacity: 1 } }
+  .cm-modal {
+    background: #fff; border-radius: 12px; max-width: 640px; width: 100%;
+    max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,.3);
+    position: relative;
+  }
+  .cm-header {
+    background: linear-gradient(135deg,#1a56db 0%,#1e40af 100%); color: #fff;
+    padding: 16px 24px; border-radius: 12px 12px 0 0;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .cm-header h3 { margin: 0; font-size: 17px; font-weight: 700; }
+  .cm-close {
+    background: rgba(255,255,255,.2); border: none; color: #fff; width: 28px; height: 28px;
+    border-radius: 50%; cursor: pointer; font-size: 18px; line-height: 1;
+  }
+  .cm-close:hover { background: rgba(255,255,255,.35); }
+  .cm-body { padding: 22px 24px; }
+  .cm-step { display: none; }
+  .cm-step.active { display: block; }
+  .cm-choice {
+    display: block; width: 100%; padding: 18px; margin-bottom: 12px;
+    border: 2px solid #cbd5e1; border-radius: 10px; background: #fff;
+    cursor: pointer; text-align: left; transition: all .15s;
+  }
+  .cm-choice:hover { border-color: #1a56db; background: #eff6ff; transform: translateY(-1px); }
+  .cm-choice .icon { font-size: 32px; display: block; margin-bottom: 8px; }
+  .cm-choice .titolo { font-weight: 700; color: #1e3a6e; font-size: 15px; display: block; }
+  .cm-choice .desc { color: #64748b; font-size: 14px; margin-top: 6px; display: block; line-height: 1.5; }
+
+  .cm-back {
+    background: transparent; border: 1px solid #cbd5e1; color: #475569;
+    padding: 8px 14px; border-radius: 6px; cursor: pointer; font-size: 14px;
+  }
+  .cm-back:hover { background: #f1f5f9; }
+  .cm-primary {
+    background: #1a56db; color: #fff; border: none;
+    padding: 9px 18px; border-radius: 6px; cursor: pointer;
+    font-size: 14px; font-weight: 700;
+  }
+  .cm-primary:hover { background: #1e40af; }
+  .cm-primary:disabled { background: #cbd5e1; cursor: not-allowed; }
+  .cm-actions { display: flex; justify-content: space-between; margin-top: 18px; gap: 8px; }
+
+  .cm-input, .cm-select {
+    width: 100%; padding: 10px 12px; border: 2px solid #cbd5e1; border-radius: 6px;
+    font-size: 14px; box-sizing: border-box; margin-top: 4px;
+  }
+  .cm-input:focus, .cm-select:focus { border-color: #1a56db; outline: none; box-shadow: 0 0 0 3px rgba(26,86,219,.12); }
+  .cm-label { display: block; margin-top: 12px; font-weight: 600; font-size: 14px; color: #334155; }
+  .cm-label .req { color: #dc2626; }
+  .cm-readonly { background: #f1f5f9; color: #475569; padding: 8px 12px; border-radius: 6px; font-size: 14px; margin-top: 4px; }
+
+  .cm-section-title { font-weight: 700; color: #1e3a6e; font-size: 14px; text-transform: uppercase; letter-spacing: .5px; margin: 14px 0 8px; }
+  .cm-strut-list { max-height: 280px; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 6px; }
+  .cm-strut-item {
+    padding: 10px 14px; border-bottom: 1px solid #f1f5f9; cursor: pointer; font-size: 14px;
+    display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  }
+  .cm-strut-item:last-child { border-bottom: none; }
+  .cm-strut-item:hover { background: #eff6ff; }
+  .cm-strut-item .nome { font-weight: 600; color: #1e3a6e; flex: 1; }
+  .cm-strut-item .tipo { font-size: 14px; background: #e0e7ff; color: #3730a3; padding: 2px 7px; border-radius: 10px; font-weight: 700; white-space: nowrap; }
+  .cm-strut-empty { padding: 16px; text-align: center; color: #94a3b8; font-style: italic; font-size: 14px; }
+  .cm-altro-btn {
+    width: 100%; margin-top: 10px; padding: 12px;
+    background: #fef3c7; border: 2px dashed #f59e0b; border-radius: 8px;
+    color: #92400e; cursor: pointer; font-weight: 600; font-size: 14px;
+  }
+  .cm-altro-btn:hover { background: #fde68a; }
+
+  /* v127.9 — Badge ECM/Non ECM */
+  .ecm-badge {
+    display: flex; align-items: center; gap: 12px;
+    padding: 10px 14px; border-radius: 8px;
+    border: 2px solid; font-weight: 600; font-size: 14px;
+  }
+  .ecm-badge.ecm { background: #ecfdf5; border-color: #10b981; color: #065f46; }
+  .ecm-badge.non-ecm { background: #fef3c7; border-color: #f59e0b; color: #92400e; }
+  .ecm-edit-btn {
+    margin-left: auto; padding: 6px 12px; font-size: 14px; font-weight: 600;
+    background: #1a56db; color: #fff; border: none; border-radius: 6px; cursor: pointer;
+  }
+  .ecm-edit-btn:hover { background: #1241a8; }

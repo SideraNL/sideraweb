@@ -4,329 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Sidera — Compilazione contratto</title>
-<style>
-  * { box-sizing: border-box; }
-  body {
-    margin: 0; padding: 0;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    background: #f1f5f9; color: #1e293b; line-height: 1.5;
-  }
-  .wrap { max-width: 800px; margin: 0 auto; padding: 24px 16px 80px; }
-
-  /* Header brand */
-  .brand { text-align: center; margin-bottom: 18px; }
-  .brand .row { display: flex; align-items: center; justify-content: center; gap: 12px; }
-  .brand .logo { height: 36px; width: auto; object-fit: contain; border-radius: 6px; background: #fff; padding: 2px 4px; }
-  .brand h1 { color: #1e3a6e; font-size: 22px; margin: 0; }
-  .brand .sub { color: #64748b; font-size: 13px; margin-top: 6px; }
-
-  /* Box evento */
-  .evento-box {
-    background: #eef2ff; border-left: 4px solid #1e3a6e; border-radius: 10px;
-    padding: 14px 18px; margin-bottom: 22px;
-    box-shadow: 0 1px 3px rgba(0,0,0,.04);
-  }
-  .evento-box .eyebrow {
-    font-size: 11px; color: #64748b; text-transform: uppercase;
-    letter-spacing: .5px; font-weight: 700; margin-bottom: 6px;
-  }
-  .evento-box .titolo { font-size: 16px; color: #1e3a6e; font-weight: 700; line-height: 1.3; margin-bottom: 8px; }
-  .evento-box .meta { font-size: 13px; color: #475569; }
-  .evento-box .meta b { color: #1e293b; }
-
-  /* Progress */
-  .progress {
-    background: #fff; border: 1px solid #e2e8f0; border-radius: 10px;
-    padding: 14px 18px; margin-bottom: 18px; box-shadow: 0 1px 3px rgba(0,0,0,.04);
-  }
-  .progress-top {
-    display: flex; justify-content: space-between; align-items: center;
-    margin-bottom: 8px; font-size: 13px;
-  }
-  .progress-top .label { font-weight: 600; color: #1e3a6e; }
-  .progress-top .step-name { color: #64748b; }
-  .progress-bar {
-    background: #e2e8f0; border-radius: 999px; height: 8px; overflow: hidden;
-  }
-  .progress-fill {
-    background: linear-gradient(90deg, #3b82f6, #1a56db);
-    height: 100%; transition: width .3s ease;
-  }
-
-  /* v288.0 — Informativa art. 13 al punto di raccolta. Chiusa di default per
-     non allungare il modulo, ma presente su ogni passo (sta fuori dai .step). */
-  .privacy-box {
-    background: #fff; border: 1px solid #e2e8f0; border-left: 4px solid #475569;
-    border-radius: 10px; margin-bottom: 18px; box-shadow: 0 1px 3px rgba(0,0,0,.04);
-  }
-  .privacy-box > summary {
-    cursor: pointer; padding: 13px 18px; font-size: 13px; font-weight: 600;
-    color: #334155; list-style: none; display: flex; align-items: center; gap: 8px;
-  }
-  .privacy-box > summary::-webkit-details-marker { display: none; }
-  .privacy-box > summary::after {
-    content: '▾'; margin-left: auto; color: #64748b; font-size: 12px;
-    transition: transform .2s ease;
-  }
-  .privacy-box[open] > summary::after { transform: rotate(180deg); }
-  .privacy-box > summary:hover { color: #1a56db; }
-  .privacy-box .privacy-body { padding: 0 18px 16px; }
-  .privacy-box .privacy-body p {
-    font-size: 12.5px; line-height: 1.6; color: #475569; margin: 0 0 9px;
-  }
-  .privacy-box .privacy-body p:last-child { margin-bottom: 0; }
-  .privacy-box .privacy-body b { color: #334155; }
-  .privacy-box .privacy-body a { color: #1a56db; }
-
-  /* Card (cartolina) */
-  .card {
-    background: #fff; border: 1px solid #e2e8f0; border-radius: 12px;
-    padding: 26px 28px; margin-bottom: 18px;
-    box-shadow: 0 2px 8px rgba(0,0,0,.05);
-    animation: slideIn .25s ease;
-  }
-  @keyframes slideIn {
-    from { opacity: 0; transform: translateY(8px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-  .card-icon {
-    display: inline-block; background: #eef2ff; color: #1e3a6e;
-    border-radius: 10px; padding: 6px 12px; font-size: 11px;
-    font-weight: 700; letter-spacing: .5px; margin-bottom: 10px;
-    text-transform: uppercase;
-  }
-  .card h2 {
-    color: #1e3a6e; font-size: 18px; margin: 0 0 6px; font-weight: 700;
-  }
-  .card .lead { color: #64748b; font-size: 13px; margin: 0 0 18px; }
-
-  /* Form */
-  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-  @media (max-width: 600px) { .grid { grid-template-columns: 1fr; } }
-  .field { display: flex; flex-direction: column; min-width: 0; }
-  .field.full { grid-column: 1/-1; }
-  .field label {
-    font-size: 12px; font-weight: 600; color: #334155; margin-bottom: 4px;
-  }
-  .field label .req { color: #dc2626; }
-  .field input, .field select, .field textarea {
-    width: 100%; box-sizing: border-box;
-    border: 1px solid #cbd5e1; border-radius: 6px; padding: 9px 11px;
-    font-size: 14px; font-family: inherit; background: #fff;
-    transition: border-color .15s, box-shadow .15s;
-  }
-  /* v128.2 — Long option text in select: clip lo standard browser display, ma le voci nel dropdown aperto
-     restano leggibili (overflow del browser native widget). text-overflow ellipsis per fallback testo. */
-  .field select { text-overflow: ellipsis; }
-  .field input:focus, .field select:focus, .field textarea:focus {
-    outline: none; border-color: #1a56db; box-shadow: 0 0 0 2px rgba(26,86,219,.15);
-  }
-  .field input[readonly] { background: #f8fafc; color: #475569; cursor: not-allowed; }
-  .field .hint { font-size: 11px; color: #94a3b8; margin-top: 3px; }
-  /* v140.8 — Auto-uppercase visivo per tutti i campi testuali (esclusa email) */
-  .field input:not([type=email]):not([type=number]):not([type=tel]):not([type=password]) { text-transform: uppercase; }
-
-  /* Opzioni A/B/C */
-  .opzione {
-    display: block; margin-bottom: 10px; padding: 14px 16px;
-    border: 2px solid #e2e8f0; border-radius: 10px; cursor: pointer;
-    transition: all .15s;
-  }
-  .opzione:hover { border-color: #cbd5e1; background: #f8fafc; }
-  .opzione input { margin-right: 8px; }
-  .opzione.selected { border-color: #1a56db; background: #eef2ff; }
-  .opzione .titolo { font-weight: 700; color: #1e293b; font-size: 14px; }
-  .opzione .desc { font-size: 12px; color: #64748b; margin-top: 5px; line-height: 1.5; }
-
-  /* Clausole BIS/TER */
-  .clausola {
-    background: #f8fafc; border-left: 3px solid #94a3b8;
-    border-radius: 6px; padding: 14px 16px; margin-bottom: 14px;
-  }
-  .clausola h3 {
-    color: #1e3a6e; font-size: 13px; font-weight: 700; margin: 0 0 8px;
-    text-transform: uppercase; letter-spacing: .3px;
-  }
-  .clausola p { font-size: 13px; color: #334155; margin: 0 0 8px; line-height: 1.6; }
-  .clausola p:last-child { margin-bottom: 0; }
-  .norme-cit {
-    font-size: 11px; color: #64748b; font-style: italic; margin-bottom: 14px;
-  }
-
-  /* Checkbox accettazione */
-  .accept-box {
-    background: #fffbeb; border: 1px solid #fde68a;
-    border-radius: 10px; padding: 14px 18px; margin-top: 18px;
-    display: flex; align-items: flex-start; gap: 10px;
-  }
-  .accept-box input[type=checkbox] {
-    width: 18px; height: 18px; flex-shrink: 0; margin-top: 2px;
-    accent-color: #16a34a;
-  }
-  .accept-box label { font-size: 13px; color: #78350f; line-height: 1.5; cursor: pointer; }
-  .accept-box label b { color: #78350f; }
-
-  /* Riepilogo */
-  .summary { background: #f8fafc; border-radius: 8px; padding: 16px 18px; }
-  .summary table { width: 100%; font-size: 13px; }
-  .summary td { padding: 6px 8px; border-bottom: 1px solid #e2e8f0; }
-  .summary td:first-child { color: #64748b; font-weight: 600; width: 40%; }
-  .summary td:last-child { color: #1e293b; font-weight: 500; }
-  .summary tr:last-child td { border-bottom: none; }
-
-  /* Navigazione step */
-  .nav-row {
-    display: flex; gap: 12px; justify-content: space-between;
-    align-items: center; margin-top: 22px;
-  }
-  .btn {
-    border: none; border-radius: 8px; padding: 12px 22px;
-    font-size: 14px; font-weight: 700; cursor: pointer;
-    transition: all .15s; font-family: inherit;
-  }
-  .btn-back { background: #e2e8f0; color: #475569; }
-  .btn-back:hover { background: #cbd5e1; }
-  .btn-next { background: #1a56db; color: #fff; }
-  .btn-next:hover { background: #1e40af; }
-  .btn-submit {
-    background: #16a34a; color: #fff; padding: 14px 32px; font-size: 16px;
-    box-shadow: 0 2px 6px rgba(22,163,74,.3);
-  }
-  .btn-submit:hover { background: #15803d; transform: translateY(-1px); }
-  .btn:disabled { background: #cbd5e1; color: #94a3b8; cursor: not-allowed; transform: none; box-shadow: none; }
-
-  /* Stati pagina (loading/error/success) */
-  .state {
-    background: #fff; border-radius: 12px; padding: 50px 30px;
-    text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,.05);
-  }
-  .state .spinner {
-    display: inline-block; width: 36px; height: 36px;
-    border: 3px solid #e2e8f0; border-top-color: #1a56db;
-    border-radius: 50%; animation: spin .8s linear infinite;
-    margin-bottom: 14px;
-  }
-  @keyframes spin { to { transform: rotate(360deg); } }
-  .state .icon { font-size: 48px; margin-bottom: 14px; }
-  .state h2 { color: #1e3a6e; margin: 0 0 10px; font-size: 20px; }
-  .state p { color: #475569; font-size: 14px; margin: 0; line-height: 1.6; }
-
-  .footer { text-align: center; color: #94a3b8; font-size: 11px; margin-top: 30px; line-height: 1.6; }
-
-  /* v127.2 — Card riassunto Azienda + Modale bivio Pubblica/Privata */
-  .azienda-summary {
-    border: 2px solid #1a56db; border-radius: 8px; padding: 14px 18px; cursor: pointer;
-    background: #fff; transition: background .15s; min-height: 60px;
-    display: flex; align-items: center; justify-content: space-between; gap: 12px;
-  }
-  .azienda-summary:hover { background: #eff6ff; }
-  /* v128.3 — Stato "tipologia da confermare" (pre-fill DBDOC senza dbao_id) */
-  .azienda-summary-pending { border-color: #f59e0b; background: #fff7ed; }
-  .azienda-summary-pending:hover { background: #fef3c7; }
-  .azienda-summary-empty {
-    border: 2px dashed #cbd5e1; border-radius: 8px; padding: 18px; cursor: pointer;
-    background: #f8fafc; text-align: center; color: #64748b; transition: all .15s;
-  }
-  .azienda-summary-empty:hover { border-color: #1a56db; color: #1a56db; background: #eff6ff; }
-  .azienda-summary-info { flex: 1; }
-  .azienda-summary-info .name { font-weight: 700; color: #1e3a6e; font-size: 15px; }
-  .azienda-summary-info .meta { color: #64748b; font-size: 12px; margin-top: 4px; }
-  .azienda-summary-info .pec { font-family: monospace; font-size: 12px; color: #1a56db; margin-top: 4px; word-break: break-all; }
-  .azienda-summary .edit-btn {
-    background: #1a56db; color: #fff; border: none; border-radius: 6px;
-    padding: 6px 12px; font-size: 12px; font-weight: 600; cursor: pointer; white-space: nowrap;
-  }
-
-  .cm-overlay {
-    position: fixed; inset: 0; background: rgba(15,23,42,.55); z-index: 999;
-    display: flex; align-items: center; justify-content: center; padding: 20px;
-    animation: cmFade .15s ease-out;
-  }
-  @keyframes cmFade { from { opacity: 0 } to { opacity: 1 } }
-  .cm-modal {
-    background: #fff; border-radius: 12px; max-width: 640px; width: 100%;
-    max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,.3);
-    position: relative;
-  }
-  .cm-header {
-    background: linear-gradient(135deg,#1a56db 0%,#1e40af 100%); color: #fff;
-    padding: 16px 24px; border-radius: 12px 12px 0 0;
-    display: flex; align-items: center; justify-content: space-between;
-  }
-  .cm-header h3 { margin: 0; font-size: 17px; font-weight: 700; }
-  .cm-close {
-    background: rgba(255,255,255,.2); border: none; color: #fff; width: 28px; height: 28px;
-    border-radius: 50%; cursor: pointer; font-size: 18px; line-height: 1;
-  }
-  .cm-close:hover { background: rgba(255,255,255,.35); }
-  .cm-body { padding: 22px 24px; }
-  .cm-step { display: none; }
-  .cm-step.active { display: block; }
-  .cm-choice {
-    display: block; width: 100%; padding: 18px; margin-bottom: 12px;
-    border: 2px solid #cbd5e1; border-radius: 10px; background: #fff;
-    cursor: pointer; text-align: left; transition: all .15s;
-  }
-  .cm-choice:hover { border-color: #1a56db; background: #eff6ff; transform: translateY(-1px); }
-  .cm-choice .icon { font-size: 32px; display: block; margin-bottom: 8px; }
-  .cm-choice .titolo { font-weight: 700; color: #1e3a6e; font-size: 15px; display: block; }
-  .cm-choice .desc { color: #64748b; font-size: 12px; margin-top: 6px; display: block; line-height: 1.5; }
-
-  .cm-back {
-    background: transparent; border: 1px solid #cbd5e1; color: #475569;
-    padding: 8px 14px; border-radius: 6px; cursor: pointer; font-size: 13px;
-  }
-  .cm-back:hover { background: #f1f5f9; }
-  .cm-primary {
-    background: #1a56db; color: #fff; border: none;
-    padding: 9px 18px; border-radius: 6px; cursor: pointer;
-    font-size: 14px; font-weight: 700;
-  }
-  .cm-primary:hover { background: #1e40af; }
-  .cm-primary:disabled { background: #cbd5e1; cursor: not-allowed; }
-  .cm-actions { display: flex; justify-content: space-between; margin-top: 18px; gap: 8px; }
-
-  .cm-input, .cm-select {
-    width: 100%; padding: 10px 12px; border: 2px solid #cbd5e1; border-radius: 6px;
-    font-size: 14px; box-sizing: border-box; margin-top: 4px;
-  }
-  .cm-input:focus, .cm-select:focus { border-color: #1a56db; outline: none; box-shadow: 0 0 0 3px rgba(26,86,219,.12); }
-  .cm-label { display: block; margin-top: 12px; font-weight: 600; font-size: 13px; color: #334155; }
-  .cm-label .req { color: #dc2626; }
-  .cm-readonly { background: #f1f5f9; color: #475569; padding: 8px 12px; border-radius: 6px; font-size: 13px; margin-top: 4px; }
-
-  .cm-section-title { font-weight: 700; color: #1e3a6e; font-size: 13px; text-transform: uppercase; letter-spacing: .5px; margin: 14px 0 8px; }
-  .cm-strut-list { max-height: 280px; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 6px; }
-  .cm-strut-item {
-    padding: 10px 14px; border-bottom: 1px solid #f1f5f9; cursor: pointer; font-size: 13px;
-    display: flex; align-items: center; justify-content: space-between; gap: 8px;
-  }
-  .cm-strut-item:last-child { border-bottom: none; }
-  .cm-strut-item:hover { background: #eff6ff; }
-  .cm-strut-item .nome { font-weight: 600; color: #1e3a6e; flex: 1; }
-  .cm-strut-item .tipo { font-size: 10px; background: #e0e7ff; color: #3730a3; padding: 2px 7px; border-radius: 10px; font-weight: 700; white-space: nowrap; }
-  .cm-strut-empty { padding: 16px; text-align: center; color: #94a3b8; font-style: italic; font-size: 13px; }
-  .cm-altro-btn {
-    width: 100%; margin-top: 10px; padding: 12px;
-    background: #fef3c7; border: 2px dashed #f59e0b; border-radius: 8px;
-    color: #92400e; cursor: pointer; font-weight: 600; font-size: 13px;
-  }
-  .cm-altro-btn:hover { background: #fde68a; }
-
-  /* v127.9 — Badge ECM/Non ECM */
-  .ecm-badge {
-    display: flex; align-items: center; gap: 12px;
-    padding: 10px 14px; border-radius: 8px;
-    border: 2px solid; font-weight: 600; font-size: 14px;
-  }
-  .ecm-badge.ecm { background: #ecfdf5; border-color: #10b981; color: #065f46; }
-  .ecm-badge.non-ecm { background: #fef3c7; border-color: #f59e0b; color: #92400e; }
-  .ecm-edit-btn {
-    margin-left: auto; padding: 6px 12px; font-size: 12px; font-weight: 600;
-    background: #1a56db; color: #fff; border: none; border-radius: 6px; cursor: pointer;
-  }
-  .ecm-edit-btn:hover { background: #1241a8; }
-</style>
+<link rel="stylesheet" href="css/contratto.css?v=311.10">
 </head>
 <body>
 
@@ -363,7 +41,7 @@
       A seguire riceverà una <b>seconda email</b> dal servizio di firma elettronica
       <b>iLovePDF</b>, con il pulsante per apporre la Sua firma sul documento.
     </p>
-    <p style="margin-top:14px;font-size:12px;color:#94a3b8">
+    <p style="margin-top:14px;font-size:14px;color:#94a3b8">
       L'email di firma arriva tipicamente entro pochi minuti; in caso di carico
       operativo può richiedere alcune ore. Controlli anche lo spam. Se non riceve
       nulla entro qualche giorno, scriva a <b>sidera@sideraweb.com</b>.
@@ -447,31 +125,31 @@
     <!-- ───────── STEP 1: Dati anagrafici ───────── -->
     <div class="card step" data-step="1">
       <div class="card-icon">Passo 1</div>
-      <h2>Dati anagrafici</h2>
+      <h2><span class="pn">1.</span>Dati anagrafici</h2>
       <p class="lead">Verifichi i suoi dati anagrafici. I campi contrassegnati con <span style="color:#dc2626">*</span> sono obbligatori.</p>
       <div class="grid">
-        <div class="field"><label>Cognome <span class="req">*</span></label><input id="f-cognome" required></div>
-        <div class="field"><label>Nome <span class="req">*</span></label><input id="f-nome" required></div>
+        <div class="field"><label><span class="pn">1.1</span>Cognome <span class="req">*</span></label><input id="f-cognome" required></div>
+        <div class="field"><label><span class="pn">1.2</span>Nome <span class="req">*</span></label><input id="f-nome" required></div>
         <!-- v141.1 — Codice fiscale centrale + bottone "Estrai dati" (solo italiani) -->
         <div class="field full">
-          <label>Codice fiscale <span class="req">*</span></label>
+          <label><span class="pn">1.3</span>Codice fiscale <span class="req">*</span></label>
           <div style="display:flex;gap:8px;align-items:stretch">
             <input id="f-cf" maxlength="16" style="flex:1;text-transform:uppercase" required>
             <button id="btn-cf-extract" type="button" onclick="onCfExtract()"
-                    style="background:#1a56db;color:#fff;border:none;border-radius:6px;padding:0 18px;font-weight:600;font-size:13px;cursor:pointer;white-space:nowrap">📋 Estrai dati</button>
+                    style="background:#1a56db;color:#fff;border:none;border-radius:6px;padding:0 18px;font-weight:600;font-size:14px;cursor:pointer;white-space:nowrap">📋 Estrai dati</button>
           </div>
           <div id="cf-extract-hint" class="hint" style="margin-top:6px">Inserisca il Suo codice fiscale e clicchi <b>Estrai dati</b> per compilare automaticamente Luogo, Provincia e Data di nascita.</div>
         </div>
         <!-- v141.1 — Luogo (largo) · Provincia (stretto) · Data di nascita (stretto) sulla stessa riga -->
         <div style="grid-column:1/-1;display:grid;grid-template-columns:2fr 1fr 1fr;gap:14px">
-          <div class="field"><label>Luogo di nascita <span class="req">*</span></label><input id="f-nato_a" required></div>
+          <div class="field"><label><span class="pn">1.4</span>Luogo di nascita <span class="req">*</span></label><input id="f-nato_a" required></div>
           <div class="field">
-            <label>Provincia di nascita <span class="req">*</span> <small style="color:#dc2626;font-weight:600">(NON di residenza)</small></label>
+            <label><span class="pn">1.5</span>Provincia di nascita <span class="req">*</span> <small style="color:#dc2626;font-weight:600">(NON di residenza)</small></label>
             <select id="f-provincia" required></select>
             <div class="hint">Sigla della provincia del Suo <b>comune di nascita</b> (es. <code>MI</code> se nato a Milano). Selezioni <code>EE</code> se nato all'estero. Per evitare errori, usi il pulsante <b>📋 Estrai dati</b> sopra dopo aver inserito il codice fiscale.</div>
           </div>
           <div class="field">
-            <label>Data di nascita <span class="req">*</span></label>
+            <label><span class="pn">1.6</span>Data di nascita <span class="req">*</span></label>
             <input id="f-nato_il" placeholder="GG/MM/AAAA" maxlength="10" pattern="\d{2}/\d{2}/\d{4}" inputmode="numeric" required>
             <div class="hint">Formato: GG/MM/AAAA</div>
           </div>
@@ -482,26 +160,27 @@
     <!-- ───────── STEP 2: Residenza e contatti ───────── -->
     <div class="card step" data-step="2" style="display:none">
       <div class="card-icon">Passo 2</div>
-      <h2>Residenza e contatti</h2>
+      <h2><span class="pn">2.</span>Residenza e contatti</h2>
       <p class="lead">Indirizzo di residenza e recapiti per le comunicazioni.</p>
       <div class="grid">
-        <div class="field full"><label>Indirizzo <span class="req">*</span></label><input id="f-indirizzo" required></div>
-        <div class="field"><label>CAP <span class="req">*</span></label><input id="f-cap" maxlength="5" inputmode="numeric" required></div>
-        <div class="field"><label>Città <span class="req">*</span></label><input id="f-citta" required></div>
-        <div class="field"><label>Cellulare</label><input id="f-cellulare"></div>
-        <div class="field"><label>Email</label><input id="f-email" type="email"></div>
+        <div class="field full"><label><span class="pn">2.1</span>Indirizzo <span class="req">*</span></label><input id="f-indirizzo" required></div>
+        <div class="field"><label><span class="pn">2.2</span>CAP <span class="req">*</span></label><input id="f-cap" maxlength="5" inputmode="numeric" required></div>
+        <div class="field"><label><span class="pn">2.3</span>Città <span class="req">*</span></label><input id="f-citta" required></div>
+        <div class="field"><label><span class="pn">2.4</span>Cellulare</label><input id="f-cellulare"></div>
+        <div class="field"><label><span class="pn">2.5</span>Email</label><input id="f-email" type="email"></div>
       </div>
     </div>
 
     <!-- ───────── STEP 3: Attività professionale ───────── -->
     <div class="card step" data-step="3" style="display:none">
       <div class="card-icon">Passo 3</div>
-      <h2>Attività professionale</h2>
+      <h2><span class="pn">3.</span>Attività professionale</h2>
       <p class="lead">Indichi la sua azienda di appartenenza, la professione e la disciplina.</p>
       <div class="grid">
         <!-- v127.2 — Card riassunto Azienda + bottone modifica -->
         <div class="field full">
-          <label>Azienda</label>
+          <label><span class="pn">3.1</span>Azienda o amministrazione di appartenenza</label>
+          <div class="hint" style="margin:0 0 6px">Indichi il datore di lavoro con cui ha il <b>rapporto di lavoro dipendente prevalente</b>. Se è dipendente di un&#8217;università statale, indichi l&#8217;ateneo; è a quell&#8217;amministrazione che Sidera invierà la comunicazione prima dell&#8217;evento.</div>
           <div id="azienda-summary" class="azienda-summary-empty" onclick="openCompanyModal()">
             <span>Clicca per indicare la sua azienda di appartenenza</span>
           </div>
@@ -513,11 +192,41 @@
           <input type="hidden" id="f-azienda-citta">
           <input type="hidden" id="f-azienda-prov">
           <input type="hidden" id="f-dbao-id">
+          <!-- v296.1 — ente scelto dall'Indice PA (AgID): la PEC che ne deriva è
+               il domicilio digitale eletto, non un indirizzo digitato a mano. -->
+          <input type="hidden" id="f-ipa-cod">
+          <!-- v297.3 — Dip.pub di DBDOC ('1' dipendente pubblico, '2' privato,
+               '3' professore universitario): serve a capire, senza chiederlo,
+               se il relatore è personale universitario. -->
+          <input type="hidden" id="f-dip-pubblico">
+        </div>
+
+        <!-- v298.5 — La qualità di docente universitario si chiede, non si deduce.
+             Prima veniva ricavata dall'ente e dall'anagrafica, con un link nel
+             mezzo della sezione 5 per correggere la deduzione sbagliata: quel
+             link restava lì come una domanda mai chiusa, e la deduzione aveva già
+             sbagliato una volta (categoria IPA "Aziende Ospedaliere UNIVERSITARIE").
+             Chiesta qui, prima dell'ART. 3, decide da sola quale vocabolario
+             mostrare al punto 5.3. -->
+        <div class="field full" id="univ-row">
+          <label><span class="pn">3.2</span>È professore o ricercatore <b>a tempo pieno</b> di un&#8217;università statale? <span class="req">*</span></label>
+          <div class="a3-scelte">
+            <label class="a3-opt"><input type="radio" name="f-univ" value="no" onchange="onUnivChange()"><span>No</span></label>
+            <label class="a3-opt"><input type="radio" name="f-univ" value="si" onchange="onUnivChange()"><span>Sì</span></label>
+          </div>
+          <div class="hint">Risponda <b>Sì</b> se ha un rapporto di impiego <b>a tempo pieno</b> con un ateneo statale — professore ordinario, professore associato o ricercatore. È il regime a cui l&#8217;art. 6, comma 10, della L. 240/2010 (riforma Gelmini) riconosce la libera esercitabilità di lezioni e seminari di carattere <b>occasionale</b>, anche retribuiti e senza autorizzazione.<br>
+          Risponda <b>No</b> in tutti gli altri casi, compreso il <b>tempo definito</b>: non perché la Sua posizione sia più debole — anzi, il tempo definito è escluso in blocco dall&#8217;art. 53 e non ha bisogno della Gelmini — ma perché lo indicherà al punto <b>5.1</b>, dove trova la casella dedicata. Risponda <b>No</b> anche se presta servizio in un&#8217;azienda ospedaliero-universitaria senza incarico accademico, se insegna in un&#8217;università non statale, o se ha soltanto un contratto di insegnamento come professore a contratto (art. 23 L. 240/2010) senza essere dipendente dell&#8217;ateneo.</div>
+          <!-- v299.0 — Avviso di coerenza fra 3.1 e 3.2. Non blocca: chi è
+               professore di ateneo e presta servizio in convenzione presso un
+               ospedale può legittimamente indicare l'una o l'altro, e vietargli
+               la risposta esatta sarebbe peggio dell'incoerenza. Segnala, dice
+               quale conseguenza avrà, e lascia decidere a lui. -->
+          <div id="univ-avviso" style="display:none;margin-top:8px;padding:9px 12px;background:#fffbeb;border-left:3px solid #f59e0b;border-radius:5px;font-size:14px;color:#78350f;line-height:1.55"></div>
         </div>
         <!-- v127.9 — Badge ECM / Non ECM (solo italiani). Hidden field f-ecm-flag = '1' | '0' | '' -->
         <input type="hidden" id="f-ecm-flag">
         <div id="ecm-badge-row" class="field full" style="display:none">
-          <label>Ambito professionale</label>
+          <label><span class="pn">3.3</span>Ambito professionale</label>
           <div id="ecm-badge" class="ecm-badge">
             <span id="ecm-badge-text">—</span>
             <button type="button" class="ecm-edit-btn" onclick="openEcmModal()">✏️ Modifica</button>
@@ -530,32 +239,32 @@
 
         <!-- Modalità ECM: dropdown -->
         <div class="field" id="prof-ecm-row" style="display:none">
-          <label>Professione <span style="color:#dc2626">*</span></label>
+          <label><span class="pn">3.4</span>Professione <span style="color:#dc2626">*</span></label>
           <select id="f-prof-select" onchange="onProfEcmChange()">
             <option value="">— scegli professione —</option>
           </select>
         </div>
         <div class="field" id="disc-ecm-row" style="display:none">
-          <label>Disciplina <span style="color:#dc2626">*</span></label>
+          <label><span class="pn">3.5</span>Disciplina <span style="color:#dc2626">*</span></label>
           <select id="f-disc-select" onchange="onDiscEcmChange()" disabled>
             <option value="">— prima scelga la professione —</option>
           </select>
         </div>
 
         <!-- Modalità Non-ECM / Straniero: free text -->
-        <div class="field" id="prof-free-row"><label>Professione</label><input id="f-qualifica"></div>
-        <div class="field" id="disc-free-row"><label>Disciplina</label><input id="f-specialita"></div>
+        <div class="field" id="prof-free-row"><label><span class="pn">3.4</span>Professione</label><input id="f-qualifica"></div>
+        <div class="field" id="disc-free-row"><label><span class="pn">3.5</span>Disciplina</label><input id="f-specialita"></div>
       </div>
     </div>
 
     <!-- ───────── STEP 4: Dati fiscali ───────── -->
     <div class="card step" data-step="4" style="display:none">
       <div class="card-icon">Passo 4</div>
-      <h2>Dati fiscali e bancari</h2>
-      <p class="lead" id="step4-lead">IBAN per l'accredito del compenso e P.IVA se applicabile.</p>
+      <h2><span class="pn">4.</span>Dati fiscali e bancari</h2>
+      <p class="lead" id="step4-lead">IBAN per l'accredito del compenso e P.IVA se applicabile. <b>L'IBAN è facoltativo</b>: se preferisce non comunicarlo, lasci il campo vuoto — le invieremo un link con cui incassare inserendo Lei stesso i dati per l'accredito.</p>
       <div class="grid">
         <div class="field full" id="iban-row">
-          <label>IBAN <span id="iban-req-mark" style="color:#dc2626;display:none">*</span></label>
+          <label><span class="pn">4.1</span>IBAN <span id="iban-req-mark" style="color:#dc2626;display:none">*</span></label>
           <input id="f-iban" maxlength="34" style="text-transform:uppercase"
                  oninput="onIbanInput()" onblur="onIbanBlur()">
           <div id="iban-feedback" class="hint" style="margin-top:5px">Inserisca l'IBAN per l'accredito del compenso</div>
@@ -566,7 +275,7 @@
             parziale (ultime quattro cifre); il dato completo resta negli archivi di Sidera.</div>
         </div>
         <div class="field full">
-          <label>Partita IVA <small style="color:#94a3b8">(facoltativa)</small></label>
+          <label><span class="pn">4.2</span>Partita IVA <small style="color:#94a3b8">(facoltativa)</small></label>
           <input id="f-partita_iva" maxlength="11">
         </div>
       </div>
@@ -574,96 +283,206 @@
 
     <!-- ───────── STEP 5: Autorizzazione (Opzione A/B/C) ───────── -->
     <div class="card step" data-step="5" style="display:none">
-      <div class="card-icon">Passo 5 — ART. 3</div>
-      <h2>Autorizzazione</h2>
-      <p class="lead">Selezioni l'opzione che descrive la sua situazione lavorativa. Le opzioni B e C aggiungono al contratto le clausole di conformità per dipendenti pubblici (ART. 3 BIS e 3 TER).</p>
+      <div class="card-icon">ART. 3</div>
+      <h2><span class="pn">5.</span>Autorizzazione</h2>
 
-      <label class="opzione" id="op-A">
-        <input type="radio" name="opzione" value="A">
-        <span class="titolo">Opzione A — Non dipendente pubblico</span>
-        <div class="desc">Libero professionista, lavoratore autonomo, dipendente privato o part-time inferiore al 50%. Include il personale docente di università e altri enti di diritto privato. <b>Non è richiesta autorizzazione</b> dell'ente di appartenenza.</div>
-      </label>
+      <!-- v296.2 — Le opzioni non si scelgono più a mano: si derivano dalle
+           risposte. I radio restano nel DOM (nascosti) perché il resto del form,
+           il backend e il PDF ragionano ancora sulle lettere A/B/C. -->
+      <div style="display:none">
+        <input type="radio" name="opzione" value="A"><input type="radio" name="opzione" value="B"><input type="radio" name="opzione" value="C">
+        <input type="radio" name="op-C-tipo" value="SSN"><input type="radio" name="op-C-tipo" value="UNIV">
+      </div>
 
-      <label class="opzione" id="op-B">
-        <input type="radio" name="opzione" value="B">
-        <span class="titolo">Opzione B — Dipendente pubblico con richiesta di autorizzazione</span>
-        <div class="desc">Dipendente di ente pubblico (SSN, Università statale, ASL, ecc.) che <b>necessita di autorizzazione preventiva</b> da parte dell'ente di appartenenza ai sensi dell'art. 53 del D.Lgs. 165/2001.</div>
-      </label>
+      <!-- Q1 — dipendente pubblico e regime del rapporto (v300.5).
+           Prima erano due domande: "è dipendente pubblico?" e, più sotto,
+           "che rapporto ha?". La seconda serviva solo a intercettare due
+           posizioni — il part-time fino al 50% e l'aspettativa — che il comma 6
+           esclude dal regime autorizzatorio; tutte le altre risposte finivano
+           comunque sulla domanda del regolamento. Accorpate qui: stessa
+           informazione, un passaggio in meno, e i due assi (percentuale e
+           aspettativa) smettono di escludersi a vicenda come accadeva quando
+           erano opzioni dello stesso radio. La soglia è quella di legge:
+           "non superiore al cinquanta per cento", quindi il 50% esatto sta
+           nella casella esclusa, non in quella soggetta. -->
+      <div class="a3-q" id="a3-q1">
+        <div class="a3-dom"><span class="pn">5.1</span>Qual è la Sua posizione lavorativa? <span style="color:#dc2626">*</span></div>
+        <div class="a3-note">Sono pubbliche amministrazioni le ASL e ASST, le aziende ospedaliere, gli IRCCS pubblici, le università statali, i ministeri, le regioni, gli enti locali e gli enti di ricerca. La risposta è dovuta anche se esercita la libera professione con partita IVA: le due condizioni possono coesistere.</div>
+        <div class="a3-scelte a3-col">
+          <label class="a3-opt"><input type="radio" name="a3-dip" value="no" onchange="a3Calcola()"><span><b>Non sono dipendente di una pubblica amministrazione</b></span></label>
+          <label class="a3-opt"><input type="radio" name="a3-dip" value="si_pieno" onchange="a3Calcola()"><span><b>Dipendente pubblico</b> a tempo pieno o a tempo parziale <b>oltre il 50%</b> delle ore di un tempo pieno</span></label>
+          <label class="a3-opt"><input type="radio" name="a3-dip" value="si_pt50" onchange="a3Calcola()"><span><b>Dipendente pubblico</b> a tempo parziale <b>fino al 50%</b> delle ore di un tempo pieno</span></label>
+          <label class="a3-opt"><input type="radio" name="a3-dip" value="si_univdef" onchange="a3Calcola()"><span><b>Docente universitario a tempo definito</b> — è la categoria che l'art. 53, comma 6, nomina espressamente fra quelle escluse</span></label>
+          <!-- v303.4 - Quinta opzione. Prima la nota diceva di indicare
+               comunque il regime del proprio rapporto, quindi chi era in
+               aspettativa finiva sul tempo pieno e firmava di aver chiesto
+               un'autorizzazione che l'art. 53 comma 6 lett. e) non gli
+               richiede. La formulazione insiste su "per svolgere questo
+               incarico" perche' e' quello il presupposto della lett. e):
+               chi si trova in aspettativa per altre ragioni (maternita',
+               studio, altro impiego) NON rientra, e senza la precisazione
+               sceglierebbe questa voce. -->
+          <label class="a3-opt"><input type="radio" name="a3-dip" value="si_asp" onchange="a3Calcola()"><span><b>Dipendente pubblico collocato in aspettativa, comando o fuori ruolo <u>per svolgere questo incarico</u></b> — non vale se si trova in aspettativa per altri motivi (maternità, studio, altro impiego): in quel caso scelga la voce che descrive il Suo rapporto di lavoro</span></label>
+        </div>
+      </div>
 
-      <label class="opzione" id="op-C">
-        <input type="radio" name="opzione" value="C">
-        <span class="titolo">Opzione C — Dipendente pubblico / Professore Università Statale (Ordinario, Associato o Ricercatore)</span>
-        <div class="desc">Partecipazione come relatore a convegno o seminario: <b>esonero dall'autorizzazione preventiva</b>, con obbligo di comunicazione all'ente di appartenenza. Riferimenti normativi: <b>art. 53, comma 6, lett. c) D.Lgs. 165/2001</b> per dipendenti pubblici, <b>art. 6 L. 240/2010</b> per personale universitario statale. <b>⚠ Per il personale universitario, l'opzione si applica esclusivamente alle università statali. Se afferisci a un ente di diritto privato seleziona Opzione A.</b></div>
-      </label>
+      <!-- Q1 in versione dedotta (v298.9). Chi al 3.2 ha dichiarato di essere
+           professore o ricercatore di università statale è per ciò stesso
+           dipendente pubblico: richiederlo qui sarebbe una domanda di cui
+           abbiamo già la risposta, e permetterebbe la coppia contraddittoria
+           "professore di ateneo statale" + "non dipendente pubblico". Si mostra
+           comunque l'esito, con il rimando al punto da correggere. -->
+      <div class="a3-q" id="a3-q1-derivato" style="display:none">
+        <div class="a3-dom"><span class="pn">5.1</span>È dipendente di una pubblica amministrazione? <span style="color:#166534">Sì</span></div>
+        <div class="a3-note">Discende dal punto <b>3.2</b>: professori e ricercatori delle università statali hanno un rapporto di impiego pubblico e ricadono nell&#8217;art. 53 del D.Lgs. 165/2001. Se non è la Sua situazione, torni al punto 3.2 e corregga la risposta.</div>
+        <!-- v299.0 — Se il form ha sovrascritto una risposta già data, deve
+             dirlo: una correzione silenziosa lascia il relatore a firmare una
+             dichiarazione diversa da quella che ricorda di aver reso. -->
+        <div id="a3-dip-corretto" style="display:none;margin-top:8px;padding:9px 12px;background:#fffbeb;border-left:3px solid #f59e0b;border-radius:5px;font-size:14px;color:#78350f;line-height:1.55">
+          Attenzione: aveva risposto <b>No</b> a questa domanda. La risposta è stata
+          <b>aggiornata a Sì</b> perché al punto <b>3.2</b> ha dichiarato di essere professore o
+          ricercatore di università statale. Se è il 3.2 a essere sbagliato, lo corregga lì.
+        </div>
+      </div>
 
-      <!-- Sub-scelta tipologia (solo se Opzione C) -->
-      <div id="op-C-subtype" style="display:none;margin-top:14px;padding:12px 14px;background:#f0fdf4;border:1.5px solid #16a34a;border-radius:8px">
-        <p style="font-size:13px;color:#166534;margin:0 0 10px;font-weight:600">Selezioni la categoria di appartenenza:</p>
-        <label style="display:flex;align-items:flex-start;gap:8px;padding:8px 10px;cursor:pointer;border-radius:5px;font-size:14px;color:#0f172a">
-          <input type="radio" name="op-C-tipo" value="SSN" style="margin-top:3px">
-          <span><b>Dipendente pubblico SSN/PA</b> — Dirigente medico, dirigente sanitario, dipendente di ASL/AOU/IRCCS pubblico/Ministero/altro ente pubblico.</span>
-        </label>
-        <label style="display:flex;align-items:flex-start;gap:8px;padding:8px 10px;cursor:pointer;border-radius:5px;font-size:14px;color:#0f172a">
-          <input type="radio" name="op-C-tipo" value="UNIV" style="margin-top:3px">
-          <span><b>Professore presso Università Statale</b> — Ordinario, Associato o Ricercatore di università statale (anche in convenzione con AOU).</span>
-        </label>
+      <!-- Q2 — vincoli particolari (solo se NON dipendente) -->
+      <div class="a3-q" id="a3-q2" style="display:none">
+        <div class="a3-dom"><span class="pn">5.2</span>Ricorre una di queste condizioni? <span style="color:#dc2626">*</span></div>
+        <div class="a3-scelte a3-col">
+          <label class="a3-opt"><input type="radio" name="a3-vinc" value="nessuno" onchange="a3Calcola()"><span><b>Nessuna delle seguenti</b> — libero professionista, lavoratore autonomo o dipendente privato</span></label>
+          <label class="a3-opt"><input type="radio" name="a3-vinc" value="spec" onchange="a3Calcola()"><span><b>Medico in formazione specialistica</b> (specializzando)</span></label>
+          <label class="a3-opt"><input type="radio" name="a3-vinc" value="conv" onchange="a3Calcola()"><span><b>Rapporto convenzionale con il SSN</b> — medico di famiglia, pediatra di libera scelta, specialista ambulatoriale</span></label>
+          <label class="a3-opt"><input type="radio" name="a3-vinc" value="univpriv" onchange="a3Calcola()"><span><b>Docente di università non statale</b> o di altro ente di diritto privato</span></label>
+        </div>
+      </div>
+
+      <!-- Promemoria copia autorizzazione: compare quando l'esito è il caso C. -->
+        <div id="a3-prot" style="display:none;margin-top:16px;padding:12px 14px;background:#fffbeb;border:1px solid #fcd34d;border-radius:6px">
+          <div style="font-size:14.5px;color:#78350f;line-height:1.6">
+            Ci faccia avere <b>copia dell&#8217;autorizzazione</b> non appena il Suo ente la rilascia,
+            all&#8217;indirizzo <b>direzione@sideraweb.it</b>: <b>prima dell&#8217;evento</b> e comunque
+            entro <b>trenta giorni</b>. In mancanza l&#8217;incarico non potr&#224; esserLe conferito.
+          </div>
+        </div>
+
+
+      <!-- Esito derivato -->
+      <div id="a3-esito" style="display:none;margin-top:16px;padding:14px 16px;border-radius:8px;border-left:4px solid #16a34a;background:#f0fdf4">
+        <div style="font-size:14px;font-weight:700;color:#166534;letter-spacing:.4px;margin-bottom:6px">LA SUA POSIZIONE</div>
+        <div id="a3-esito-testo" style="font-size:16px;color:#0f172a;line-height:1.5"></div>
+        <div id="a3-esito-nota" style="font-size:14.5px;color:#475569;margin-top:8px"></div>
+        <a href="javascript:void(0)" onclick="a3Riapri()" style="display:inline-block;margin-top:10px;font-size:14.5px;color:#1a56db">Non è la mia situazione — rivedo le risposte</a>
       </div>
     </div>
 
-    <!-- ───────── STEP 6: ART. 3 BIS (solo B/C) ───────── -->
+    <!-- ───────── STEP 6: ART. 3 BIS (solo B/C) ─────────
+         v302.5 — Era diviso in due passi (3 BIS clausole di conformità e 3 TER
+         approfondimenti normativi). Il primo ripeteva l'ART. 3 e il secondo era
+         in gran parte spiegazione di norme: il contratto ora ha un articolo
+         solo, e questo passo lo rispecchia. -->
     <div class="card step step-pub" data-step="6" style="display:none">
-      <div class="card-icon" style="background:#fef3c7;color:#92400e">Passo 6 — ART. 3 BIS</div>
-      <h2>Clausole di conformità normativa</h2>
-      <p class="lead" id="bis-norme">Per dipendenti pubblici — ai sensi della normativa vigente.</p>
+      <div class="card-icon" style="background:#fef3c7;color:#92400e">ART. 3 BIS</div>
+      <h2><span class="pn">6.</span><span id="bis-title">Pagamento e termini per la documentazione</span></h2>
+      <p class="lead">Per i dipendenti pubblici: quale documento serve, da cosa dipende il pagamento ed entro quando va inviato.</p>
       <div id="bis-content"></div>
       <div class="accept-box">
         <input type="checkbox" id="ack-bis">
-        <label for="ack-bis"><b>Dichiaro</b> di aver letto e di accettare integralmente le clausole di conformità normativa sopra riportate (ART. 3 BIS).</label>
-      </div>
-    </div>
-
-    <!-- ───────── STEP 7: ART. 3 TER (solo B/C) ───────── -->
-    <div class="card step step-pub" data-step="7" style="display:none">
-      <div class="card-icon" style="background:#fef3c7;color:#92400e">Passo 7 — ART. 3 TER</div>
-      <h2 id="ter-title">Approfondimenti normativi</h2>
-      <p class="lead">Riferimenti normativi sull'autorizzazione per dipendenti pubblici.</p>
-      <div id="ter-content"></div>
-      <div class="accept-box">
-        <input type="checkbox" id="ack-ter">
-        <label for="ack-ter"><b>Dichiaro</b> di aver preso visione integrale degli approfondimenti normativi sopra riportati (ART. 3 TER).</label>
+        <label for="ack-bis"><span class="pn">6.1</span><b>Dichiaro</b> di aver letto e di accettare integralmente le clausole dell'ART. 3 BIS, e di approvare specificamente il punto 3 BIS.3 (termine per l'invio della documentazione e decadenza dal diritto al compenso).</label>
       </div>
     </div>
 
     <!-- ───────── STEP CDI: Conflitto di interesse ───────── -->
+    <!-- ───────── STEP CV: Curriculum semplificato (v289.9) ─────────
+         I dati arrivano da DBREL quando la scheda esiste: in quel caso i campi
+         nascono in sola lettura e al relatore basta un click per confermare.
+         Se la scheda non c'è (relatore nuovo, o ricerca albo non ancora fatta)
+         partono già sbloccati e li compila lui. -->
+    <div class="card step" data-step="cv" style="display:none">
+      <div class="card-icon" style="background:#ede9fe;color:#5b21b6">Curriculum</div>
+      <h2><span class="pn">8.</span>Il suo curriculum in breve</h2>
+      <p class="lead">Questi dati compongono il <b>curriculum sintetico</b> allegato al contratto e usato per l'accreditamento ECM. Li verifichi: se sono corretti prosegua, altrimenti li corregga.</p>
+
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px" id="cv-grid">
+        <label style="font-size:14px;color:#334155;font-weight:600"><span class="pn">8.1</span>Ordine professionale
+          <input type="text" id="f-cv-albo_ordine" maxlength="80" class="cv-in" style="width:100%;padding:8px 10px;border:1px solid #cbd5e1;border-radius:5px;margin-top:3px;font-size:14px">
+        </label>
+        <label style="font-size:14px;color:#334155;font-weight:600"><span class="pn">8.2</span>Provincia dell'albo
+          <input type="text" id="f-cv-albo_provincia" maxlength="40" class="cv-in" style="width:100%;padding:8px 10px;border:1px solid #cbd5e1;border-radius:5px;margin-top:3px;font-size:14px">
+        </label>
+        <label style="font-size:14px;color:#334155;font-weight:600"><span class="pn">8.3</span>Numero di iscrizione <small style="font-weight:400;color:#64748b">(obbligatorio per i medici)</small>
+          <input type="text" id="f-cv-albo_numero" maxlength="40" class="cv-in" style="width:100%;padding:8px 10px;border:1px solid #cbd5e1;border-radius:5px;margin-top:3px;font-size:14px">
+        </label>
+        <label style="font-size:14px;color:#334155;font-weight:600"><span class="pn">8.4</span>Anno di laurea
+          <input type="text" id="f-cv-laurea_data" maxlength="30" class="cv-in" style="width:100%;padding:8px 10px;border:1px solid #cbd5e1;border-radius:5px;margin-top:3px;font-size:14px">
+        </label>
+        <label style="font-size:14px;color:#334155;font-weight:600;grid-column:1/-1"><span class="pn">8.5</span>Laurea *
+          <input type="text" id="f-cv-laurea" maxlength="120" class="cv-in" style="width:100%;padding:8px 10px;border:1px solid #cbd5e1;border-radius:5px;margin-top:3px;font-size:14px">
+        </label>
+        <label style="font-size:14px;color:#334155;font-weight:600"><span class="pn">8.6</span>Università
+          <input type="text" id="f-cv-laurea_universita" maxlength="120" class="cv-in" style="width:100%;padding:8px 10px;border:1px solid #cbd5e1;border-radius:5px;margin-top:3px;font-size:14px">
+        </label>
+        <label style="font-size:14px;color:#334155;font-weight:600"><span class="pn">8.7</span>Sede di servizio
+          <input type="text" id="f-cv-sede" maxlength="160" class="cv-in" style="width:100%;padding:8px 10px;border:1px solid #cbd5e1;border-radius:5px;margin-top:3px;font-size:14px" placeholder="Città in cui presta servizio">
+        </label>
+        <label style="font-size:14px;color:#334155;font-weight:600;grid-column:1/-1"><span class="pn">8.8</span>Specializzazioni
+          <input type="text" id="f-cv-specializzazioni" maxlength="200" class="cv-in" style="width:100%;padding:8px 10px;border:1px solid #cbd5e1;border-radius:5px;margin-top:3px;font-size:14px">
+        </label>
+        <!-- v290.1 — Qualifica a tutta larghezza e su più righe: nei dati reali
+             è spesso una descrizione lunga (ruolo + struttura + azienda) che in
+             un campo a mezza riga restava tagliata e non verificabile. -->
+        <label style="font-size:14px;color:#334155;font-weight:600;grid-column:1/-1"><span class="pn">8.9</span>Qualifica
+          <textarea id="f-cv-qualifica" maxlength="300" rows="3" class="cv-in" style="width:100%;padding:8px 10px;border:1px solid #cbd5e1;border-radius:5px;margin-top:3px;font-size:14px;resize:vertical;font-family:inherit;line-height:1.45"></textarea>
+        </label>
+        <label style="font-size:14px;color:#334155;font-weight:600"><span class="pn">8.10</span>Professione (ECM)
+          <input type="text" id="f-cv-professione" maxlength="120" class="cv-in" style="width:100%;padding:8px 10px;border:1px solid #cbd5e1;border-radius:5px;margin-top:3px;font-size:14px">
+        </label>
+        <label style="font-size:14px;color:#334155;font-weight:600"><span class="pn">8.11</span>Disciplina (ECM)
+          <input type="text" id="f-cv-disciplina" maxlength="120" class="cv-in" style="width:100%;padding:8px 10px;border:1px solid #cbd5e1;border-radius:5px;margin-top:3px;font-size:14px">
+        </label>
+      </div>
+      <label style="display:block;font-size:14px;color:#334155;font-weight:600;margin-top:14px"><span class="pn">8.12</span>Altre informazioni professionali
+        <span style="font-weight:400;color:#64748b">— attività clinica, incarichi, società scientifiche, pubblicazioni</span>
+        <textarea id="f-cv-note_extra" maxlength="2000" rows="6" class="cv-in" style="width:100%;padding:8px 10px;border:1px solid #cbd5e1;border-radius:5px;margin-top:3px;font-size:14px;resize:vertical;font-family:inherit;line-height:1.45"></textarea>
+      </label>
+
+      <p style="font-size:14px;color:#64748b;margin-top:12px">
+        La struttura di appartenenza è quella che ha già indicato al passo precedente e comparirà nel curriculum: non deve ripeterla qui. Professione e disciplina sono i dati su cui è costruito l'accreditamento ECM dell'evento: se li modifica, la segreteria verificherà prima della firma. I campi con * sono obbligatori.
+      </p>
+      <p style="font-size:14px;color:#64748b;margin-top:6px">
+        Sottoscrivendo il contratto dichiarerà, ai sensi degli artt. 46 e 47 del D.P.R. 445/2000, che questi dati corrispondono al vero.
+      </p>
+    </div>
+
     <div class="card step" data-step="cdi" style="display:none">
       <div class="card-icon" style="background:#fef3c7;color:#92400e">Conflitto di interesse</div>
-      <h2>Dichiarazione conflitto di interesse</h2>
+      <h2><span class="pn">9.</span>Dichiarazione conflitto di interesse</h2>
       <p class="lead">Ai sensi della normativa ECM, indichi le <b>aziende con cui ha avuto rapporti commerciali in ambito sanitario negli ultimi due anni</b> (massimo 5 — solo le principali).</p>
 
       <div style="background:#f1f5f9;border-radius:8px;padding:14px 16px;margin:14px 0">
         <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:14px;color:#0f172a">
           <input type="checkbox" id="cdi-no-collab" onchange="cdiToggleNoCollab()" style="width:16px;height:16px;cursor:pointer">
-          <span><b>Dichiaro di NON aver avuto</b> rapporti commerciali in ambito sanitario negli ultimi due anni.</span>
+          <span><span class="pn">9.1</span><b>Dichiaro di NON aver avuto</b> rapporti commerciali in ambito sanitario negli ultimi due anni.</span>
         </label>
       </div>
 
       <div id="cdi-aziende-block">
-        <p style="font-size:13px;color:#64748b;margin:8px 0 10px">Inserisca il nome delle aziende (anche solo 1 o 2 — i campi non compilati restano vuoti):</p>
+        <p style="font-size:14px;color:#64748b;margin:8px 0 10px">Inserisca il nome delle aziende (anche solo 1 o 2 — i campi non compilati restano vuoti):</p>
         <div style="display:grid;grid-template-columns:1fr;gap:10px">
-          <label style="font-size:13px;color:#334155;font-weight:600">Azienda 1
-            <input type="text" id="cdi-az-1" maxlength="120" style="width:100%;padding:8px 10px;border:1px solid #cbd5e1;border-radius:5px;margin-top:3px;font-size:13px" placeholder="Nome azienda…">
+          <label style="font-size:14px;color:#334155;font-weight:600"><span class="pn">9.2</span>Azienda 1
+            <input type="text" id="cdi-az-1" maxlength="120" style="width:100%;padding:8px 10px;border:1px solid #cbd5e1;border-radius:5px;margin-top:3px;font-size:14px" placeholder="Nome azienda…">
           </label>
-          <label style="font-size:13px;color:#334155;font-weight:600">Azienda 2
-            <input type="text" id="cdi-az-2" maxlength="120" style="width:100%;padding:8px 10px;border:1px solid #cbd5e1;border-radius:5px;margin-top:3px;font-size:13px" placeholder="Nome azienda…">
+          <label style="font-size:14px;color:#334155;font-weight:600"><span class="pn">9.3</span>Azienda 2
+            <input type="text" id="cdi-az-2" maxlength="120" style="width:100%;padding:8px 10px;border:1px solid #cbd5e1;border-radius:5px;margin-top:3px;font-size:14px" placeholder="Nome azienda…">
           </label>
-          <label style="font-size:13px;color:#334155;font-weight:600">Azienda 3
-            <input type="text" id="cdi-az-3" maxlength="120" style="width:100%;padding:8px 10px;border:1px solid #cbd5e1;border-radius:5px;margin-top:3px;font-size:13px" placeholder="Nome azienda…">
+          <label style="font-size:14px;color:#334155;font-weight:600"><span class="pn">9.4</span>Azienda 3
+            <input type="text" id="cdi-az-3" maxlength="120" style="width:100%;padding:8px 10px;border:1px solid #cbd5e1;border-radius:5px;margin-top:3px;font-size:14px" placeholder="Nome azienda…">
           </label>
-          <label style="font-size:13px;color:#334155;font-weight:600">Azienda 4
-            <input type="text" id="cdi-az-4" maxlength="120" style="width:100%;padding:8px 10px;border:1px solid #cbd5e1;border-radius:5px;margin-top:3px;font-size:13px" placeholder="Nome azienda…">
+          <label style="font-size:14px;color:#334155;font-weight:600"><span class="pn">9.5</span>Azienda 4
+            <input type="text" id="cdi-az-4" maxlength="120" style="width:100%;padding:8px 10px;border:1px solid #cbd5e1;border-radius:5px;margin-top:3px;font-size:14px" placeholder="Nome azienda…">
           </label>
-          <label style="font-size:13px;color:#334155;font-weight:600">Azienda 5
-            <input type="text" id="cdi-az-5" maxlength="120" style="width:100%;padding:8px 10px;border:1px solid #cbd5e1;border-radius:5px;margin-top:3px;font-size:13px" placeholder="Nome azienda…">
+          <label style="font-size:14px;color:#334155;font-weight:600"><span class="pn">9.6</span>Azienda 5
+            <input type="text" id="cdi-az-5" maxlength="120" style="width:100%;padding:8px 10px;border:1px solid #cbd5e1;border-radius:5px;margin-top:3px;font-size:14px" placeholder="Nome azienda…">
           </label>
         </div>
       </div>
@@ -672,7 +491,7 @@
     <!-- ───────── STEP FINAL: Riepilogo ───────── -->
     <div class="card step" data-step="final" style="display:none">
       <div class="card-icon" style="background:#dcfce7;color:#166534">Riepilogo</div>
-      <h2>Riepilogo e invio</h2>
+      <h2><span class="pn">10.</span>Riepilogo e invio</h2>
       <p class="lead">Verifichi il riepilogo dei dati e clicchi <b>Invia PDF</b> per generare il contratto e procedere con la firma elettronica.</p>
       <div class="summary"><table id="summary-table"></table></div>
     </div>
@@ -697,15 +516,15 @@
 <div id="anag-confirm-overlay" style="display:none;position:fixed;inset:0;z-index:1000;background:rgba(15,23,42,.55);align-items:center;justify-content:center;padding:20px">
   <div style="background:#fff;border-radius:12px;max-width:520px;width:100%;padding:28px;box-shadow:0 24px 60px rgba(0,0,0,.4)">
     <h3 style="margin:0 0 6px;color:#1e3a6e;font-size:19px">Confermi i Suoi dati anagrafici</h3>
-    <p style="margin:0 0 16px;color:#475569;font-size:13px">I seguenti dati sono stati derivati dal Suo codice fiscale. La preghiamo di verificare che corrispondano al Suo documento d'identità prima di procedere.</p>
+    <p style="margin:0 0 16px;color:#475569;font-size:14px">I seguenti dati sono stati derivati dal Suo codice fiscale. La preghiamo di verificare che corrispondano al Suo documento d'identità prima di procedere.</p>
     <table id="anag-confirm-table" style="width:100%;border-collapse:collapse;font-size:14px;margin-bottom:20px">
       <tbody></tbody>
     </table>
     <div style="display:flex;gap:10px;justify-content:flex-end">
       <button type="button" onclick="anagConfirmNo()"
-              style="background:#fff;color:#475569;border:1px solid #cbd5e1;border-radius:7px;padding:10px 18px;font-weight:600;font-size:13px;cursor:pointer">✏️ Modifica</button>
+              style="background:#fff;color:#475569;border:1px solid #cbd5e1;border-radius:7px;padding:10px 18px;font-weight:600;font-size:14px;cursor:pointer">✏️ Modifica</button>
       <button type="button" onclick="anagConfirmYes()"
-              style="background:#16a34a;color:#fff;border:none;border-radius:7px;padding:10px 22px;font-weight:600;font-size:13px;cursor:pointer">✓ Sì, sono corretti</button>
+              style="background:#16a34a;color:#fff;border:none;border-radius:7px;padding:10px 22px;font-weight:600;font-size:14px;cursor:pointer">✓ Sì, sono corretti</button>
     </div>
   </div>
 </div>
@@ -738,7 +557,7 @@
 
       <!-- Step Privata: free text -->
       <div id="cm-step-privata" class="cm-step">
-        <p style="margin:0 0 12px;color:#475569;font-size:13px">Indichi il nome della Sua azienda (denominazione esercitata).</p>
+        <p style="margin:0 0 12px;color:#475569;font-size:14px">Indichi il nome della Sua azienda (denominazione esercitata).</p>
         <label class="cm-label">Nome azienda</label>
         <input id="cm-priv-nome" class="cm-input" type="text" placeholder="Es. Studio Medico Rossi" autocomplete="off">
         <div class="cm-actions">
@@ -749,7 +568,7 @@
 
       <!-- Step Pubblica: città azienda -->
       <div id="cm-step-citta" class="cm-step">
-        <p style="margin:0 0 12px;color:#475569;font-size:13px">In quale città si trova l'azienda dove Lei presta servizio? (Non quella di residenza.)</p>
+        <p style="margin:0 0 12px;color:#475569;font-size:14px">In quale città si trova l'azienda dove Lei presta servizio? (Non quella di residenza.)</p>
         <label class="cm-label">Città dell'azienda</label>
         <input id="cm-pub-citta" class="cm-input" type="text" list="cm-cities-datalist"
                placeholder="Es. Alessandria" autocomplete="off">
@@ -762,7 +581,7 @@
 
       <!-- Step Pubblica: lista strutture filtrate per città/provincia -->
       <div id="cm-step-strutture" class="cm-step">
-        <p style="margin:0 0 8px;color:#475569;font-size:13px">
+        <p style="margin:0 0 8px;color:#475569;font-size:14px">
           Selezioni la Sua struttura. Sotto trova anche le strutture della stessa provincia
           (alcune hanno sede legale in piccoli comuni).
         </p>
@@ -782,14 +601,47 @@
         </div>
       </div>
 
+      <!-- Step Pubblica: ricerca ente nell'Indice PA (v296.1) -->
+      <div id="cm-step-ipa" class="cm-step">
+        <p style="margin:0 0 10px;color:#475569;font-size:14px">
+          Cerchi il Suo ente scrivendone una parte del nome, oppure la città.
+          L'elenco è quello ufficiale delle pubbliche amministrazioni.
+        </p>
+        <div style="display:flex;gap:8px">
+          <input id="cm-ipa-q" class="cm-input" type="text" style="flex:1"
+                 placeholder="es. spedali civili · policlinico · università"
+                 oninput="cmIpaSearchDebounced()" onkeydown="cmIpaKey(event)">
+          <input id="cm-ipa-prov" class="cm-input" type="text" maxlength="2"
+                 style="width:82px;text-transform:uppercase" placeholder="Prov."
+                 oninput="cmIpaSearchDebounced()">
+        </div>
+        <div id="cm-ipa-list" class="cm-strut-list" style="margin-top:10px"></div>
+        <button class="cm-altro-btn" onclick="cmIpaTuttaPa()" id="cm-ipa-estendi">
+          Non trovo il mio ente — cerca in tutta la Pubblica Amministrazione
+        </button>
+        <div class="cm-actions">
+          <button class="cm-back" onclick="cmGoBivio()">← Indietro</button>
+        </div>
+      </div>
+
       <!-- Step Pubblica: conferma struttura selezionata + PEC -->
       <div id="cm-step-conferma" class="cm-step">
         <div class="cm-section-title">Struttura selezionata</div>
         <div id="cm-struttura-info" class="cm-readonly" style="padding:12px"></div>
-        <label class="cm-label">PEC aziendale <span class="req">*</span></label>
-        <input id="cm-pub-pec" class="cm-input" type="email" placeholder="es. protocollo@pec.ente.it">
-        <div class="hint" id="cm-pec-hint" style="font-size:11px;color:#64748b;margin-top:4px">
-          Obbligatoria. Se non la conosce, può trovarla sul cedolino o sul sito istituzionale dell'ente.
+        <label class="cm-label">PEC dell'ente <span class="req">*</span></label>
+        <!-- Percorso IPA: indirizzo ufficiale, non modificabile (v296.1) -->
+        <div id="cm-pec-ipa-box" style="display:none">
+          <div class="cm-readonly" id="cm-pec-ipa" style="padding:10px;font-family:monospace;font-size:14px;word-break:break-all"></div>
+          <div class="hint" style="font-size:14px;color:#166534;margin-top:4px">
+            Domicilio digitale ufficiale dell'ente, dall'Indice PA di AgID. Non serve modificarlo.
+          </div>
+        </div>
+        <!-- Percorso storico (struttura da archivio o inserita a mano) -->
+        <div id="cm-pec-man-box">
+          <input id="cm-pub-pec" class="cm-input" type="email" placeholder="es. protocollo@pec.ente.it">
+          <div class="hint" id="cm-pec-hint" style="font-size:14px;color:#64748b;margin-top:4px">
+            Obbligatoria. Se non la conosce, può trovarla sul cedolino o sul sito istituzionale dell'ente.
+          </div>
         </div>
         <div class="cm-actions">
           <button class="cm-back" onclick="cmGoStrutture()">← Indietro</button>
@@ -799,7 +651,7 @@
 
       <!-- Step Pubblica: Altro (struttura non in DBAO) -->
       <div id="cm-step-altro" class="cm-step">
-        <p style="margin:0 0 12px;color:#475569;font-size:13px">
+        <p style="margin:0 0 12px;color:#475569;font-size:14px">
           Indichi i dati della Sua struttura. Sarà censita in archivio dopo verifica.
         </p>
         <label class="cm-label">Città / Provincia</label>
@@ -854,1753 +706,7 @@
   </div>
 </div>
 
-<script>
-// ── Strada B (Opzione A) — backend GAS Web App ────────────────────────────
-// Il form è statico su sideraweb.com (GitHub Pages). Per prefill/submit chiama
-// un GAS Web App pubblico che fa da proxy verso un Google Sheet "Contratti".
-// MedFIND polla quel Sheet quando è acceso e processa i submit pendenti.
-const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbxUciq4e30VetpXvNSqfv3d0axKCh8G65JMHTx2YTDuXolEUJMTIbwdOWrFX850yhM0/exec';
-
-let TOKEN = '';
-let CURRENT_STEP_INDEX = 0;
-let CLAUSOLE_LOADED = false;
-let CLAUSOLE_INLINE = null;  // Strada B: clausole arrivano dentro al prefill
-
-// v128.0 — Tabelle AGENAS Allegato F+G v1.24 (31 professioni + 121 discipline)
-// Embedded statico: cambiano raramente (versioni 1.20→1.24 in molti anni).
-// Per aggiornare: rigenera con `python scripts/rebuild_codici_agenas.py` poi sostituisci sotto.
-const AGENAS_DATA = {"professioni":[{"cod":1,"nome":"MEDICO CHIRURGO"},{"cod":2,"nome":"ODONTOIATRA"},{"cod":3,"nome":"FARMACISTA"},{"cod":4,"nome":"VETERINARIO"},{"cod":5,"nome":"PSICOLOGO"},{"cod":6,"nome":"BIOLOGO"},{"cod":7,"nome":"CHIMICO"},{"cod":8,"nome":"FISICO"},{"cod":9,"nome":"ASSISTENTE SANITARIO"},{"cod":10,"nome":"DIETISTA"},{"cod":11,"nome":"EDUCATORE PROFESSIONALE"},{"cod":12,"nome":"FISIOTERAPISTA"},{"cod":13,"nome":"IGIENISTA DENTALE"},{"cod":14,"nome":"INFERMIERE"},{"cod":15,"nome":"INFERMIERE PEDIATRICO"},{"cod":16,"nome":"LOGOPEDISTA"},{"cod":17,"nome":"ORTOTTISTA/ASSISTENTE DI OFTALMOLOGIA"},{"cod":18,"nome":"OSTETRICA/O"},{"cod":19,"nome":"PODOLOGO"},{"cod":20,"nome":"TECNICO AUDIOMETRISTA"},{"cod":21,"nome":"TECNICO AUDIOPROTESISTA"},{"cod":22,"nome":"TECNICO DELLA FISIOPATOLOGIA CARDIOCIRCOLATORIA E PERFUSIONE CARDIOVASCOLARE"},{"cod":23,"nome":"TECNICO DELLA PREVENZIONE NELL'AMBIENTE E NEI LUOGHI DI LAVORO"},{"cod":24,"nome":"TECNICO DELLA RIABILITAZIONE PSICHIATRICA"},{"cod":25,"nome":"TECNICO DI NEUROFISIOPATOLOGIA"},{"cod":26,"nome":"TECNICO ORTOPEDICO"},{"cod":27,"nome":"TECNICO SANITARIO DI RADIOLOGIA MEDICA"},{"cod":28,"nome":"TECNICO SANITARIO LABORATORIO BIOMEDICO"},{"cod":29,"nome":"TERAPISTA DELLA NEURO E PSICOMOTRICITA' DELL'ETA' EVOLUTIVA"},{"cod":30,"nome":"TERAPISTA OCCUPAZIONALE"},{"cod":33,"nome":"MASSOFISIOTERAPISTA ISCRITTO ALL'ELENCO SPECIALE EX ART.5 D.M. 9 AGOSTO 2019"}],"discipline_per_prof":{"1":[{"cod":1,"nome":"ALLERGOLOGIA ED IMMUNOLOGIA CLINICA"},{"cod":42,"nome":"ANATOMIA PATOLOGICA"},{"cod":43,"nome":"ANESTESIA E RIANIMAZIONE"},{"cod":2,"nome":"ANGIOLOGIA"},{"cod":111,"nome":"AUDIOLOGIA E FONIATRIA"},{"cod":44,"nome":"BIOCHIMICA CLINICA"},{"cod":29,"nome":"CARDIOCHIRURGIA"},{"cod":3,"nome":"CARDIOLOGIA"},{"cod":30,"nome":"CHIRURGIA GENERALE"},{"cod":31,"nome":"CHIRURGIA MAXILLO-FACCIALE"},{"cod":32,"nome":"CHIRURGIA PEDIATRICA"},{"cod":33,"nome":"CHIRURGIA PLASTICA E RICOSTRUTTIVA"},{"cod":34,"nome":"CHIRURGIA TORACICA"},{"cod":35,"nome":"CHIRURGIA VASCOLARE"},{"cod":59,"nome":"CONTINUITA' ASSISTENZIALE"},{"cod":114,"nome":"CURE PALLIATIVE"},{"cod":4,"nome":"DERMATOLOGIA E VENEREOLOGIA"},{"cod":107,"nome":"DIREZIONE MEDICA DI PRESIDIO OSPEDALIERO"},{"cod":5,"nome":"EMATOLOGIA"},{"cod":6,"nome":"ENDOCRINOLOGIA"},{"cod":115,"nome":"EPIDEMIOLOGIA"},{"cod":45,"nome":"FARMACOLOGIA E TOSSICOLOGIA CLINICA"},{"cod":7,"nome":"GASTROENTEROLOGIA"},{"cod":8,"nome":"GENETICA MEDICA"},{"cod":9,"nome":"GERIATRIA"},{"cod":36,"nome":"GINECOLOGIA E OSTETRICIA"},{"cod":56,"nome":"IGIENE DEGLI ALIMENTI E DELLA NUTRIZIONE"},{"cod":55,"nome":"IGIENE, EPIDEMIOLOGIA E SANITA' PUBBLICA"},{"cod":46,"nome":"LABORATORIO DI GENETICA MEDICA"},{"cod":11,"nome":"MALATTIE DELL'APPARATO RESPIRATORIO"},{"cod":12,"nome":"MALATTIE INFETTIVE"},{"cod":10,"nome":"MALATTIE METABOLICHE E DIABETOLOGIA"},{"cod":17,"nome":"MEDICINA AERONAUTICA E SPAZIALE"},{"cod":13,"nome":"MEDICINA D'EMERGENZA-URGENZA"},{"cod":57,"nome":"MEDICINA DEL LAVORO E SICUREZZA DEGLI AMBIENTI DI LAVORO"},{"cod":18,"nome":"MEDICINA DELLO SPORT"},{"cod":116,"nome":"MEDICINA DI COMUNITA' E DELLE CURE PRIMARIE"},{"cod":14,"nome":"MEDICINA FISICA E RIABILITAZIONE"},{"cod":58,"nome":"MEDICINA GENERALE (MEDICI DI FAMIGLIA)"},{"cod":15,"nome":"MEDICINA INTERNA"},{"cod":48,"nome":"MEDICINA LEGALE"},{"cod":49,"nome":"MEDICINA NUCLEARE"},{"cod":117,"nome":"MEDICINA SUBACQUEA E IPERBARICA"},{"cod":16,"nome":"MEDICINA TERMALE"},{"cod":47,"nome":"MEDICINA TRASFUSIONALE"},{"cod":50,"nome":"MICROBIOLOGIA E VIROLOGIA"},{"cod":19,"nome":"NEFROLOGIA"},{"cod":20,"nome":"NEONATOLOGIA"},{"cod":37,"nome":"NEUROCHIRURGIA"},{"cod":51,"nome":"NEUROFISIOPATOLOGIA"},{"cod":21,"nome":"NEUROLOGIA"},{"cod":22,"nome":"NEUROPSICHIATRIA INFANTILE"},{"cod":52,"nome":"NEURORADIOLOGIA"},{"cod":38,"nome":"OFTALMOLOGIA"},{"cod":23,"nome":"ONCOLOGIA"},{"cod":108,"nome":"ORGANIZZAZIONE DEI SERVIZI SANITARI DI BASE"},{"cod":39,"nome":"ORTOPEDIA E TRAUMATOLOGIA"},{"cod":40,"nome":"OTORINOLARINGOIATRIA"},{"cod":53,"nome":"PATOLOGIA CLINICA (LABORATORIO DI ANALISI CHIMICO-CLINICHE E MICROBIOLOGIA)"},{"cod":24,"nome":"PEDIATRIA"},{"cod":60,"nome":"PEDIATRIA (PEDIATRI DI LIBERA SCELTA)"},{"cod":113,"nome":"PRIVO DI SPECIALIZZAZIONE"},{"cod":25,"nome":"PSICHIATRIA"},{"cod":112,"nome":"PSICOTERAPIA"},{"cod":54,"nome":"RADIODIAGNOSTICA"},{"cod":26,"nome":"RADIOTERAPIA"},{"cod":27,"nome":"REUMATOLOGIA"},{"cod":106,"nome":"SCIENZA DELL'ALIMENTAZIONE E DIETETICA"},{"cod":41,"nome":"UROLOGIA"}],"2":[{"cod":64,"nome":"ODONTOIATRIA"}],"3":[{"cod":118,"nome":"FARMACISTA DI ALTRO SETTORE"},{"cod":66,"nome":"FARMACISTA PUBBLICO DEL SSN"},{"cod":67,"nome":"FARMACISTA TERRITORIALE"}],"4":[{"cod":61,"nome":"IGIENE DEGLI ALLEVAMENTI E DELLE PRODUZIONI ZOOTECNICHE"},{"cod":62,"nome":"IGIENE PROD., TRASF., COMMERCIAL., CONSERV. E TRAS. ALIMENTI DI ORIGINE ANIMALE E DERIVATI"},{"cod":63,"nome":"SANITA' ANIMALE"}],"5":[{"cod":78,"nome":"PSICOLOGIA"},{"cod":77,"nome":"PSICOTERAPIA"}],"6":[{"cod":68,"nome":"BIOLOGO"}],"7":[{"cod":76,"nome":"CHIMICA"}],"8":[{"cod":79,"nome":"FISICA"}],"9":[{"cod":80,"nome":"ASSISTENTE SANITARIO"}],"10":[{"cod":81,"nome":"DIETISTA"},{"cod":119,"nome":"ISCRITTO NELL'ELENCO SPECIALE AD ESAURIMENTO"}],"11":[{"cod":83,"nome":"EDUCATORE PROFESSIONALE"},{"cod":120,"nome":"ISCRITTO NELL'ELENCO SPECIALE AD ESAURIMENTO"}],"12":[{"cod":82,"nome":"FISIOTERAPISTA"},{"cod":121,"nome":"ISCRITTO NELL'ELENCO SPECIALE AD ESAURIMENTO"}],"13":[{"cod":84,"nome":"IGIENISTA DENTALE"},{"cod":122,"nome":"ISCRITTO NELL'ELENCO SPECIALE AD ESAURIMENTO"}],"14":[{"cod":85,"nome":"INFERMIERE"}],"15":[{"cod":86,"nome":"INFERMIERE PEDIATRICO"}],"16":[{"cod":123,"nome":"ISCRITTO NELL'ELENCO SPECIALE AD ESAURIMENTO"},{"cod":87,"nome":"LOGOPEDISTA"}],"17":[{"cod":124,"nome":"ISCRITTO NELL'ELENCO SPECIALE AD ESAURIMENTO"},{"cod":88,"nome":"ORTOTTISTA/ASSISTENTE DI OFTALMOLOGIA"}],"18":[{"cod":89,"nome":"OSTETRICA/O"}],"19":[{"cod":125,"nome":"ISCRITTO NELL'ELENCO SPECIALE AD ESAURIMENTO"},{"cod":90,"nome":"PODOLOGO"}],"20":[{"cod":126,"nome":"ISCRITTO NELL'ELENCO SPECIALE AD ESAURIMENTO"},{"cod":95,"nome":"TECNICO AUDIOMETRISTA"}],"21":[{"cod":127,"nome":"ISCRITTO NELL'ELENCO SPECIALE AD ESAURIMENTO"},{"cod":96,"nome":"TECNICO AUDIOPROTESISTA"}],"22":[{"cod":128,"nome":"ISCRITTO NELL'ELENCO SPECIALE AD ESAURIMENTO"},{"cod":92,"nome":"TECNICO DELLA FISIOPATOLOGIA CARDIOCIRCOLATORIA E PERFUSIONE CARDIOVASCOLARE"}],"23":[{"cod":129,"nome":"ISCRITTO NELL'ELENCO SPECIALE AD ESAURIMENTO"},{"cod":105,"nome":"TECNICO DELLA PREVENZIONE NELL'AMBIENTE E NEI LUOGHI DI LAVORO"}],"24":[{"cod":130,"nome":"ISCRITTO NELL'ELENCO SPECIALE AD ESAURIMENTO"},{"cod":91,"nome":"TECNICO DELLA RIABILITAZIONE PSICHIATRICA"}],"25":[{"cod":131,"nome":"ISCRITTO NELL'ELENCO SPECIALE AD ESAURIMENTO"},{"cod":98,"nome":"TECNICO DI NEUROFISIOPATOLOGIA"}],"26":[{"cod":132,"nome":"ISCRITTO NELL'ELENCO SPECIALE AD ESAURIMENTO"},{"cod":99,"nome":"TECNICO ORTOPEDICO"}],"27":[{"cod":94,"nome":"TECNICO SANITARIO DI RADIOLOGIA MEDICA"}],"28":[{"cod":133,"nome":"ISCRITTO NELL'ELENCO SPECIALE AD ESAURIMENTO"},{"cod":93,"nome":"TECNICO SANITARIO LABORATORIO BIOMEDICO"}],"29":[{"cod":134,"nome":"ISCRITTO NELL'ELENCO SPECIALE AD ESAURIMENTO"},{"cod":100,"nome":"TERAPISTA DELLA NEURO E PSICOMOTRICITA' DELL'ETA' EVOLUTIVA"}],"30":[{"cod":135,"nome":"ISCRITTO NELL'ELENCO SPECIALE AD ESAURIMENTO"},{"cod":101,"nome":"TERAPISTA OCCUPAZIONALE"}],"33":[{"cod":136,"nome":"ISCRITTO NELL'ELENCO SPECIALE AD ESAURIMENTO EX ART.5 D.M. 09.08.2019"}]}};
-
-const FIELDS = [
-  'cognome','nome','cf','nato_il','nato_a','provincia',
-  'indirizzo','cap','citta','cellulare','email',
-  'ente','pec','qualifica','specialita',
-  'iban','partita_iva',
-];
-
-// 110 province italiane + EE = Estero
-const PROVINCE_IT = [
-  'AG','AL','AN','AO','AP','AQ','AR','AT','AV',
-  'BA','BG','BI','BL','BN','BO','BR','BS','BT','BZ',
-  'CA','CB','CE','CH','CL','CN','CO','CR','CS','CT','CZ',
-  'EN',
-  'FC','FE','FG','FI','FM','FR',
-  'GE','GO','GR',
-  'IM','IS',
-  'KR',
-  'LC','LE','LI','LO','LT','LU',
-  'MB','MC','ME','MI','MN','MO','MS','MT',
-  'NA','NO','NU',
-  'OR',
-  'PA','PC','PD','PE','PG','PI','PN','PO','PR','PT','PU','PV','PZ',
-  'RA','RC','RE','RG','RI','RM','RN','RO',
-  'SA','SI','SO','SP','SR','SS','SU',
-  'TA','TE','TN','TO','TP','TR','TS','TV',
-  'UD',
-  'VA','VB','VC','VE','VI','VR','VT','VV',
-];
-const STEP_NAMES = {
-  '1': 'Dati anagrafici',
-  '2': 'Residenza e contatti',
-  '3': 'Attività professionale',
-  '4': 'Dati fiscali e bancari',
-  '5': 'Autorizzazione (ART. 3)',
-  '6': 'ART. 3 BIS — Clausole conformità',
-  '7': 'ART. 3 TER — Approfondimenti',
-  'cdi': 'Conflitto di interesse',
-  'final': 'Riepilogo e invio',
-};
-
-function $(id) { return document.getElementById(id); }
-function $$(sel) { return document.querySelectorAll(sel); }
-
-function showState(which) {
-  ['loading-screen','error-screen','success-screen','form-screen'].forEach(id => {
-    $(id).style.display = (id === which) ? (which === 'form-screen' ? 'block' : 'block') : 'none';
-  });
-  if (which === 'success-screen') window.scrollTo(0, 0);
-}
-
-function showError(msg) { $('error-msg').textContent = msg; showState('error-screen'); }
-
-function populateProvince() {
-  const sel = $('f-provincia');
-  if (!sel) return;
-  let html = '<option value="">— seleziona —</option>';
-  for (const sigla of PROVINCE_IT) html += `<option value="${sigla}">${sigla}</option>`;
-  html += '<option value="EE">EE — Estero</option>';
-  sel.innerHTML = html;
-}
-
-function normalizeDateInput(v) {
-  if (!v) return '';
-  const s = String(v).trim();
-  // v128.4 — ISO format yyyy-mm-dd [HH:MM:SS] (datetime serializzato): converte a dd/mm/yyyy
-  const iso = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
-  if (iso) return iso[3] + '/' + iso[2] + '/' + iso[1];
-  const m = s.match(/^(\d{1,2})[\/\-\.](\d{1,2})[\/\-\.](\d{2,4})$/);
-  if (!m) return s;
-  let dd = m[1].padStart(2, '0');
-  let mm = m[2].padStart(2, '0');
-  let yy = m[3];
-  if (yy.length === 2) {
-    const yi = parseInt(yy, 10);
-    yy = (yi <= 30) ? String(2000 + yi) : String(1900 + yi);
-  }
-  return `${dd}/${mm}/${yy}`;
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// v141.0 — Info box per messaggi di validazione (sostituisce alert() del browser).
-// Sceglie automaticamente il contenitore: se il modale "Azienda" è aperto, scrive
-// in #cm-msg dentro al modale; altrimenti in #form-msg in cima al form principale.
-// ─────────────────────────────────────────────────────────────────────────────
-function _renderFormMsg(el, msg, type) {
-  if (!el) return;
-  const palette = ({
-    error:   { bg:'#fef2f2', bd:'#dc2626', fg:'#991b1b', icon:'⚠️' },
-    warning: { bg:'#fffbeb', bd:'#f59e0b', fg:'#92400e', icon:'⚠️' },
-    info:    { bg:'#eff6ff', bd:'#3b82f6', fg:'#1e3a6e', icon:'ℹ️' },
-    success: { bg:'#ecfdf5', bd:'#16a34a', fg:'#065f46', icon:'✓' }
-  })[type || 'error'];
-  el.style.cssText = 'display:block;margin:0 0 16px;padding:14px 18px;border-radius:8px;'
-    + 'font-size:14px;font-weight:500;background:' + palette.bg + ';'
-    + 'border:1px solid ' + palette.bd + ';color:' + palette.fg + ';white-space:pre-line';
-  el.textContent = palette.icon + '  ' + msg;
-  try { el.scrollIntoView({behavior:'smooth', block:'nearest'}); } catch(_) {}
-}
-
-function showFormMsg(msg, type) {
-  // Se il modale Azienda è aperto, mostra dentro al modale
-  const cmOv = document.getElementById('cm-overlay');
-  if (cmOv && cmOv.style.display && cmOv.style.display !== 'none') {
-    return _renderFormMsg(document.getElementById('cm-msg'), msg, type);
-  }
-  _renderFormMsg(document.getElementById('form-msg'), msg, type);
-}
-
-function clearFormMsg() {
-  const a = document.getElementById('form-msg');
-  const b = document.getElementById('cm-msg');
-  if (a) a.style.display = 'none';
-  if (b) b.style.display = 'none';
-}
-
-async function init() {
-  const params = new URLSearchParams(location.search);
-  TOKEN = params.get('t') || '';
-  if (!TOKEN) { showError('Link non valido: token mancante.'); return; }
-
-  populateProvince();
-  _populateProfDropdown();  // v128.0 — dropdown professioni AGENAS
-
-  // v140.9 — Auto-format data nato_il mentre l'utente digita: "07041973" → "07/04/1973"
-  const dataEl = $('f-nato_il');
-  if (dataEl) {
-    dataEl.addEventListener('input', () => {
-      const raw = (dataEl.value || '').replace(/\D/g, '').slice(0, 8); // solo cifre, max 8
-      let out = raw;
-      if (raw.length > 4)      out = raw.slice(0, 2) + '/' + raw.slice(2, 4) + '/' + raw.slice(4);
-      else if (raw.length > 2) out = raw.slice(0, 2) + '/' + raw.slice(2);
-      if (out !== dataEl.value) dataEl.value = out;
-    });
-    dataEl.addEventListener('blur', () => {
-      dataEl.value = normalizeDateInput(dataEl.value);
-    });
-  }
-
-  // v140.8 — Auto-uppercase su tutti i campi testuali (esclude email, telefono, numerici, IBAN già gestito).
-  // Delega globale: cattura anche input dinamici (modale azienda, ecc.).
-  document.addEventListener('input', (e) => {
-    const t = e.target;
-    if (!t || t.tagName !== 'INPUT') return;
-    const tp = (t.type || 'text').toLowerCase();
-    if (tp === 'email' || tp === 'password' || tp === 'number' || tp === 'tel' || tp === 'checkbox' || tp === 'radio' || tp === 'date') return;
-    if (t.dataset && t.dataset.noUpper === '1') return;
-    const up = (t.value || '').toUpperCase();
-    if (up !== t.value) {
-      const s = t.selectionStart, eN = t.selectionEnd;
-      t.value = up;
-      try { t.setSelectionRange(s, eN); } catch (_) {}
-    }
-  });
-
-  // v141.1 — Se l'utente modifica il CF dopo aver estratto i dati, sblocca i campi
-  // anagrafici (luogo/prov/data) così deve cliccare di nuovo "Estrai dati".
-  const cfEl = $('f-cf');
-  if (cfEl) cfEl.addEventListener('input', _maybeUnlockOnCfChange);
-
-  // v141.1 — Precarica la tabella codici catastali in background (non bloccante).
-  // Verrà comunque caricata al primo click su "Estrai dati", ma così è già pronta.
-  _ensureCfCodesLoaded().catch(() => {});
-
-  try {
-    // v127.3 — Se aperto da localhost (testing diretto su MedFIND), bypassa GAS
-    // e chiama direttamente l'endpoint locale /api/contratti/prefill/<token>
-    // (che ritorna anche `dbao` per il modale Pubblica).
-    const isLocal = ['localhost', '127.0.0.1'].includes(window.location.hostname);
-    const url = isLocal
-      ? ('/api/contratti/prefill/' + encodeURIComponent(TOKEN))
-      : (GAS_API_URL + '?action=prefill&t=' + encodeURIComponent(TOKEN));
-    const res = await fetch(url);
-    const data = await res.json();
-    if (!data.ok) { showError(data.error || 'Errore caricamento dati.'); return; }
-    if (data.submitted) { showState('success-screen'); return; }
-    // Clausole arrivano già inline nello snapshot (per dipendenti pubblici B/C)
-    if (data.clausole) {
-      CLAUSOLE_INLINE = data.clausole;
-    }
-    populate(data);
-    showState('form-screen');
-    renderStep();
-  } catch (e) {
-    showError('Errore di rete: ' + e.message);
-  }
-}
-
-function populate(data) {
-  // Evento
-  const ev = data.evento || {};
-  $('ev-titolo').textContent = ev.titolo || '—';
-  let dataTxt = ev.data_inizio || '—';
-  if (ev.data_fine && ev.data_fine !== ev.data_inizio) {
-    dataTxt = (ev.data_inizio || '—') + ' → ' + ev.data_fine;
-  }
-  $('ev-data').textContent = dataTxt;
-  $('ev-luogo').textContent = ev.luogo || '—';
-  $('ev-cod').textContent = ev.codice_ecm || '—';
-
-  // v127.2 — Snapshot DBAO embedded nel prefill (Fase 4). Array di record
-  // {ID, TIPO, NOME, INDIRIZZO, CAP, CITTA, Prov, PEC}. Senza dati il modale
-  // accetterà solo il branch Privata/"Altro" (free text).
-  if (Array.isArray(data.dbao)) {
-    cmDbaoCache = data.dbao;
-  }
-  // v128.1 — Snapshot AGENAS embedded nel prefill (override del fallback statico).
-  // Se GAS porta dati AGENAS aggiornati, sostituiscono la costante AGENAS_DATA inline.
-  // Fallback: se data.agenas manca o è malformato, usiamo l'embedded (sempre presente).
-  if (data.agenas && Array.isArray(data.agenas.professioni) && data.agenas.discipline_per_prof) {
-    AGENAS_DATA.professioni = data.agenas.professioni;
-    AGENAS_DATA.discipline_per_prof = data.agenas.discipline_per_prof;
-    _populateProfDropdown();  // ripopola il dropdown con i dati freschi
-  }
-
-  // Anagrafica
-  const a = data.anagrafica || {};
-  for (const k of FIELDS) {
-    const el = $('f-' + k);
-    if (!el) continue;
-    let val = a[k] || '';
-    if (k === 'nato_il') val = normalizeDateInput(val);
-    if (k === 'provincia') val = (val || '').toUpperCase();
-    el.value = val;
-  }
-
-  // v127.2 — Pre-fill Azienda dal data se MedFIND conosce già l'ente del relatore.
-  // Atteso (Fase 5): data.anagrafica.ente, data.anagrafica.pec, data.anagrafica.dbao_id,
-  // data.anagrafica.azienda_tipo, data.anagrafica.azienda_citta, data.anagrafica.azienda_prov,
-  // data.anagrafica.company_type ('pubblica'|'privata'). Se assenti, summary parte vuota.
-  if (a.ente) {
-    $('f-ente').value = a.ente || '';
-    $('f-pec').value = a.pec || '';
-    $('f-company-type').value = (a.company_type || (a.dbao_id ? 'pubblica' : '')).toLowerCase();
-    $('f-azienda-tipo').value = a.azienda_tipo || '';
-    $('f-azienda-citta').value = a.azienda_citta || '';
-    $('f-azienda-prov').value = a.azienda_prov || '';
-    $('f-dbao-id').value = a.dbao_id ? String(a.dbao_id) : '';
-    // Sync stato modale per riapertura coerente
-    cmState.type = $('f-company-type').value || null;
-    if (cmState.type === 'pubblica') {
-      cmState.citta = a.azienda_citta || '';
-      cmState.prov = a.azienda_prov || '';
-      if (a.dbao_id) {
-        cmState.struttura = cmDbaoCache.find(r => +r.ID === +a.dbao_id) || null;
-        cmState.pec_attuale = cmState.struttura ? (cmState.struttura.PEC || '') : '';
-      }
-    } else if (cmState.type === 'privata') {
-      cmState.privata_nome = a.ente || '';
-    }
-    updateAziendaSummary();
-  }
-
-  // Opzione: nessun default pre-selezionato (v120.3, richiesta utente).
-  // Il relatore deve scegliere consapevolmente A, B o C — la validazione step 5
-  // blocca il next se nessuno è selezionato. Niente updateOpzione() qui: se
-  // serve aggiornare UI (es. step BIS/TER) lo farà l'onchange dei radio.
-
-  // v120.5 — Salva info contratto (importo + straniero) per la logica IBAN
-  const contr = data.contratto || {};
-  CONTRATTO_INFO.importo = parseFloat(String(contr.importo || '0').replace(',', '.')) || 0;
-  CONTRATTO_INFO.straniero = !!contr.straniero;
-  // Aggiorna obbligatorietà visiva del campo IBAN e re-valida se già compilato
-  updateIbanRequiredMark();
-  if ($('f-iban').value) onIbanInput();
-
-  // v141.1 — Per stranieri il bottone "Estrai dati" non ha senso (CF italiano assente).
-  // Nascondi bottone + hint; i campi anagrafici restano sempre editabili.
-  if (CONTRATTO_INFO.straniero) {
-    const btn = document.getElementById('btn-cf-extract');
-    if (btn) btn.style.display = 'none';
-    const hint = document.getElementById('cf-extract-hint');
-    if (hint) hint.textContent = 'Compili manualmente i Suoi dati anagrafici.';
-  }
-}
-
-// v120.5 — Stato globale per logica IBAN obbligatorio
-const CONTRATTO_INFO = { importo: 0, straniero: false };
-
-// ─── IBAN: validazione live e gestione obbligatorietà ────────────────────
-// Algoritmo identico a utils/iban_validator.py (Python). Ritorna {ok, code, msg}.
-
-const _IBAN_LENGTHS = {
-  AD:24, AE:23, AL:28, AT:20, AZ:28, BA:20, BE:16, BG:22, BH:22, BR:29,
-  CH:21, CR:22, CY:28, CZ:24, DE:22, DK:18, DO:28, EE:20, ES:24, FI:18,
-  FO:18, FR:27, GB:22, GE:22, GI:23, GL:18, GR:27, GT:28, HR:21, HU:28,
-  IE:22, IL:23, IS:26, IT:27, JO:30, KW:30, KZ:20, LB:28, LC:32, LI:21,
-  LT:20, LU:20, LV:21, MC:27, MD:24, ME:22, MK:19, MR:27, MT:31, MU:30,
-  NL:18, NO:15, PK:24, PL:28, PS:29, PT:25, QA:29, RO:24, RS:22, SA:24,
-  SC:31, SE:24, SI:19, SK:24, SM:27, TL:23, TN:24, TR:26, UA:29, VA:22,
-  VG:24, XK:20,
-};
-
-const _CIN_DISPARI = {
-  '0':1,'1':0,'2':5,'3':7,'4':9,'5':13,'6':15,'7':17,'8':19,'9':21,
-  'A':1,'B':0,'C':5,'D':7,'E':9,'F':13,'G':15,'H':17,'I':19,'J':21,
-  'K':2,'L':4,'M':18,'N':20,'O':11,'P':3,'Q':6,'R':8,'S':12,'T':14,
-  'U':16,'V':10,'W':22,'X':25,'Y':24,'Z':23,
-};
-
-function _cinPari(ch) {
-  if (ch >= '0' && ch <= '9') return ch.charCodeAt(0) - 48;
-  return ch.charCodeAt(0) - 65;  // A=0..Z=25
-}
-
-function _cinItaliano(abiCabCc) {
-  let total = 0;
-  for (let i = 0; i < abiCabCc.length; i++) {
-    const ch = abiCabCc[i];
-    if ((i + 1) % 2 === 1) total += (_CIN_DISPARI[ch] || 0);
-    else                   total += _cinPari(ch);
-  }
-  return String.fromCharCode(65 + (total % 26));
-}
-
-function _checkIso97(iban) {
-  // Sposta i primi 4 char in coda, sostituisce A=10..Z=35, mod 97 == 1
-  const re = iban.slice(4) + iban.slice(0, 4);
-  let big = '';
-  for (const ch of re) {
-    if (ch >= '0' && ch <= '9') big += ch;
-    else big += String(ch.charCodeAt(0) - 55);  // A=10..Z=35
-  }
-  // BigInt per sicurezza (anche se i mod 97 step-by-step bastano)
-  try {
-    return BigInt(big) % 97n === 1n;
-  } catch (e) {
-    // Fallback step-by-step se BigInt non disponibile
-    let r = 0;
-    for (const d of big) r = (r * 10 + parseInt(d, 10)) % 97;
-    return r === 1;
-  }
-}
-
-function normalizeIban(s) {
-  return (s || '').replace(/\s+/g, '').toUpperCase();
-}
-
-function validateIban(iban) {
-  const s = normalizeIban(iban);
-  if (!s) return { ok: false, code: 'empty', msg: 'IBAN vuoto' };
-  if (!/^[A-Z0-9]+$/.test(s))
-    return { ok: false, code: 'format', msg: 'L\'IBAN contiene caratteri non ammessi (solo lettere A-Z e cifre 0-9)' };
-  if (s.length < 4) return { ok: false, code: 'country', msg: 'IBAN troppo corto' };
-  const country = s.slice(0, 2);
-  if (!/^[A-Z]{2}$/.test(country))
-    return { ok: false, code: 'country', msg: 'I primi 2 caratteri devono essere il codice paese (lettere)' };
-  const expectedLen = _IBAN_LENGTHS[country];
-  if (expectedLen && s.length !== expectedLen)
-    return { ok: false, code: 'length', msg: `L'IBAN ${country} deve avere ${expectedLen} caratteri (ricevuti ${s.length})` };
-  if (country === 'IT') {
-    if (s.length !== 27)
-      return { ok: false, code: 'length', msg: `L'IBAN italiano deve avere 27 caratteri (ricevuti ${s.length})` };
-    const cinAtteso = s[4];
-    if (!/^[A-Z]$/.test(cinAtteso))
-      return { ok: false, code: 'format', msg: 'Il 5° carattere (CIN) deve essere una lettera A-Z' };
-    const cinCalc = _cinItaliano(s.slice(5));
-    if (cinCalc !== cinAtteso)
-      return { ok: false, code: 'cin', msg: `CIN errato: il 5° carattere è '${cinAtteso}', dovrebbe essere '${cinCalc}'. Verificare l'IBAN.` };
-  }
-  if (!_checkIso97(s))
-    return { ok: false, code: 'iso97', msg: 'Checksum ISO mod97 non valido. L\'IBAN è formalmente sbagliato — verificare le cifre di controllo (caratteri 3-4).' };
-  return { ok: true, code: 'valid', msg: 'IBAN valido' };
-}
-
-function ibanIsRequired() {
-  // Italiano + compenso > 0 → obbligatorio
-  return CONTRATTO_INFO.importo > 0 && !CONTRATTO_INFO.straniero;
-}
-
-// v133.1 — Se l'incarico è gratuito (importo == 0), l'IBAN non serve: nascondo
-// la riga IBAN per non chiederla al relatore. Resta visibile solo P.IVA.
-function ibanIsHidden() {
-  return CONTRATTO_INFO.importo === 0;
-}
-
-function updateIbanRequiredMark() {
-  // v133.1 — Nascondi/mostra l'intera riga IBAN in base all'importo
-  const ibanRow = $('iban-row');
-  if (ibanRow) ibanRow.style.display = ibanIsHidden() ? 'none' : '';
-  const lead = $('step4-lead');
-  if (lead) {
-    lead.textContent = ibanIsHidden()
-      ? 'P.IVA se applicabile.'
-      : 'IBAN per l\'accredito del compenso e P.IVA se applicabile.';
-  }
-  const mark = $('iban-req-mark');
-  if (mark) mark.style.display = ibanIsRequired() ? 'inline' : 'none';
-  const fb = $('iban-feedback');
-  if (fb && !$('f-iban').value) {
-    fb.textContent = ibanIsRequired()
-      ? '⚠ IBAN obbligatorio per contratti con compenso a relatori italiani'
-      : 'Inserisca l\'IBAN per l\'accredito del compenso (facoltativo)';
-    fb.style.color = ibanIsRequired() ? '#dc2626' : '#94a3b8';
-  }
-}
-
-function onIbanInput() {
-  // Pulisce: uppercase + rimuove spazi mentre digita
-  const el = $('f-iban');
-  const cur = el.selectionStart;
-  const oldLen = el.value.length;
-  el.value = el.value.replace(/\s+/g, '').toUpperCase();
-  // Mantieni cursore stabile
-  el.setSelectionRange(cur - (oldLen - el.value.length), cur - (oldLen - el.value.length));
-  showIbanFeedback();
-}
-
-function onIbanBlur() {
-  showIbanFeedback();
-}
-
-function showIbanFeedback() {
-  const el = $('f-iban');
-  const fb = $('iban-feedback');
-  if (!fb) return;
-  const v = (el.value || '').trim();
-  if (!v) {
-    updateIbanRequiredMark();
-    return;
-  }
-  const r = validateIban(v);
-  if (r.ok) {
-    fb.textContent = '✓ IBAN valido';
-    fb.style.color = '#16a34a';
-  } else {
-    fb.textContent = '✗ ' + r.msg;
-    fb.style.color = '#dc2626';
-  }
-}
-
-function getCurrentSteps() {
-  // v127.2 — La scelta Pubblica/Privata fatta nel modale Step 3 determina
-  // anche il flusso di Art. 3:
-  //   • Privata/Altro → Opzione A forzata, salta del tutto step 5 (Art.3) e
-  //                      i due step di clausole BIS/TER (6, 7).
-  //   • Pubblica → step 5 mostra solo B/C (logica esistente di getCurrentSteps);
-  //                BIS/TER attivi solo se B o C scelta.
-  // Step CDI sempre presente.
-  // v140.7 — Se il contratto è gratuito (importo == 0) salto interamente lo
-  // step 4 (Dati fiscali e bancari): niente IBAN, niente P.IVA, perché senza
-  // compenso non c'è accredito né necessità di partita IVA.
-  const skipStep4 = (CONTRATTO_INFO.importo === 0);
-  const step4 = skipStep4 ? [] : ['4'];
-
-  const companyType = (document.getElementById('f-company-type') || {}).value || '';
-  if (companyType.toLowerCase() === 'privata') {
-    return ['1','2','3', ...step4, 'cdi','final'];
-  }
-  const sel = document.querySelector('input[name="opzione"]:checked');
-  const base = ['1','2','3', ...step4, '5'];
-  if (sel && (sel.value === 'B' || sel.value === 'C')) return [...base, '6','7','cdi','final'];
-  return [...base, 'cdi', 'final'];
-}
-
-function renderStep() {
-  const steps = getCurrentSteps();
-  const stepKey = steps[CURRENT_STEP_INDEX];
-
-  // v141.0 — pulisci eventuali info-box quando entro in un nuovo step
-  clearFormMsg();
-
-  // Mostra solo lo step corrente
-  $$('.step').forEach(el => {
-    el.style.display = (el.getAttribute('data-step') === stepKey) ? 'block' : 'none';
-  });
-
-  // Progress
-  const total = steps.length;
-  const cur = CURRENT_STEP_INDEX + 1;
-  $('step-counter').textContent = `Passo ${cur} di ${total}`;
-  $('step-name').textContent = STEP_NAMES[stepKey] || '';
-  $('progress-fill').style.width = `${Math.round((cur / total) * 100)}%`;
-
-  // Bottoni nav
-  $('btn-back').style.visibility = (CURRENT_STEP_INDEX > 0) ? 'visible' : 'hidden';
-  const isLast = (stepKey === 'final');
-  $('btn-next').style.display = isLast ? 'none' : 'inline-block';
-  $('btn-submit').style.display = isLast ? 'inline-block' : 'none';
-
-  if (stepKey === 'final') renderSummary();
-
-  // v127.9 — entrando in Step 3, se Azienda già pre-fillata e ECM non scelto, apri modal ECM
-  if (stepKey === '3') {
-    updateEcmBadge();
-    applyEcmModeToStep3();  // v128.0 — sincronizza visibilità dropdown/free text
-    const enteAlreadyFilled = ($('f-ente').value || '').trim();
-    const ctypeFilled = ($('f-company-type').value || '').trim();
-    if (enteAlreadyFilled && !ctypeFilled) {
-      // v128.3 — DBDOC ha l'ente ma non la tipologia (mai legato a DBAO).
-      // Apri il modal Azienda dal bivio per chiedere conferma Pubblica/Privata.
-      setTimeout(openCompanyModal, 200);
-    } else if (enteAlreadyFilled) {
-      setTimeout(tryAutoOpenEcmModal, 250);
-    }
-  }
-
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-}
-
-function goNext() {
-  if (!validateStep()) return;
-  CURRENT_STEP_INDEX++;
-  const steps = getCurrentSteps();
-  if (CURRENT_STEP_INDEX >= steps.length) CURRENT_STEP_INDEX = steps.length - 1;
-  renderStep();
-}
-
-function goBack() {
-  if (CURRENT_STEP_INDEX > 0) CURRENT_STEP_INDEX--;
-  renderStep();
-}
-
-// v140.6 — Validazione rigorosa del Codice Fiscale italiano.
-// Controlli:
-//   1) Pattern 16 caratteri AAAAAA00A00A000A (6 lettere + 2 cifre + 1 lettera +
-//      2 cifre + 1 lettera + 3 alfanumerici + 1 lettera checksum)
-//   2) Checksum (carattere finale calcolato sui primi 15)
-//   3) Coerenza opzionale con Cognome/Nome/Data di nascita (se forniti, warning
-//      bloccante solo su mismatch netto; carattere "*" admin per CF anonimi non
-//      contemplati nel form pubblico).
-// Algoritmo: tabelle ufficiali Agenzia delle Entrate. La lettera finale dipende
-// da una somma pesata di valori PARI/DISPARI sui primi 15 caratteri.
-// Ritorna {ok:boolean, error?:string}.
-// v141.0 — Omocodia: quando 2 CF coinciderebbero, l'Agenzia delle Entrate sostituisce
-// le cifre con lettere secondo questa tabella. Posizioni sostituibili (1-based): 7, 8, 10, 11, 13, 14, 15.
-const OMOCODIA_MAP = {'L':'0','M':'1','N':'2','P':'3','Q':'4','R':'5','S':'6','T':'7','U':'8','V':'9'};
-function _cfDecodeChar(c) {
-  if (/\d/.test(c)) return c;
-  return Object.prototype.hasOwnProperty.call(OMOCODIA_MAP, c) ? OMOCODIA_MAP[c] : c;
-}
-
-function validateCodiceFiscale(cf, hint) {
-  if (!cf) return {ok:false, error:'Codice fiscale non inserito'};
-  cf = String(cf).toUpperCase().trim();
-  if (cf.length !== 16) {
-    return {ok:false, error:`Lunghezza errata: ${cf.length} caratteri (devono essere 16)`};
-  }
-  // Pattern: 6 lettere + (anno) + lettera mese + (giorno) + lettera prov + (seq prov) + lettera check.
-  // Nelle posizioni "numeriche" (7-8 anno, 10-11 giorno, 13-15 seq prov) sono ammesse anche
-  // lettere di omocodia (L,M,N,P,Q,R,S,T,U,V) per disambiguare CF identici.
-  const pattern = /^[A-Z]{6}[\dLMNPQRSTUV]{2}[A-Z][\dLMNPQRSTUV]{2}[A-Z][\dLMNPQRSTUV]{3}[A-Z]$/;
-  if (!pattern.test(cf)) {
-    return {ok:false, error:'Formato non valido (atteso: 6 lettere + anno + lettera-mese + giorno + lettera-provincia + 3 caratteri + 1 lettera di controllo)'};
-  }
-  // Checksum: tabella PARI/DISPARI per posizioni 1-15, lettera finale derivata
-  // dal modulo 26 della somma pesata.
-  const DISPARI = {
-    '0':1,'1':0,'2':5,'3':7,'4':9,'5':13,'6':15,'7':17,'8':19,'9':21,
-    'A':1,'B':0,'C':5,'D':7,'E':9,'F':13,'G':15,'H':17,'I':19,'J':21,
-    'K':2,'L':4,'M':18,'N':20,'O':11,'P':3,'Q':6,'R':8,'S':12,'T':14,
-    'U':16,'V':10,'W':22,'X':25,'Y':24,'Z':23
-  };
-  const PARI = {
-    '0':0,'1':1,'2':2,'3':3,'4':4,'5':5,'6':6,'7':7,'8':8,'9':9,
-    'A':0,'B':1,'C':2,'D':3,'E':4,'F':5,'G':6,'H':7,'I':8,'J':9,
-    'K':10,'L':11,'M':12,'N':13,'O':14,'P':15,'Q':16,'R':17,'S':18,'T':19,
-    'U':20,'V':21,'W':22,'X':23,'Y':24,'Z':25
-  };
-  const CHECK_LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-  let sum = 0;
-  for (let i = 0; i < 15; i++) {
-    const c = cf[i];
-    // Posizione 1-based: dispari = posizione dispari (1,3,5,...)
-    sum += ((i + 1) % 2 === 1) ? DISPARI[c] : PARI[c];
-  }
-  const expectedCheck = CHECK_LETTERS[sum % 26];
-  if (cf[15] !== expectedCheck) {
-    return {ok:false, error:`Checksum errato (l'ultimo carattere dovrebbe essere "${expectedCheck}" ma è "${cf[15]}")`};
-  }
-  // Coerenza con data di nascita (se fornita in GG/MM/AAAA).
-  // Decodifica omocodia sulle posizioni "numeriche" prima del confronto.
-  if (hint && hint.natoIl) {
-    const m = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(hint.natoIl);
-    if (m) {
-      const [_, gg, mm, aaaa] = m;
-      const yyCF = _cfDecodeChar(cf[6]) + _cfDecodeChar(cf[7]);
-      const yyDate = aaaa.substring(2, 4);
-      if (yyCF !== yyDate) {
-        return {ok:false, error:`Le 2 cifre dell'anno nel CF (${yyCF}) non coincidono con la data di nascita (${aaaa})`};
-      }
-      // Mese: A=gen B=feb C=mar D=apr E=mag H=giu L=lug M=ago P=set R=ott S=nov T=dic
-      const MESI = {'A':'01','B':'02','C':'03','D':'04','E':'05','H':'06',
-                    'L':'07','M':'08','P':'09','R':'10','S':'11','T':'12'};
-      const mmCF = MESI[cf[8]];
-      if (mmCF && mmCF !== mm) {
-        return {ok:false, error:`Il mese codificato nel CF ("${cf[8]}" = ${mmCF}) non coincide con la data di nascita (${mm})`};
-      }
-      // Giorno: per femmine, giorno + 40 → range 41-71. Decodifica omocodia su pos 10-11.
-      const ggCFstr = _cfDecodeChar(cf[9]) + _cfDecodeChar(cf[10]);
-      let ggCF = parseInt(ggCFstr, 10);
-      if (Number.isNaN(ggCF)) return {ok:false, error:'Caratteri non validi nelle posizioni del giorno di nascita'};
-      if (ggCF > 40) ggCF -= 40;
-      if (ggCF !== parseInt(gg, 10)) {
-        return {ok:false, error:`Il giorno codificato nel CF (${ggCF}) non coincide con la data di nascita (${gg})`};
-      }
-    }
-  }
-  return {ok:true};
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// v141.1 — Estrazione dati anagrafici dal CF (solo italiani).
-// Workflow: l'utente digita il CF → clicca "Estrai dati" → JS valida + decodifica
-// + popola Luogo/Provincia/Data e li blocca in readonly. Prima di passare allo
-// Step 2 viene chiesta conferma esplicita che corrispondano al documento.
-// Per relatori stranieri il bottone NON viene mostrato (CONTRATTO_INFO.straniero).
-// ─────────────────────────────────────────────────────────────────────────────
-let CF_CODES_CACHE = null;            // {COD: [COMUNE, SIGLA]} caricato da /static/data/cf_codes.json
-let ANAGRAFICA_LOCKED = false;        // true → luogo/provincia/data in readonly perché derivati dal CF
-let ANAGRAFICA_CONFIRMED = false;     // true → l'utente ha confermato → goNext() può procedere
-let ANAGRAFICA_EXTRACTED_CF = '';     // CF che ha generato il lock (se cambia, sblocco)
-
-const MESI_CF_REV = {'A':'01','B':'02','C':'03','D':'04','E':'05','H':'06',
-                     'L':'07','M':'08','P':'09','R':'10','S':'11','T':'12'};
-
-async function _ensureCfCodesLoaded() {
-  if (CF_CODES_CACHE && Object.keys(CF_CODES_CACHE).length > 1000) return true;
-  // v141.4 — rimosso "force-cache" (poteva servire una risposta stale tipo 302
-  // dal login se non whitelisted). Aggiunto sanity-check sul contenuto: se il
-  // JSON è vuoto o ha pochi record, tratto come fallimento e mostro warning.
-  // Path relativo: risolve sia in locale (Flask, /cf_codes.json) sia su
-  // sideraweb (GitHub Pages root, /cf_codes.json).
-  try {
-    const r = await fetch('cf_codes.json');
-    if (!r.ok) throw new Error('HTTP ' + r.status);
-    const ct = r.headers.get('content-type') || '';
-    if (!ct.toLowerCase().includes('json')) {
-      // Es. 302 → HTML di login restituito come 200 dopo redirect-follow
-      throw new Error('Risposta non-JSON (' + ct + '). Verifichi di essere autenticato o riavvii il server.');
-    }
-    const data = await r.json();
-    if (!data || typeof data !== 'object' || Object.keys(data).length < 1000) {
-      throw new Error('Tabella vuota o incompleta (' + Object.keys(data || {}).length + ' record)');
-    }
-    CF_CODES_CACHE = data;
-    return true;
-  } catch (e) {
-    CF_CODES_CACHE = null;
-    showFormMsg('Impossibile caricare la tabella comuni: ' + e.message + '. Compili manualmente luogo, provincia e data di nascita.', 'warning');
-    return false;
-  }
-}
-
-function _decodeCfData(cf) {
-  // Anno (pos 7-8 → idx 6-7), con decoder omocodia
-  const yyDec = _cfDecodeChar(cf[6]) + _cfDecodeChar(cf[7]);
-  const yi = parseInt(yyDec, 10);
-  if (Number.isNaN(yi)) return null;
-  const aaaa = yi <= 30 ? (2000 + yi) : (1900 + yi);
-  // Mese (pos 9 → idx 8)
-  const mm = MESI_CF_REV[cf[8]];
-  if (!mm) return null;
-  // Giorno + sesso (pos 10-11 → idx 9-10)
-  const ggDec = _cfDecodeChar(cf[9]) + _cfDecodeChar(cf[10]);
-  let gg = parseInt(ggDec, 10);
-  if (Number.isNaN(gg)) return null;
-  const sesso = gg > 40 ? 'F' : 'M';
-  if (gg > 40) gg -= 40;
-  if (gg < 1 || gg > 31) return null;
-  const data_nascita = String(gg).padStart(2, '0') + '/' + mm + '/' + aaaa;
-  // Codice catastale (pos 12-15 → idx 11-14)
-  const cod_comune = cf.substring(11, 15);
-  const estero = cod_comune.startsWith('Z');
-  let luogo_nascita = '';
-  let provincia = '';
-  if (estero) {
-    provincia = 'EE';
-  } else if (CF_CODES_CACHE && CF_CODES_CACHE[cod_comune]) {
-    luogo_nascita = CF_CODES_CACHE[cod_comune][0];
-    provincia     = CF_CODES_CACHE[cod_comune][1];
-  }
-  return {data_nascita, luogo_nascita, provincia, sesso, estero, cod_comune};
-}
-
-function _setAnagraficaLocked(locked) {
-  ANAGRAFICA_LOCKED = !!locked;
-  const data = $('f-nato_il'), luogo = $('f-nato_a'), prov = $('f-provincia');
-  if (data)  data.readOnly  = !!locked;
-  if (luogo) luogo.readOnly = !!locked;
-  if (prov)  prov.disabled  = !!locked;
-  // Visual hint
-  [data, luogo].forEach(el => {
-    if (!el) return;
-    if (locked) { el.style.background = '#f1f5f9'; el.style.color = '#0f172a'; }
-    else { el.style.background = ''; el.style.color = ''; }
-  });
-}
-
-async function onCfExtract() {
-  clearFormMsg();
-  const cfEl = $('f-cf');
-  const cf = (cfEl.value || '').trim().toUpperCase();
-  cfEl.value = cf;
-  // Validazione formato + checksum (riusa il validator esistente)
-  const check = validateCodiceFiscale(cf);
-  if (!check.ok) {
-    showFormMsg('Codice fiscale non valido — ' + check.error + '. Verifichi e riprovi.', 'error');
-    cfEl.focus();
-    return;
-  }
-  // Carica la tabella comuni (lazy)
-  await _ensureCfCodesLoaded();
-  // Decodifica
-  const d = _decodeCfData(cf);
-  if (!d) {
-    showFormMsg('Impossibile estrarre i dati dal codice fiscale. Verifichi i caratteri.', 'error');
-    return;
-  }
-  // Popola i campi
-  $('f-nato_il').value = d.data_nascita;
-  $('f-nato_a').value  = d.luogo_nascita;
-  const provSel = $('f-provincia');
-  if (provSel) provSel.value = d.provincia;
-  // Lock condizionale
-  if (d.estero) {
-    // Italiano nato all'estero: data + provincia="EE" bloccati, luogo editabile (lo stato estero)
-    _setAnagraficaLocked(true);
-    $('f-nato_a').readOnly = false;
-    $('f-nato_a').style.background = '';
-    $('f-nato_a').style.color = '';
-    showFormMsg('Estrazione completata. Lei risulta nato all\'estero (codice catastale ' + d.cod_comune + '): indichi il Nome dello Stato di nascita nel campo "Luogo di nascita".', 'info');
-  } else if (!d.luogo_nascita) {
-    _setAnagraficaLocked(false);
-    showFormMsg('Codice comune "' + d.cod_comune + '" non trovato in archivio. Compili manualmente Luogo e Provincia di nascita.', 'warning');
-  } else {
-    _setAnagraficaLocked(true);
-    ANAGRAFICA_EXTRACTED_CF = cf;
-    ANAGRAFICA_CONFIRMED = false;
-    showFormMsg('Dati estratti: ' + d.luogo_nascita + ' (' + d.provincia + ') — ' + d.data_nascita + '. Cliccando "Avanti" Le verrà chiesta conferma.', 'success');
-  }
-}
-
-// Se l'utente modifica il CF dopo l'estrazione → sblocca tutto e richiede nuova Estrai
-function _maybeUnlockOnCfChange() {
-  if (!ANAGRAFICA_LOCKED) return;
-  const cur = ($('f-cf').value || '').trim().toUpperCase();
-  if (cur !== ANAGRAFICA_EXTRACTED_CF) {
-    _setAnagraficaLocked(false);
-    ANAGRAFICA_CONFIRMED = false;
-    ANAGRAFICA_EXTRACTED_CF = '';
-  }
-}
-
-// Confirm overlay
-function _showAnagConfirmOverlay() {
-  const tbody = document.querySelector('#anag-confirm-table tbody');
-  const rows = [
-    ['Cognome',           $('f-cognome').value],
-    ['Nome',              $('f-nome').value],
-    ['Codice fiscale',    $('f-cf').value],
-    ['Luogo di nascita',  $('f-nato_a').value],
-    ['Provincia',         $('f-provincia').value],
-    ['Data di nascita',   $('f-nato_il').value],
-  ];
-  tbody.innerHTML = rows.map(([k, v]) =>
-    `<tr><td style="padding:8px 10px;border-bottom:1px solid #e2e8f0;color:#64748b;font-size:12.5px">${k}</td>`
-    + `<td style="padding:8px 10px;border-bottom:1px solid #e2e8f0;font-weight:600;color:#0f172a">${(v || '').replace(/[<>&]/g, '')}</td></tr>`
-  ).join('');
-  $('anag-confirm-overlay').style.display = 'flex';
-}
-
-function anagConfirmYes() {
-  $('anag-confirm-overlay').style.display = 'none';
-  ANAGRAFICA_CONFIRMED = true;
-  // Riesegue la navigazione "Avanti" che era stata bloccata
-  CURRENT_STEP_INDEX++;
-  const steps = getCurrentSteps();
-  if (CURRENT_STEP_INDEX >= steps.length) CURRENT_STEP_INDEX = steps.length - 1;
-  renderStep();
-}
-
-function anagConfirmNo() {
-  $('anag-confirm-overlay').style.display = 'none';
-  // Sblocca i campi così l'utente può correggerli a mano
-  _setAnagraficaLocked(false);
-  ANAGRAFICA_CONFIRMED = false;
-  ANAGRAFICA_EXTRACTED_CF = '';
-  showFormMsg('Modifichi i dati anagrafici che non corrispondono e clicchi nuovamente "Avanti".', 'info');
-}
-
-function validateStep() {
-  const steps = getCurrentSteps();
-  const stepKey = steps[CURRENT_STEP_INDEX];
-
-  if (stepKey === '1') {
-    // v140.6 — Tutti i campi anagrafici obbligatori (era solo cognome/nome/cf).
-    // Caso Zeqaj 1337-20: data/luogo/provincia di nascita vuoti hanno generato
-    // un contratto firmato con ART.2 incompleto.
-    const reqFields = {
-      'cognome'  : 'Cognome',
-      'nome'     : 'Nome',
-      'cf'       : 'Codice fiscale',
-      'nato_il'  : 'Data di nascita',
-      'nato_a'   : 'Luogo di nascita',
-      'provincia': 'Provincia di nascita',
-    };
-    for (const [k, label] of Object.entries(reqFields)) {
-      const el = $('f-' + k);
-      if (!(el.value || '').trim()) {
-        showFormMsg('Campo obbligatorio mancante: ' + label, 'error');
-        el.focus();
-        return false;
-      }
-    }
-    // Validazione rigorosa del Codice Fiscale (era solo lunghezza con bypass).
-    const cf = $('f-cf').value.trim().toUpperCase();
-    $('f-cf').value = cf;
-    const cfCheck = validateCodiceFiscale(cf, {
-      cognome: $('f-cognome').value.trim(),
-      nome:    $('f-nome').value.trim(),
-      natoIl:  $('f-nato_il').value.trim(),
-    });
-    if (!cfCheck.ok) {
-      showFormMsg('Codice fiscale non valido — ' + cfCheck.error + '. Verifichi i caratteri e riprovi.', 'error');
-      $('f-cf').focus();
-      return false;
-    }
-    // v141.1 — Gate di conferma anagrafica: se i dati sono stati estratti dal CF
-    // (lock attivo) e l'utente non ha ancora confermato, mostra l'overlay.
-    // Per stranieri il lock non si attiva mai → ANAGRAFICA_LOCKED resta false → procede senza chiedere.
-    if (ANAGRAFICA_LOCKED && !ANAGRAFICA_CONFIRMED) {
-      _showAnagConfirmOverlay();
-      return false; // blocca goNext; sarà anagConfirmYes() a far procedere
-    }
-  }
-
-  // v208.3 — Step 2: Indirizzo/CAP/Città residenza obbligatori.
-  // Caso Pasinelli 1334-1 (29/05/2026): contratto firmato con righe Indirizzo/CAP/Città
-  // vuote in ART.2 perché il form non bloccava il passaggio allo step successivo.
-  // Cellulare resta facoltativo (scelta esplicita).
-  if (stepKey === '2') {
-    const reqFields = {
-      'indirizzo': 'Indirizzo',
-      'cap'      : 'CAP',
-      'citta'    : 'Città',
-    };
-    for (const [k, label] of Object.entries(reqFields)) {
-      const el = $('f-' + k);
-      if (!(el.value || '').trim()) {
-        showFormMsg('Campo obbligatorio mancante: ' + label, 'error');
-        el.focus();
-        return false;
-      }
-    }
-    // CAP italiano: 5 cifre numeriche.
-    const cap = ($('f-cap').value || '').trim();
-    if (!/^\d{5}$/.test(cap)) {
-      showFormMsg('CAP non valido: deve essere di 5 cifre numeriche.', 'error');
-      $('f-cap').focus();
-      return false;
-    }
-  }
-
-  // v127.2 — Step 3: azienda obbligatoria (scelta dal modale Pubblica/Privata)
-  if (stepKey === '3') {
-    const ente = ($('f-ente').value || '').trim();
-    const ctype = ($('f-company-type').value || '').trim();
-    if (!ente) {
-      showFormMsg('Indichi la Sua azienda cliccando sulla card "Azienda".', 'error');
-      return false;
-    }
-    if (!ctype) {
-      showFormMsg('Confermi la tipologia (Pubblica oppure Privata/Altro) della Sua azienda cliccando "Modifica" sulla card.', 'error');
-      openCompanyModal();
-      return false;
-    }
-    // Per Pubblica la PEC è obbligatoria (gestita nel modale, ma defensive check)
-    if (ctype === 'pubblica') {
-      const pec = ($('f-pec').value || '').trim();
-      if (!pec) {
-        showFormMsg('Per le aziende pubbliche la PEC è obbligatoria. Riapra il modale "Azienda" per inserirla.', 'error');
-        return false;
-      }
-    }
-    // v127.9 — italiani: scelta ECM/Non ECM obbligatoria
-    if (!CONTRATTO_INFO.straniero) {
-      const ecmFlag = ($('f-ecm-flag').value || '').trim();
-      if (ecmFlag !== '0' && ecmFlag !== '1') {
-        openEcmModal();
-        return false;
-      }
-      // v128.0 — italiano + ECM: professione e disciplina AGENAS obbligatorie
-      if (ecmFlag === '1') {
-        const profCod = ($('f-prof-cod').value || '').trim();
-        const discCod = ($('f-disc-cod').value || '').trim();
-        if (!profCod) {
-          showFormMsg('Selezioni la Sua professione dall\'elenco.', 'error');
-          $('f-prof-select').focus();
-          return false;
-        }
-        if (!discCod) {
-          showFormMsg('Selezioni la Sua disciplina dall\'elenco.', 'error');
-          $('f-disc-select').focus();
-          return false;
-        }
-      }
-    }
-  }
-
-  // v120.5 — Validazione IBAN allo step 4
-  // v133.1 — Skip se incarico gratuito (IBAN row nascosta)
-  if (stepKey === '4' && !ibanIsHidden()) {
-    const ibanEl = $('f-iban');
-    const v = (ibanEl.value || '').trim();
-    if (!v) {
-      if (ibanIsRequired()) {
-        showFormMsg('IBAN obbligatorio: il contratto prevede un compenso e Lei non risulta tra i relatori stranieri. Inserisca l\'IBAN per procedere.', 'error');
-        ibanEl.focus();
-        return false;
-      }
-      // IBAN vuoto e non obbligatorio → ok
-    } else {
-      const r = validateIban(v);
-      if (!r.ok) {
-        showFormMsg('IBAN non valido — ' + r.msg + '. La preghiamo di verificare l\'IBAN inserito prima di procedere.', 'error');
-        ibanEl.focus();
-        return false;
-      }
-      // Normalizza nel campo (rimuove spazi, uppercase)
-      ibanEl.value = normalizeIban(v);
-    }
-  }
-
-  if (stepKey === '5') {
-    const sel = document.querySelector('input[name="opzione"]:checked');
-    if (!sel) {
-      showFormMsg('Selezioni una delle opzioni A, B o C.', 'error');
-      return false;
-    }
-    // Se Opzione C: sub-tipo (SSN o UNIV) obbligatorio
-    if (sel.value === 'C') {
-      const subSel = document.querySelector('input[name="op-C-tipo"]:checked');
-      if (!subSel) {
-        showFormMsg('Per l\'Opzione C selezioni la categoria di appartenenza (Dipendente pubblico SSN/PA oppure Professore Università Statale).', 'error');
-        return false;
-      }
-    }
-    // v126.8 — PEC obbligatoria per dipendenti pubblici (Opzione B o C).
-    // Bug fixato: prima il form aveva solo l'asterisco visivo ma nessun blocco.
-    if (sel.value === 'B' || sel.value === 'C') {
-      const pecV = (($('f-pec') || {}).value || '').trim();
-      if (!pecV) {
-        showFormMsg('PEC aziendale obbligatoria per dipendenti pubblici (Opzione ' + sel.value + '). Torni al Passo 3 e inserisca la PEC del Suo ente di appartenenza.', 'error');
-        return false;
-      }
-    }
-    // Se passiamo da Opzione A a B/C (o viceversa) carichiamo le clausole se mancano
-    if ((sel.value === 'B' || sel.value === 'C') && !CLAUSOLE_LOADED) {
-      loadClausole();
-    }
-  }
-
-  if (stepKey === '6') {
-    // v141.3 — Non si può accettare ciò che non è stato visualizzato.
-    const bisHtml = ($('bis-content') && $('bis-content').innerHTML || '').trim();
-    if (!bisHtml || !CLAUSOLE_LOADED) {
-      showFormMsg('Le clausole ART. 3 BIS non sono state caricate. Ricarichi la pagina (Ctrl+F5). Se il problema persiste contatti l\'organizzazione: non può accettare clausole che non Le sono state mostrate.', 'error');
-      return false;
-    }
-    if (!$('ack-bis').checked) {
-      showFormMsg('Per procedere deve dichiarare di aver letto e accettato le clausole ART. 3 BIS.', 'error');
-      return false;
-    }
-  }
-
-  if (stepKey === '7') {
-    const terHtml = ($('ter-content') && $('ter-content').innerHTML || '').trim();
-    if (!terHtml || !CLAUSOLE_LOADED) {
-      showFormMsg('Gli approfondimenti ART. 3 TER non sono stati caricati. Ricarichi la pagina (Ctrl+F5). Se il problema persiste contatti l\'organizzazione: non può accettare contenuti che non Le sono stati mostrati.', 'error');
-      return false;
-    }
-    if (!$('ack-ter').checked) {
-      showFormMsg('Per procedere deve dichiarare di aver preso visione degli approfondimenti ART. 3 TER.', 'error');
-      return false;
-    }
-  }
-
-  return true;
-}
-
-function updateOpzione() {
-  const sel = document.querySelector('input[name="opzione"]:checked');
-  ['A','B','C'].forEach(k => $('op-' + k).classList.toggle('selected', sel && sel.value === k));
-  const isPublic = sel && (sel.value === 'B' || sel.value === 'C');
-  // v127.3 — pec-req-mark e pec-hint rimossi in v127.2 (Step 3 ridisegnato con
-  // card riassunto + modale Pubblica/Privata). Null-guard per backward compat.
-  const pecMark = $('pec-req-mark');
-  if (pecMark) pecMark.style.display = isPublic ? 'inline' : 'none';
-  const pecHint = $('pec-hint');
-  if (pecHint) pecHint.textContent = isPublic
-    ? '⚠ Obbligatoria per dipendenti pubblici'
-    : 'Obbligatoria se è dipendente pubblico';
-  if (isPublic && !CLAUSOLE_LOADED) loadClausole();
-  // Sub-tipo C (SSN/UNIV): visibile solo se Opzione C scelta
-  const subC = $('op-C-subtype');
-  if (subC) {
-    subC.style.display = (sel && sel.value === 'C') ? 'block' : 'none';
-    if (sel && sel.value !== 'C') {
-      // Reset sub-tipo se l'utente cambia opzione
-      document.querySelectorAll('input[name="op-C-tipo"]').forEach(r => { r.checked = false; });
-    }
-  }
-}
-
-document.addEventListener('change', e => {
-  if (e.target.name === 'opzione') updateOpzione();
-});
-
-async function loadClausole() {
-  try {
-    // 1) Best: clausole inline nel prefill (Strada B)
-    if (CLAUSOLE_INLINE) {
-      renderBis(CLAUSOLE_INLINE.bis);
-      renderTer(CLAUSOLE_INLINE.ter);
-      CLAUSOLE_LOADED = true;
-      return;
-    }
-    // 2) v141.3 — Fallback statico: stesso path su Flask locale e su sideraweb
-    //    (GitHub Pages serve clausole_pubblici.json alla root, sempre online).
-    //    Risolve il caso TEST-GRAT-1: snapshot creato per Opzione A senza clausole
-    //    + relatore che durante la compilazione passa a B/C.
-    try {
-      const r = await fetch('clausole_pubblici.json', {cache: 'force-cache'});
-      if (r.ok) {
-        const j = await r.json();
-        if (j && (j.bis || j.ter)) {
-          CLAUSOLE_INLINE = j;
-          renderBis(j.bis);
-          renderTer(j.ter);
-          CLAUSOLE_LOADED = true;
-          return;
-        }
-      }
-    } catch (_) { /* prosegui col fallback API */ }
-    // 3) Ultima chance: endpoint Flask locale (utile solo in dev)
-    try {
-      const r = await fetch('/api/contratti/clausole-pubblici');
-      if (r.ok) {
-        const j = await r.json();
-        if (j && j.ok) {
-          CLAUSOLE_INLINE = { bis: j.bis, ter: j.ter };
-          renderBis(j.bis);
-          renderTer(j.ter);
-          CLAUSOLE_LOADED = true;
-          return;
-        }
-      }
-    } catch (_) { /* finita la cascata */ }
-    console.warn('Clausole non caricabili da nessuna fonte');
-  } catch (e) {
-    console.error('loadClausole error', e);
-  }
-}
-
-function escapeHtml(s) {
-  return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-}
-// Reportlab usa <b>...</b> nei template Python — li lasciamo passare. Tutto il resto è escape.
-function richText(s) {
-  // Permettiamo SOLO i tag <b> ... </b> (e <i>, <br/>) che vengono dai TPL Python
-  return String(s || '')
-    .replace(/&/g, '&amp;')
-    .replace(/<(?!\/?(?:b|i|br\s*\/?)>)/g, '&lt;');
-}
-
-function renderBis(bis) {
-  if (!bis) return;
-  if (bis.titolo_norme) $('bis-norme').innerHTML = richText(bis.titolo_norme);
-  let html = '';
-  for (const c of (bis.clausole || [])) {
-    html += `<div class="clausola">
-      <h3>${escapeHtml(c.titolo)}</h3>
-      <p>${richText(c.testo)}</p>
-    </div>`;
-  }
-  if (bis.dichiarazione) {
-    html += `<div class="clausola" style="border-left-color:#ea580c;background:#fff7ed">
-      <h3>${escapeHtml(bis.dichiarazione.titolo)}</h3>
-      <p>${richText(bis.dichiarazione.testo)}</p>
-      <p>${richText(bis.dichiarazione.impegno)}</p>
-    </div>`;
-  }
-  $('bis-content').innerHTML = html;
-}
-
-function renderTer(ter) {
-  if (!ter) return;
-  if (ter.titolo) $('ter-title').textContent = ter.titolo;
-  let html = '';
-  for (const b of (ter.blocchi || [])) {
-    html += `<div class="clausola"><h3>${richText(b.titolo)}</h3>`;
-    for (const t of (b.testi || [])) {
-      html += `<p>${richText(t)}</p>`;
-    }
-    html += `</div>`;
-  }
-  if (ter.presa_visione || ter.presa_visione_spec) {
-    html += `<div class="clausola" style="border-left-color:#ea580c;background:#fff7ed">
-      <p><b>${richText(ter.presa_visione)}</b></p>
-      <p>${richText(ter.presa_visione_spec)}</p>
-    </div>`;
-  }
-  $('ter-content').innerHTML = html;
-}
-
-function renderSummary() {
-  const sel = document.querySelector('input[name="opzione"]:checked');
-  const op = sel ? sel.value : '—';
-  const opTxt = {A:'A — Non dipendente pubblico', B:'B — Dipendente pubblico con autorizzazione', C:'C — Dipendente pubblico con obbligo di comunicazione'}[op] || '—';
-  const tbl = $('summary-table');
-  const get = id => ($(id).value || '').trim() || '—';
-  const dataNasc = normalizeDateInput($('f-nato_il').value || '') || '—';
-  // CDI summary
-  const cdi = getCdiPayload();
-  let cdiTxt;
-  if (cdi.no_collab) {
-    cdiTxt = '<i>Nessun rapporto commerciale dichiarato negli ultimi 2 anni</i>';
-  } else if (cdi.aziende.length === 0) {
-    cdiTxt = '<i style="color:#dc2626">— nessuna azienda indicata e flag "nessun rapporto" non spuntato</i>';
-  } else {
-    cdiTxt = cdi.aziende.map((a, i) => `${i + 1}. ${a}`).join('<br>');
-  }
-
-  tbl.innerHTML = `
-    <tr><td>Cognome e Nome</td><td>${get('f-cognome')} ${get('f-nome')}</td></tr>
-    <tr><td>Codice fiscale</td><td>${get('f-cf')}</td></tr>
-    <tr><td>Nato a / il</td><td>${get('f-nato_a')} (${get('f-provincia')}) — ${dataNasc}</td></tr>
-    <tr><td>Indirizzo</td><td>${get('f-indirizzo')} — ${get('f-cap')} ${get('f-citta')} ${get('f-provincia')}</td></tr>
-    <tr><td>Cellulare / Email</td><td>${get('f-cellulare')} — ${get('f-email')}</td></tr>
-    <tr><td>Azienda / Professione</td><td>${get('f-ente')} — ${get('f-qualifica')}</td></tr>
-    <tr><td>PEC aziendale</td><td>${get('f-pec')}</td></tr>
-    ${ibanIsHidden() ? '' : `<tr><td>IBAN</td><td>${get('f-iban')}</td></tr>`}
-    ${ibanIsHidden() ? '' : `<tr><td>P.IVA</td><td>${get('f-partita_iva')}</td></tr>`}
-    <tr><td>Autorizzazione</td><td><b>${opTxt}</b></td></tr>
-    <tr><td>Conflitto interesse</td><td>${cdiTxt}</td></tr>
-  `;
-}
-
-// CDI: toggle checkbox "no collaborazioni" → disabilita le 5 input azienda
-function cdiToggleNoCollab() {
-  const cb = $('cdi-no-collab');
-  const block = $('cdi-aziende-block');
-  if (!cb || !block) return;
-  const off = cb.checked;
-  block.style.opacity = off ? '0.45' : '1';
-  block.style.pointerEvents = off ? 'none' : 'auto';
-  for (let i = 1; i <= 5; i++) {
-    const el = $('cdi-az-' + i);
-    if (el) {
-      el.disabled = off;
-      if (off) el.value = '';
-    }
-  }
-}
-
-function getCdiPayload() {
-  const noCollab = !!($('cdi-no-collab') && $('cdi-no-collab').checked);
-  const aziende = [];
-  if (!noCollab) {
-    for (let i = 1; i <= 5; i++) {
-      const el = $('cdi-az-' + i);
-      if (el && (el.value || '').trim()) aziende.push(el.value.trim());
-    }
-  }
-  return { aziende, no_collab: noCollab };
-}
-
-async function submitForm() {
-  const sel = document.querySelector('input[name="opzione"]:checked');
-  if (!sel) { showFormMsg('Selezione opzione mancante.', 'error'); return; }
-
-  // v126.8 — Final PEC check (defensive, lo step 5 dovrebbe già aver bloccato)
-  if (sel.value === 'B' || sel.value === 'C') {
-    const pecV = (($('f-pec') || {}).value || '').trim();
-    if (!pecV) {
-      showFormMsg('PEC aziendale obbligatoria per dipendenti pubblici (Opzione ' + sel.value + '). Torni al Passo 3 e inserisca la PEC prima di inviare.', 'error');
-      return;
-    }
-  }
-
-  // v120.5 — Final IBAN check (defensive, lo step 4 dovrebbe già aver bloccato)
-  // v133.1 — Skip se incarico gratuito (IBAN row nascosta nel form)
-  if (!ibanIsHidden()) {
-    const ibanV = ($('f-iban').value || '').trim();
-    if (!ibanV && ibanIsRequired()) {
-      showFormMsg('IBAN obbligatorio: il contratto prevede un compenso. Torni al passo 4 e inserisca l\'IBAN.', 'error');
-      return;
-    }
-    if (ibanV) {
-      const r = validateIban(ibanV);
-      if (!r.ok) {
-        showFormMsg('IBAN non valido — ' + r.msg + '. Torni al passo 4 per correggere prima di inviare.', 'error');
-        return;
-      }
-      $('f-iban').value = normalizeIban(ibanV);
-    }
-  }
-
-  const anag = {};
-  for (const k of FIELDS) {
-    const el = $('f-' + k);
-    if (!el) continue;
-    let v = (el.value || '').trim();
-    if (k === 'nato_il') v = normalizeDateInput(v);
-    if (k === 'cf' || k === 'iban' || k === 'provincia') v = v.toUpperCase();
-    anag[k] = v;
-  }
-
-  const cdi = getCdiPayload();
-
-  const btn = $('btn-submit');
-  btn.disabled = true;
-  btn.textContent = '⏳ Invio in corso…';
-
-  try {
-    // Strada B: il submit va al GAS Web App pubblico, che scrive sul Sheet
-    // Pipeline. MedFIND polla quel Sheet (ogni 5 min) e processa: genera PDF,
-    // mergeia CDI, manda a iLovePDF. Il signer riceverà l'email iLovePDF.
-    // Sub-tipo C (SSN | UNIV): solo se Opzione C, altrimenti vuoto
-    const subC = document.querySelector('input[name="op-C-tipo"]:checked');
-    const tipoDipPub = (sel.value === 'C' && subC) ? subC.value : '';
-
-    // v127.2 — Snapshot Azienda (Pubblica/Privata + lookup DBAO o Altro)
-    const azienda = {
-      company_type: ($('f-company-type').value || '').toLowerCase(),  // 'pubblica' | 'privata' | ''
-      tipo:        $('f-azienda-tipo').value || '',
-      citta:       $('f-azienda-citta').value || '',
-      prov:        $('f-azienda-prov').value || '',
-      dbao_id:     $('f-dbao-id').value || '',                         // '' se Altro
-      pec_attuale: cmState.pec_attuale || '',                          // PEC originale in DBAO
-    };
-
-    const res = await fetch(GAS_API_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' },  // GAS doPost evita preflight CORS con text/plain
-      body: JSON.stringify({
-        action: 'submit',
-        token: TOKEN,
-        opzione_aut: sel.value,
-        tipo_dip_pub: tipoDipPub,  // v120.4: 'SSN' | 'UNIV' (solo se C)
-        anagrafica: anag,
-        azienda: azienda,         // v127.2 (Fase 5: backend usa per discordanze PEC / nuovi enti)
-        ecm: ($('f-ecm-flag').value || ''),  // v127.9: '1' ECM, '0' non ECM, '' straniero
-        agenas_prof_cod: ($('f-prof-cod').value || ''),     // v128.0: codice prof. AGENAS (solo se ECM)
-        agenas_disc_cod: ($('f-disc-cod').value || ''),     // v128.0: codice disciplina AGENAS (solo se ECM)
-        aziende: cdi.aziende,
-        no_collab: cdi.no_collab,
-      }),
-    });
-    const data = await res.json();
-    if (!data.ok) {
-      const msg = data.error || 'errore sconosciuto';
-      if (data.already_submitted) {
-        showState('success-screen');
-        return;
-      }
-      showFormMsg('Errore invio: ' + msg, 'error');
-      btn.disabled = false;
-      btn.textContent = '📨 Invia PDF per la firma';
-      return;
-    }
-    showState('success-screen');
-  } catch (e) {
-    showFormMsg('Errore di rete: ' + e.message, 'error');
-    btn.disabled = false;
-    btn.textContent = '📨 Invia PDF per la firma';
-  }
-}
-
-// ════════════════════════════════════════════════════════════════════════════
-// v127.2 — Modale bivio Pubblica/Privata + flow strutture DBAO (Fase 3 + 4)
-// ════════════════════════════════════════════════════════════════════════════
-
-// Stato del modale + dati DBAO embeddati nello snapshot di prefill
-const cmState = {
-  type: null,           // 'pubblica' | 'privata' | null
-  citta: null,          // città azienda (solo Pubblica)
-  prov: null,           // provincia derivata da città
-  struttura: null,      // record DBAO selezionato (solo Pubblica)
-  altro_nome: null,     // nome ente per "Altro" (Pubblica + non in DBAO)
-  altro_tipo: null,
-  pec: null,            // PEC inserita o da DBAO (modificata)
-  pec_attuale: null,    // PEC originale in DBAO al momento della selezione
-  privata_nome: null,   // nome free text (Privata)
-};
-let cmDbaoCache = [];   // snapshot DBAO da prefill (Fase 4)
-
-function _cm(id) { return document.getElementById(id); }
-
-function openCompanyModal() {
-  // Apre sempre dal bivio (R7: "Modifica" riapre da Step 1).
-  cmShowStep('cm-step-bivio');
-  _cm('cm-overlay').style.display = 'flex';
-}
-function closeCompanyModal() {
-  _cm('cm-overlay').style.display = 'none';
-  // v127.9 — dopo aver scelto l'Azienda, chiediamo l'ambito ECM (solo italiani)
-  setTimeout(tryAutoOpenEcmModal, 200);
-}
-function cmShowStep(stepId) {
-  document.querySelectorAll('.cm-step').forEach(el => el.classList.remove('active'));
-  const target = _cm(stepId);
-  if (target) target.classList.add('active');
-  // Aggiorna titolo header
-  const titles = {
-    'cm-step-bivio':     'La sua azienda',
-    'cm-step-privata':   'Azienda privata / altro',
-    'cm-step-citta':     'Città dell’azienda pubblica',
-    'cm-step-strutture': 'Selezione struttura',
-    'cm-step-conferma':  'Conferma struttura + PEC',
-    'cm-step-altro':     'Struttura non in elenco',
-  };
-  const t = _cm('cm-title');
-  if (t) t.textContent = titles[stepId] || 'La sua azienda';
-}
-
-function cmGoBivio()     { cmShowStep('cm-step-bivio'); }
-function cmGoCitta()     { cmShowStep('cm-step-citta'); }
-function cmGoStrutture() { cmShowStep('cm-step-strutture'); }
-
-function cmChooseType(type) {
-  cmState.type = type;
-  if (type === 'privata') {
-    // Pre-fill se già scelto in passato
-    const nome = cmState.privata_nome || _cm('f-ente').value || '';
-    _cm('cm-priv-nome').value = nome;
-    cmShowStep('cm-step-privata');
-    setTimeout(() => _cm('cm-priv-nome').focus(), 50);
-  } else {
-    // Pubblica: vai a step città
-    const citta = cmState.citta || _cm('f-azienda-citta').value || '';
-    _cm('cm-pub-citta').value = citta;
-    _populateCitiesDatalist();
-    cmShowStep('cm-step-citta');
-    setTimeout(() => _cm('cm-pub-citta').focus(), 50);
-  }
-}
-
-function cmSubmitPrivata() {
-  const nome = (_cm('cm-priv-nome').value || '').trim();
-  if (!nome) {
-    showFormMsg('Indichi il nome dell’azienda.', 'error');
-    return;
-  }
-  cmState.privata_nome = nome;
-  // Salva nei hidden field del form principale
-  _cm('f-ente').value = nome;
-  _cm('f-pec').value = '';
-  _cm('f-company-type').value = 'privata';
-  _cm('f-azienda-tipo').value = '';
-  _cm('f-azienda-citta').value = '';
-  _cm('f-azienda-prov').value = '';
-  _cm('f-dbao-id').value = '';
-  // Privata → forza Opzione A in Art. 3 (e auto-skip step 5/6/7)
-  const radioA = document.querySelector('input[name="opzione"][value="A"]');
-  if (radioA) {
-    radioA.checked = true;
-    if (typeof updateOpzione === 'function') updateOpzione();
-  }
-  updateAziendaSummary();
-  closeCompanyModal();
-}
-
-function _populateCitiesDatalist() {
-  // Riempie la datalist con le città distinte presenti in DBAO (Pubblica).
-  const dl = _cm('cm-cities-datalist');
-  if (!dl) return;
-  const setCitta = new Map(); // citta_upper → display "Citta (PROV)"
-  for (const r of cmDbaoCache) {
-    const c = (r.CITTA || '').trim();
-    const p = (r.Prov || r.PROV || '').trim();
-    if (!c) continue;
-    const key = c.toUpperCase() + '|' + p.toUpperCase();
-    if (!setCitta.has(key)) setCitta.set(key, c);
-  }
-  const sortedCitta = [...setCitta.values()].sort((a, b) => a.localeCompare(b, 'it'));
-  dl.innerHTML = '';
-  for (const c of sortedCitta) {
-    const o = document.createElement('option');
-    o.value = c;
-    dl.appendChild(o);
-  }
-}
-
-function _cmFindCitta(input) {
-  // Match case-insensitive sul campo CITTA di DBAO. Ritorna provincia desunta
-  // dal primo match (omonimie ignorate per ora — accetta la prima provincia trovata).
-  const target = (input || '').trim().toUpperCase();
-  if (!target) return null;
-  for (const r of cmDbaoCache) {
-    if ((r.CITTA || '').trim().toUpperCase() === target) {
-      return { citta: (r.CITTA || '').trim(), prov: (r.Prov || r.PROV || '').trim() };
-    }
-  }
-  return null;
-}
-
-function cmCittaNext() {
-  const inp = (_cm('cm-pub-citta').value || '').trim();
-  if (!inp) {
-    showFormMsg('Indichi la città dell’azienda.', 'error');
-    return;
-  }
-  const match = _cmFindCitta(inp);
-  if (!match) {
-    if (!confirm('La città indicata non risulta tra quelle in archivio. ' +
-                 'Vuole proseguire comunque (potrà inserire la struttura come "Altro")?')) {
-      return;
-    }
-    cmState.citta = inp;
-    cmState.prov = '';
-  } else {
-    cmState.citta = match.citta;
-    cmState.prov = match.prov;
-  }
-  _populateStrutture();
-  cmShowStep('cm-step-strutture');
-}
-
-function _populateStrutture() {
-  // Popola le 2 sezioni: strutture in città + strutture in provincia (alfabetiche).
-  const targetCitta = (cmState.citta || '').toUpperCase();
-  const targetProv = (cmState.prov || '').toUpperCase();
-  _cm('cm-strut-citta-name').textContent = cmState.citta || '—';
-  _cm('cm-strut-prov-name').textContent = cmState.prov || '—';
-  const inCitta = [];
-  const inProv = [];
-  for (const r of cmDbaoCache) {
-    const rCitta = (r.CITTA || '').toUpperCase();
-    const rProv = (r.Prov || r.PROV || '').toUpperCase();
-    if (rCitta === targetCitta) {
-      inCitta.push(r);
-    } else if (targetProv && rProv === targetProv) {
-      inProv.push(r);
-    }
-  }
-  inCitta.sort((a, b) => (a.NOME || '').localeCompare(b.NOME || '', 'it'));
-  inProv.sort((a, b) => (a.NOME || '').localeCompare(b.NOME || '', 'it'));
-  const renderList = (items, containerId) => {
-    const el = _cm(containerId);
-    if (!el) return;
-    if (items.length === 0) {
-      el.innerHTML = '<div class="cm-strut-empty">Nessuna struttura trovata.</div>';
-      return;
-    }
-    let html = '';
-    for (const r of items) {
-      const id = r.ID;
-      const nome = (r.NOME || '').replace(/'/g, '&#39;').replace(/"/g, '&quot;');
-      const tipo = r.TIPO || '';
-      html += `<div class="cm-strut-item" onclick="cmSelectStruttura(${id})">` +
-              `<span class="nome">${nome}</span>` +
-              `<span class="tipo">${tipo}</span></div>`;
-    }
-    el.innerHTML = html;
-  };
-  renderList(inCitta, 'cm-strutture-citta-list');
-  renderList(inProv, 'cm-strutture-prov-list');
-  // Nascondi sezione provincia se vuota
-  _cm('cm-strutture-prov-block').style.display =
-    (inProv.length === 0 || !targetProv) ? 'none' : 'block';
-}
-
-function cmSelectStruttura(id) {
-  const rec = cmDbaoCache.find(r => +r.ID === +id);
-  if (!rec) return;
-  cmState.struttura = rec;
-  cmState.pec_attuale = (rec.PEC || '').trim();
-  // Pre-fill PEC se in DBAO; altrimenti vuota da compilare
-  _cm('cm-pub-pec').value = cmState.pec_attuale;
-  // Render info struttura
-  _cm('cm-struttura-info').innerHTML =
-    '<b>' + (rec.NOME || '') + '</b><br>' +
-    '<span style="color:#64748b;font-size:12px">' +
-    (rec.TIPO || '') + ' · ' + (rec.CITTA || '') + ' (' + (rec.Prov || rec.PROV || '') + ')' +
-    '</span>';
-  // Hint PEC dinamico
-  const hint = _cm('cm-pec-hint');
-  if (hint) {
-    if (cmState.pec_attuale) {
-      hint.textContent = 'Verifichi la PEC mostrata. Se è cambiata, può modificarla qui — la modifica sarà sottoposta ad approvazione.';
-      hint.style.color = '#16a34a';
-    } else {
-      hint.textContent = 'PEC non in archivio. Inserisca quella corretta del Suo ente — verrà censita.';
-      hint.style.color = '#92400e';
-    }
-  }
-  cmShowStep('cm-step-conferma');
-  setTimeout(() => _cm('cm-pub-pec').focus(), 50);
-}
-
-function cmAltroChoice() {
-  // Pre-fill città/prov in read-only
-  const lab = (cmState.citta || '—') + ' (' + (cmState.prov || '—') + ')';
-  _cm('cm-altro-citta-readonly').textContent = lab;
-  _cm('cm-altro-nome').value = cmState.altro_nome || '';
-  _cm('cm-altro-tipo').value = cmState.altro_tipo || '';
-  _cm('cm-altro-pec').value = '';
-  cmShowStep('cm-step-altro');
-  setTimeout(() => _cm('cm-altro-nome').focus(), 50);
-}
-
-function cmSubmitPubblica() {
-  const pec = (_cm('cm-pub-pec').value || '').trim();
-  if (!pec) {
-    showFormMsg('La PEC è obbligatoria. Se non la conosce, la cerchi sul cedolino o sul sito dell’ente.', 'error');
-    return;
-  }
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(pec)) {
-    showFormMsg('Formato PEC non valido. Esempio: protocollo@pec.ente.it', 'error');
-    return;
-  }
-  const rec = cmState.struttura;
-  if (!rec) return;
-  cmState.pec = pec;
-  // Salva nei hidden del form principale
-  _cm('f-ente').value = rec.NOME || '';
-  _cm('f-pec').value = pec;
-  _cm('f-company-type').value = 'pubblica';
-  _cm('f-azienda-tipo').value = rec.TIPO || '';
-  _cm('f-azienda-citta').value = rec.CITTA || '';
-  _cm('f-azienda-prov').value = (rec.Prov || rec.PROV || '');
-  _cm('f-dbao-id').value = String(rec.ID || '');
-  updateAziendaSummary();
-  closeCompanyModal();
-}
-
-function cmSubmitAltro() {
-  const nome = (_cm('cm-altro-nome').value || '').trim();
-  const tipo = (_cm('cm-altro-tipo').value || '').trim();
-  const pec = (_cm('cm-altro-pec').value || '').trim();
-  if (!nome) { showFormMsg('Indichi il nome dell’ente.', 'error'); return; }
-  if (!tipo) { showFormMsg('Selezioni la tipologia.', 'error'); return; }
-  if (!pec)  { showFormMsg('La PEC è obbligatoria.', 'error'); return; }
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(pec)) {
-    showFormMsg('Formato PEC non valido. Esempio: protocollo@pec.ente.it', 'error'); return;
-  }
-  cmState.altro_nome = nome;
-  cmState.altro_tipo = tipo;
-  cmState.pec = pec;
-  cmState.struttura = null; // reset (Altro = no DBAO match)
-  // Salva nei hidden
-  _cm('f-ente').value = nome;
-  _cm('f-pec').value = pec;
-  _cm('f-company-type').value = 'pubblica';   // resta pubblica (Opzione B/C)
-  _cm('f-azienda-tipo').value = tipo;
-  _cm('f-azienda-citta').value = cmState.citta || '';
-  _cm('f-azienda-prov').value = cmState.prov || '';
-  _cm('f-dbao-id').value = '';   // niente ID DBAO → backend creerà PENDING_NEW
-  updateAziendaSummary();
-  closeCompanyModal();
-}
-
-function updateAziendaSummary() {
-  // Aggiorna la card riassunto in Step 3 in base a quanto scelto nel modale.
-  const sum = _cm('azienda-summary');
-  if (!sum) return;
-  const type = (_cm('f-company-type').value || '').toLowerCase();
-  const ente = _cm('f-ente').value || '';
-  const pec = _cm('f-pec').value || '';
-  const tipo = _cm('f-azienda-tipo').value || '';
-  const citta = _cm('f-azienda-citta').value || '';
-  const prov = _cm('f-azienda-prov').value || '';
-  if (!ente) {
-    sum.className = 'azienda-summary-empty';
-    sum.innerHTML = '<span>Clicca per indicare la sua azienda di appartenenza</span>';
-    return;
-  }
-  sum.className = 'azienda-summary';
-  let metaParts = [];
-  if (type === 'pubblica') {
-    if (tipo) metaParts.push('<b>' + tipo + '</b>');
-    if (citta) metaParts.push(citta + (prov ? ' (' + prov + ')' : ''));
-  } else if (type === 'privata') {
-    metaParts.push('<i>Privata / Altro</i>');
-  } else {
-    // v128.3 — Tipologia ignota (pre-fill da DBDOC senza dbao_id né company_type)
-    sum.className = 'azienda-summary azienda-summary-pending';
-    metaParts.push('<i style="color:#92400e">⚠ Tipologia da confermare</i>');
-  }
-  let html = '<div class="azienda-summary-info">';
-  html += '<div class="name">' + ente.replace(/</g, '&lt;') + '</div>';
-  if (metaParts.length) html += '<div class="meta">' + metaParts.join(' · ') + '</div>';
-  if (pec) html += '<div class="pec">📧 ' + pec.replace(/</g, '&lt;') + '</div>';
-  html += '</div>';
-  html += '<button class="edit-btn" onclick="event.stopPropagation();openCompanyModal()">✏️ Modifica</button>';
-  sum.innerHTML = html;
-}
-
-// v127.9 — Mini modal ECM/Non ECM ─────────────────────────────────────────
-// Si apre automaticamente all'ingresso Step 3 (solo italiani, solo se flag
-// non ancora impostato). La scelta condiziona il flag "ecm" salvato nel submit.
-// Per ora i campi Professione/Disciplina restano free text in entrambi i casi.
-
-function openEcmModal() {
-  $('em-overlay').style.display = 'flex';
-}
-function closeEcmModal() {
-  $('em-overlay').style.display = 'none';
-}
-function emChoose(value) {
-  // value = 1 (ECM) | 0 (non ECM)
-  $('f-ecm-flag').value = String(value);
-  updateEcmBadge();
-  applyEcmModeToStep3();  // v128.0 — switch UI dropdown vs free text
-  closeEcmModal();
-}
-function updateEcmBadge() {
-  const row = $('ecm-badge-row');
-  const badge = $('ecm-badge');
-  const text = $('ecm-badge-text');
-  if (!row || !badge || !text) return;
-  const v = ($('f-ecm-flag').value || '').trim();
-  if (v === '1') {
-    row.style.display = '';
-    badge.className = 'ecm-badge ecm';
-    text.innerHTML = '✅ <b>Ambito ECM</b> — professione sanitaria';
-  } else if (v === '0') {
-    row.style.display = '';
-    badge.className = 'ecm-badge non-ecm';
-    text.innerHTML = '📋 <b>Non ECM</b> — non rientro tra le professioni sanitarie ECM';
-  } else {
-    row.style.display = 'none';
-  }
-}
-function tryAutoOpenEcmModal() {
-  // Apri il modal ECM se: siamo in Step 3 + non straniero + flag vuoto.
-  // Per stranieri non chiediamo (gestiti separatamente come oggi).
-  const steps = getCurrentSteps();
-  const stepKey = steps[CURRENT_STEP_INDEX];
-  if (stepKey !== '3') return;
-  if (CONTRATTO_INFO.straniero) return;
-  if (($('f-ecm-flag').value || '').trim() !== '') return;
-  openEcmModal();
-}
-
-// v128.0 — Dropdown vincolati AGENAS (modalità ECM) ─────────────────────────
-
-function _populateProfDropdown() {
-  // Popola il <select> Professione con le 31 voci AGENAS (ordine numerico cod).
-  const sel = $('f-prof-select');
-  if (!sel) return;
-  // Mantieni la prima opzione vuota
-  let html = '<option value="">— scegli professione —</option>';
-  for (const p of AGENAS_DATA.professioni) {
-    html += `<option value="${p.cod}">${p.nome}</option>`;
-  }
-  sel.innerHTML = html;
-}
-
-function _populateDiscDropdown(codProf) {
-  // Popola il <select> Disciplina con le discipline native della professione scelta.
-  // Le voci sono già ordinate alfabeticamente nel JSON.
-  const sel = $('f-disc-select');
-  if (!sel) return;
-  if (!codProf) {
-    sel.innerHTML = '<option value="">— prima scelga la professione —</option>';
-    sel.disabled = true;
-    return;
-  }
-  const list = AGENAS_DATA.discipline_per_prof[String(codProf)] || [];
-  let html = '<option value="">— scegli disciplina —</option>';
-  for (const d of list) {
-    html += `<option value="${d.cod}">${d.nome}</option>`;
-  }
-  sel.innerHTML = html;
-  sel.disabled = false;
-}
-
-function onProfEcmChange() {
-  const sel = $('f-prof-select');
-  const codProf = sel.value;
-  const nomeProf = sel.options[sel.selectedIndex] ? sel.options[sel.selectedIndex].text : '';
-  $('f-prof-cod').value = codProf || '';
-  $('f-qualifica').value = (codProf ? nomeProf : '');
-  // Reset disciplina quando cambia la professione
-  $('f-disc-cod').value = '';
-  $('f-specialita').value = '';
-  _populateDiscDropdown(codProf);
-}
-
-function onDiscEcmChange() {
-  const sel = $('f-disc-select');
-  const codDisc = sel.value;
-  const nomeDisc = sel.options[sel.selectedIndex] ? sel.options[sel.selectedIndex].text : '';
-  $('f-disc-cod').value = codDisc || '';
-  $('f-specialita').value = (codDisc ? nomeDisc : '');
-}
-
-function applyEcmModeToStep3() {
-  // Mostra dropdown AGENAS (ECM) o input free text (Non-ECM/straniero).
-  const ecmFlag = ($('f-ecm-flag').value || '').trim();
-  const isEcm = (ecmFlag === '1');
-  // Stranieri: niente flag → mostra free text (modalità default)
-  $('prof-ecm-row').style.display = isEcm ? '' : 'none';
-  $('disc-ecm-row').style.display = isEcm ? '' : 'none';
-  $('prof-free-row').style.display = isEcm ? 'none' : '';
-  $('disc-free-row').style.display = isEcm ? 'none' : '';
-
-  if (isEcm) {
-    // Pre-selezione: se Qualifica DBDOC = nome canonico AGENAS, preseleziona dropdown
-    const qualNow = ($('f-qualifica').value || '').trim().toUpperCase();
-    const profMatch = AGENAS_DATA.professioni.find(p => p.nome === qualNow);
-    if (profMatch && !$('f-prof-cod').value) {
-      $('f-prof-select').value = String(profMatch.cod);
-      $('f-prof-cod').value = String(profMatch.cod);
-      _populateDiscDropdown(profMatch.cod);
-      // Pre-selezione Disciplina se Specialità DBDOC matcha esattamente
-      const specNow = ($('f-specialita').value || '').trim().toUpperCase();
-      if (specNow) {
-        const list = AGENAS_DATA.discipline_per_prof[String(profMatch.cod)] || [];
-        const discMatch = list.find(d => d.nome === specNow);
-        if (discMatch) {
-          $('f-disc-select').value = String(discMatch.cod);
-          $('f-disc-cod').value = String(discMatch.cod);
-        }
-      }
-    } else if ($('f-prof-cod').value) {
-      // Il codice è già impostato (es. dopo onProfEcmChange) — solo sincronizza select
-      $('f-prof-select').value = $('f-prof-cod').value;
-      _populateDiscDropdown($('f-prof-cod').value);
-      if ($('f-disc-cod').value) {
-        $('f-disc-select').value = $('f-disc-cod').value;
-      }
-    }
-  }
-}
-
-init();
-</script>
+<script src="js/contratto-form.js?v=311.10"></script>
 
 </body>
 </html>
