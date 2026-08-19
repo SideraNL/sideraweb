@@ -115,7 +115,37 @@
     "idPgt": "1345",
     "luogo": "MILANO",
     "data": "18/11/2026",
-    "titolo": "MENTAL HEALTH IN THE CITIES"
+    "titolo": "MENTAL HEALTH IN THE CITIES",
+    "orari": [
+      {
+        "giorno": "1",
+        "data": "18/11/2026",
+        "ora_in": "09:00",
+        "ora_out": "18:00",
+        "pause": [
+          {
+            "in": "11:00",
+            "out": "11:30"
+          },
+          {
+            "in": "13:30",
+            "out": "14:30"
+          }
+        ]
+      },
+      {
+        "giorno": "2",
+        "data": "19/11/2026",
+        "ora_in": "09:00",
+        "ora_out": "13:30",
+        "pause": [
+          {
+            "in": "10:45",
+            "out": "11:15"
+          }
+        ]
+      }
+    ]
   },
   {
     "idPgt": "1350",
