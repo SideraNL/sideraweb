@@ -1778,6 +1778,103 @@ function cmIpaTuttaPa() {
   cmIpaSearch();
 }
 
+/* ── Archivio IPA nel browser (v314.6) ─────────────────────────────────────
+   `/api/ipa/search` risponde solo su MedFIND in locale. Il form pero' gira su
+   sideraweb.com (GitHub Pages), dove quella chiamata dava 404: la ricerca non
+   partiva proprio, e il relatore dipendente pubblico restava bloccato con
+   "Nessun ente trovato" su enti che nel registro ci sono (segnalazione del
+   19/08/2026, contratto 1349-2).
+
+   Ora dal sito si cerca in locale nel browser, sull'archivio pubblicato da
+   `scripts/gen_ipa_web.py`: ipa_core.json (~570 enti: sanita', universita',
+   ricerca, ministeri, regioni) e, solo se il relatore estende la ricerca a
+   tutta la PA, ipa_tutti.json. Il blob di ricerca `s` di ogni ente e' gia'
+   calcolato lato server, sigle d'uso corrente comprese: qui si filtra e si
+   ordina, con lo stesso punteggio di utils/ipa_enti.cerca_dettaglio.        */
+
+const IPA_IN_LOCALE = ['localhost', '127.0.0.1'].includes(window.location.hostname);
+const _ipaArchivi = {};
+
+async function _ipaArchivio(tutti) {
+  const nome = tutti ? 'ipa_tutti.json' : 'ipa_core.json';
+  if (_ipaArchivi[nome]) return _ipaArchivi[nome];
+  const r = await fetch(nome, {cache: 'force-cache'});
+  if (!r.ok) throw new Error('archivio ' + nome + ' non disponibile');
+  const d = await r.json();
+  d._prov = new Set((d.enti || []).map(e => e.p).filter(Boolean));
+  _ipaArchivi[nome] = d;
+  return d;
+}
+
+function _ipaNorm(s) {
+  return String(s == null ? '' : s).normalize('NFKD').replace(/[\u0300-\u036f]/g, '')
+    .toUpperCase().replace(/[^A-Z0-9]+/g, ' ').trim();
+}
+
+// Parole d'indirizzo e connettivi: non distinguono un ente dall'altro e in un
+// AND stretto azzererebbero i risultati (il campo Azienda arriva da DBDOC con
+// via e numero civico attaccati). Stesso elenco di utils/ipa_enti.py.
+const _IPA_RUMORE = new Set(
+  ('VIA VIALE VLE PIAZZA PIAZZALE PZA PZZA PIAZZETTA CORSO CSO LARGO LGO VICOLO '
+ + 'STRADA STRADALE CONTRADA LOCALITA LOC FRAZIONE FRAZ BORGO SALITA TRAVERSA '
+ + 'SNC INT SCALA PALAZZINA EDIFICIO PRESSO CAP NR NUM CIVICO '
+ + 'DI DA DE DEL DELLO DELLA DELL DEI DEGLI DELLE IL LO LA GLI LE ED AL ALLO '
+ + 'ALLA AI AGLI ALLE IN NEL NELLA SU PER CON TRA FRA').split(' '));
+
+function _ipaPubblico(e) {
+  return {cod: e.c, nome: e.n, acronimo: e.a, comune: e.m, prov: e.p,
+          regione: e.r, tipologia: e.t, cf: e.f, pec: e.e, core: !!e.k};
+}
+
+function _ipaCerca(arch, q, prov, tutti, limit) {
+  prov = (prov || '').trim().toUpperCase();
+  const grezzi = _ipaNorm(q).split(' ').filter(Boolean);
+  const tok = [];
+  for (const t of grezzi) {
+    if (t.length < 2 || /^\d+$/.test(t) || _IPA_RUMORE.has(t)) continue;
+    if (!tok.includes(t)) tok.push(t);
+  }
+  // Sigla di provincia in coda: filtro solo se la stringa e' chiaramente un
+  // indirizzo incollato (c'e' un CAP). Altrimenti "BRESCIA AO" verrebbe letto
+  // come "Brescia in provincia di Aosta".
+  const haCap = grezzi.some(t => t.length === 5 && /^\d+$/.test(t));
+  if (!prov && haCap && tok.length > 1 && arch._prov.has(tok[tok.length - 1])) {
+    prov = tok.pop();
+  }
+  if (!tok.length && !prov) return {enti: [], usate: [], prov: prov, parziale: false};
+
+  let migliori = [], maxMatch = 0;
+  for (const e of (arch.enti || [])) {
+    if (!tutti && !e.k) continue;
+    if (prov && e.p !== prov) continue;
+    const blob = e.s || '';
+    const parole = blob.split(' ');
+    let match = 0, punti = 0;
+    for (const t of tok) {
+      if (parole.some(p => p.startsWith(t))) {
+        match++;
+        // Peso per lunghezza: indovinare "BRESCIA" dice molto piu' che
+        // indovinare "AO", che compare in centinaia di denominazioni.
+        punti += (blob.startsWith(t) ? 2 : 1) * Math.min(t.length, 8);
+      }
+    }
+    if (tok.length && !match) continue;
+    if (match < maxMatch) continue;
+    if (match > maxMatch) { maxMatch = match; migliori = []; }
+    migliori.push([-(punti + (e.k ? 3 : 0)), (e.n || '').length, e]);
+  }
+  migliori.sort((a, b) => a[0] - b[0] || a[1] - b[1]);
+
+  let usate = tok;
+  if (migliori.length && maxMatch < tok.length) {
+    const parole = (migliori[0][2].s || '').split(' ');
+    usate = tok.filter(t => parole.some(p => p.startsWith(t)));
+  }
+  return {enti: migliori.slice(0, limit).map(x => _ipaPubblico(x[2])),
+          usate: usate, prov_usata: prov,
+          parziale: !!tok.length && maxMatch < tok.length};
+}
+
 async function cmIpaSearch() {
   const q = (_cm('cm-ipa-q').value || '').trim();
   const prov = (_cm('cm-ipa-prov').value || '').trim().toUpperCase();
@@ -1786,19 +1883,30 @@ async function cmIpaSearch() {
   const seq = ++_cmIpaSeq;
   box.innerHTML = '<div style="padding:10px;color:#64748b;font-size:14px">Ricerca in corso…</div>';
   try {
-    const url = '/api/ipa/search?q=' + encodeURIComponent(q)
-              + '&prov=' + encodeURIComponent(prov)
-              + (cmState.ipa_tutti ? '&tutti=1' : '');
-    const r = await fetch(url);
-    const d = await r.json();
+    let d;
+    if (IPA_IN_LOCALE) {
+      const url = '/api/ipa/search?q=' + encodeURIComponent(q)
+                + '&prov=' + encodeURIComponent(prov)
+                + (cmState.ipa_tutti ? '&tutti=1' : '');
+      const r = await fetch(url);
+      d = await r.json();
+    } else {
+      const arch = await _ipaArchivio(cmState.ipa_tutti);
+      d = Object.assign({ok: true}, _ipaCerca(arch, q, prov, cmState.ipa_tutti, 25));
+    }
     if (seq !== _cmIpaSeq) return;   // risposta di una digitazione superata
     cmIpaRender(d.ok ? (d.enti || []) : [], d.ok ? d : {});
   } catch (e) {
+    // Non lasciare il relatore in un vicolo cieco: se la ricerca non riesce
+    // resta il percorso storico citta' -> struttura, che non dipende da nulla
+    // di esterno.
     if (seq === _cmIpaSeq) box.innerHTML =
-      '<div style="padding:10px;color:#b91c1c;font-size:14px">Ricerca non riuscita. Riprovi fra un momento.</div>';
+      '<div style="padding:12px;color:#92400e;font-size:14px;background:#fffbeb;'
+      + 'border:1px solid #fcd34d;border-radius:6px">Ricerca degli enti non disponibile in questo momento. '
+      + '<a href="javascript:void(0)" onclick="cmGoCitta()" style="color:#1a56db">'
+      + 'Prosegua indicando la citt&agrave; dell&rsquo;ente</a>.</div>';
   }
 }
-
 let _cmIpaUltimi = [];
 
 function cmIpaRender(enti, meta) {
