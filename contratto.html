@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Sidera — Compilazione contratto</title>
-<link rel="stylesheet" href="css/contratto.css?v=311.10">
+<link rel="stylesheet" href="/static/css/contratto.css?v=307.4">
 </head>
 <body>
 
@@ -261,10 +261,23 @@
     <div class="card step" data-step="4" style="display:none">
       <div class="card-icon">Passo 4</div>
       <h2><span class="pn">4.</span>Dati fiscali e bancari</h2>
-      <p class="lead" id="step4-lead">IBAN per l'accredito del compenso e P.IVA se applicabile. <b>L'IBAN è facoltativo</b>: se preferisce non comunicarlo, lasci il campo vuoto — le invieremo un link con cui incassare inserendo Lei stesso i dati per l'accredito.</p>
+      <p class="lead" id="step4-lead">Indichi come preferisce ricevere il compenso e, se applicabile, la Partita IVA.</p>
+
+      <!-- v318.5 — Scelta esplicita del metodo di pagamento (prima era implicita:
+           IBAN vuoto = link, senza che il relatore lo scegliesse consapevolmente —
+           caso Latella/Bianconi 21/08/2026). -->
+      <div class="a3-q" id="pm-q1">
+        <div class="a3-dom"><span class="pn">4.1</span>Come preferisce ricevere il compenso? <span style="color:#dc2626">*</span></div>
+        <div class="a3-note">Con il bonifico Sidera accredita direttamente sul Suo IBAN. Con il link di pagamento riceverà un'email con cui incassare inserendo Lei stesso i dati per l'accredito (IBAN, Revolut o carta): Sidera non li vede né li conserva.</div>
+        <div class="a3-scelte a3-col">
+          <label class="a3-opt"><input type="radio" name="metodo_pagamento" value="bonifico" onchange="onMetodoPagamentoChange()"><span><b>Bonifico bancario</b> sul Suo IBAN</span></label>
+          <label class="a3-opt"><input type="radio" name="metodo_pagamento" value="link" onchange="onMetodoPagamentoChange()"><span><b>Link di pagamento</b> — non comunico l'IBAN, incasso io stesso col link</span></label>
+        </div>
+      </div>
+
       <div class="grid">
-        <div class="field full" id="iban-row">
-          <label><span class="pn">4.1</span>IBAN <span id="iban-req-mark" style="color:#dc2626;display:none">*</span></label>
+        <div class="field full" id="iban-row" style="display:none">
+          <label><span class="pn">4.2</span>IBAN <span id="iban-req-mark" style="color:#dc2626;display:none">*</span></label>
           <input id="f-iban" maxlength="34" style="text-transform:uppercase"
                  oninput="onIbanInput()" onblur="onIbanBlur()">
           <div id="iban-feedback" class="hint" style="margin-top:5px">Inserisca l'IBAN per l'accredito del compenso</div>
@@ -275,7 +288,7 @@
             parziale (ultime quattro cifre); il dato completo resta negli archivi di Sidera.</div>
         </div>
         <div class="field full">
-          <label><span class="pn">4.2</span>Partita IVA <small style="color:#94a3b8">(facoltativa)</small></label>
+          <label><span class="pn">4.3</span>Partita IVA <small style="color:#94a3b8">(facoltativa)</small></label>
           <input id="f-partita_iva" maxlength="11">
         </div>
       </div>
@@ -425,9 +438,10 @@
         <label style="font-size:14px;color:#334155;font-weight:600"><span class="pn">8.7</span>Sede di servizio
           <input type="text" id="f-cv-sede" maxlength="160" class="cv-in" style="width:100%;padding:8px 10px;border:1px solid #cbd5e1;border-radius:5px;margin-top:3px;font-size:14px" placeholder="Città in cui presta servizio">
         </label>
-        <label style="font-size:14px;color:#334155;font-weight:600;grid-column:1/-1"><span class="pn">8.8</span>Specializzazioni
-          <input type="text" id="f-cv-specializzazioni" maxlength="200" class="cv-in" style="width:100%;padding:8px 10px;border:1px solid #cbd5e1;border-radius:5px;margin-top:3px;font-size:14px">
-        </label>
+        <!-- v316.3 — campo 8.8 "Specializzazioni" rimosso: era l'ultimo a
+             scrivere la colonna di testo libero 3-19. La specializzazione che
+             conta per l'ECM e' la disciplina AGENAS, gia' dichiarata al passo 3
+             ed ereditata qui sotto. -->
         <!-- v290.1 — Qualifica a tutta larghezza e su più righe: nei dati reali
              è spesso una descrizione lunga (ruolo + struttura + azienda) che in
              un campo a mezza riga restava tagliata e non verificabile. -->
@@ -706,7 +720,7 @@
   </div>
 </div>
 
-<script src="js/contratto-form.js?v=314.6"></script>
+<script src="/static/js/contratto-form.js?v=314.6"></script>
 
 </body>
 </html>

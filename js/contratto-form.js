@@ -64,7 +64,7 @@ const STEP_NAMES = {
 const CV_FIELDS = [
   'albo_ordine', 'albo_provincia', 'albo_numero',
   'laurea', 'laurea_universita', 'laurea_data',
-  'specializzazioni', 'qualifica', 'sede',
+  'qualifica', 'sede',   // v316.3 — via 'specializzazioni' (colonna 3-19 ritirata)
   'professione', 'disciplina', 'note_extra',
 ];
 // v290.3 — Il numero di iscrizione all'albo è obbligatorio solo per i medici.
@@ -414,44 +414,63 @@ function validateIban(iban) {
   return { ok: true, code: 'valid', msg: 'IBAN valido' };
 }
 
-function ibanIsRequired() {
-  // v290.6 — L'IBAN non è più obbligatorio, per nessuno. Chi non vuole
-  // comunicarlo riceve un link di pagamento Revolut e incassa inserendo lui i
-  // propri dati, che noi non vediamo e non conserviamo: pretenderlo
-  // significherebbe chiedere — e poi custodire per dieci anni — un dato
-  // bancario di cui esiste un'alternativa che non lo richiede.
-  // Se viene inserito resta validato: un IBAN sbagliato è peggio di uno assente.
-  return false;
+// v318.5 — Metodo di pagamento: scelta esplicita del relatore (radio
+// `metodo_pagamento`, Step 4.1), non più dedotta implicitamente da "IBAN
+// vuoto = link" com'era dal v290.6. Caso Latella/Bianconi (21/08/2026):
+// entrambi convinti di aver "solo lasciato vuoto" un campo facoltativo,
+// mentre in realtà quella era già una scelta di canale di pagamento — e
+// nessuno gliel'aveva chiesta in modo esplicito.
+function metodoPagamento() {
+  const el = document.querySelector('input[name="metodo_pagamento"]:checked');
+  return el ? el.value : '';
 }
 
-// v133.1 — Se l'incarico è gratuito (importo == 0), l'IBAN non serve: nascondo
-// la riga IBAN per non chiederla al relatore. Resta visibile solo P.IVA.
+function ibanIsRequired() {
+  // Obbligatorio SOLO se il relatore ha scelto esplicitamente "Bonifico
+  // bancario". Se sceglie "Link di pagamento" l'IBAN non serve: incassa lui
+  // stesso inserendo i propri dati (IBAN, Revolut o carta), che Sidera non
+  // vede né conserva. Se non ha ancora scelto, non è "richiesto" nel senso
+  // del campo — è la domanda 4.1 stessa a essere obbligatoria (vedi
+  // validazione step 4).
+  return metodoPagamento() === 'bonifico';
+}
+
+// v133.1 — Se l'incarico è gratuito (importo == 0), IBAN e scelta del metodo
+// di pagamento non servono: non c'è nulla da accreditare.
 function ibanIsHidden() {
+  return CONTRATTO_INFO.importo === 0 || metodoPagamento() !== 'bonifico';
+}
+
+function pmQuestionIsHidden() {
   return CONTRATTO_INFO.importo === 0;
 }
 
+function onMetodoPagamentoChange() {
+  updateIbanRequiredMark();
+  clearFormMsg();
+}
+
 function updateIbanRequiredMark() {
-  // v133.1 — Nascondi/mostra l'intera riga IBAN in base all'importo
+  const pmQ = $('pm-q1');
+  if (pmQ) pmQ.style.display = pmQuestionIsHidden() ? 'none' : '';
+
+  // v133.1/v318.5 — Nascondi/mostra l'intera riga IBAN in base a importo E
+  // alla scelta del metodo di pagamento.
   const ibanRow = $('iban-row');
   if (ibanRow) ibanRow.style.display = ibanIsHidden() ? 'none' : '';
   const lead = $('step4-lead');
   if (lead) {
-    // v290.6 — innerHTML, non textContent: la frase sull'alternativa al
-    // conferimento dell'IBAN contiene grassetto, e questa funzione gira dopo
-    // il render riscrivendo la lead scritta nell'HTML.
-    lead.innerHTML = ibanIsHidden()
-      ? 'P.IVA se applicabile.'
-      : 'IBAN per l\'accredito del compenso e P.IVA se applicabile. <b>L\'IBAN è facoltativo</b>: '
-        + 'se preferisce non comunicarlo, lasci il campo vuoto — le invieremo un link con cui '
-        + 'incassare inserendo Lei stesso i dati per l\'accredito.';
+    lead.textContent = pmQuestionIsHidden()
+      ? 'Indichi la Partita IVA se applicabile.'
+      : 'Indichi come preferisce ricevere il compenso e, se applicabile, la Partita IVA.';
   }
   const mark = $('iban-req-mark');
   if (mark) mark.style.display = ibanIsRequired() ? 'inline' : 'none';
   const fb = $('iban-feedback');
   if (fb && !$('f-iban').value) {
     fb.textContent = ibanIsRequired()
-      ? '⚠ IBAN obbligatorio per contratti con compenso a relatori italiani'
-      : 'Inserisca l\'IBAN per l\'accredito del compenso (facoltativo)';
+      ? '⚠ IBAN obbligatorio: ha scelto il pagamento tramite bonifico'
+      : 'Inserisca l\'IBAN per l\'accredito del compenso';
     fb.style.color = ibanIsRequired() ? '#dc2626' : '#94a3b8';
   }
 }
@@ -975,12 +994,17 @@ async function validateStep() {
 
   // v120.5 — Validazione IBAN allo step 4
   // v133.1 — Skip se incarico gratuito (IBAN row nascosta)
+  if (stepKey === '4' && !pmQuestionIsHidden() && !metodoPagamento()) {
+    showFormMsg('Indichi come preferisce ricevere il compenso (bonifico o link di pagamento) per procedere.', 'error');
+    return false;
+  }
+
   if (stepKey === '4' && !ibanIsHidden()) {
     const ibanEl = $('f-iban');
     const v = (ibanEl.value || '').trim();
     if (!v) {
       if (ibanIsRequired()) {
-        showFormMsg('IBAN obbligatorio: il contratto prevede un compenso e Lei non risulta tra i relatori stranieri. Inserisca l\'IBAN per procedere.', 'error');
+        showFormMsg('IBAN obbligatorio: ha scelto il pagamento tramite bonifico. Inserisca l\'IBAN per procedere, oppure torni indietro e scelga il link di pagamento.', 'error');
         ibanEl.focus();
         return false;
       }
@@ -1565,12 +1589,18 @@ async function submitForm() {
     }
   }
 
+  // v318.5 — Final check metodo di pagamento (defensive, lo step 4 dovrebbe già aver bloccato)
+  if (!pmQuestionIsHidden() && !metodoPagamento()) {
+    showFormMsg('Torni al passo 4 e indichi come preferisce ricevere il compenso.', 'error');
+    return;
+  }
+
   // v120.5 — Final IBAN check (defensive, lo step 4 dovrebbe già aver bloccato)
   // v133.1 — Skip se incarico gratuito (IBAN row nascosta nel form)
   if (!ibanIsHidden()) {
     const ibanV = ($('f-iban').value || '').trim();
     if (!ibanV && ibanIsRequired()) {
-      showFormMsg('IBAN obbligatorio: il contratto prevede un compenso. Torni al passo 4 e inserisca l\'IBAN.', 'error');
+      showFormMsg('IBAN obbligatorio: ha scelto il pagamento tramite bonifico. Torni al passo 4 e inserisca l\'IBAN.', 'error');
       return;
     }
     if (ibanV) {
@@ -1581,6 +1611,10 @@ async function submitForm() {
       }
       $('f-iban').value = normalizeIban(ibanV);
     }
+  } else {
+    // v318.5 — Ha scelto "link" (o l'incarico è gratuito): un IBAN digitato
+    // prima di cambiare scelta non deve restare in giro e finire inviato.
+    $('f-iban').value = '';
   }
 
   const anag = {};
@@ -1592,6 +1626,8 @@ async function submitForm() {
     if (k === 'cf' || k === 'iban' || k === 'provincia') v = v.toUpperCase();
     anag[k] = v;
   }
+  // v318.5 — Scelta esplicita del metodo di pagamento (vuota se incarico gratuito).
+  anag.metodo_pagamento = metodoPagamento();
 
   // v289.9 — Controllo finale sul curriculum (difensivo: lo step 'cv'
   // dovrebbe già aver bloccato). Senza questi campi il CV allegato al
