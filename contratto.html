@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Sidera — Compilazione contratto</title>
-<link rel="stylesheet" href="/static/css/contratto.css?v=307.4">
+<link rel="stylesheet" href="css/contratto.css?v=307.4">
 </head>
 <body>
 
@@ -420,42 +420,44 @@
         <label style="font-size:14px;color:#334155;font-weight:600"><span class="pn">8.1</span>Ordine professionale
           <input type="text" id="f-cv-albo_ordine" maxlength="80" class="cv-in" style="width:100%;padding:8px 10px;border:1px solid #cbd5e1;border-radius:5px;margin-top:3px;font-size:14px">
         </label>
-        <label style="font-size:14px;color:#334155;font-weight:600"><span class="pn">8.2</span>Provincia dell'albo
-          <input type="text" id="f-cv-albo_provincia" maxlength="40" class="cv-in" style="width:100%;padding:8px 10px;border:1px solid #cbd5e1;border-radius:5px;margin-top:3px;font-size:14px">
-        </label>
-        <label style="font-size:14px;color:#334155;font-weight:600"><span class="pn">8.3</span>Numero di iscrizione <small style="font-weight:400;color:#64748b">(obbligatorio per i medici)</small>
+        <!-- v321.0 — campo 8.2 "Provincia dell'albo" rimosso: la provincia e'
+             gia' scritta per esteso nell'8.1 ("ORDINE DELLA PROVINCIA DI ROMA
+             (RM)"). Erano due caselle per un fatto solo, e infatti divergevano:
+             la seconda si riempiva dalla colonna PROVINCIA di DBDOC, che e' la
+             provincia di NASCITA. Su 71 schede 29 dicevano due cose diverse. -->
+        <label style="font-size:14px;color:#334155;font-weight:600"><span class="pn">8.2</span>Numero di iscrizione <small style="font-weight:400;color:#64748b">(obbligatorio per i medici)</small>
           <input type="text" id="f-cv-albo_numero" maxlength="40" class="cv-in" style="width:100%;padding:8px 10px;border:1px solid #cbd5e1;border-radius:5px;margin-top:3px;font-size:14px">
         </label>
-        <label style="font-size:14px;color:#334155;font-weight:600"><span class="pn">8.4</span>Anno di laurea
+        <label style="font-size:14px;color:#334155;font-weight:600"><span class="pn">8.3</span>Anno di laurea
           <input type="text" id="f-cv-laurea_data" maxlength="30" class="cv-in" style="width:100%;padding:8px 10px;border:1px solid #cbd5e1;border-radius:5px;margin-top:3px;font-size:14px">
         </label>
-        <label style="font-size:14px;color:#334155;font-weight:600;grid-column:1/-1"><span class="pn">8.5</span>Laurea *
+        <label style="font-size:14px;color:#334155;font-weight:600;grid-column:1/-1"><span class="pn">8.4</span>Laurea *
           <input type="text" id="f-cv-laurea" maxlength="120" class="cv-in" style="width:100%;padding:8px 10px;border:1px solid #cbd5e1;border-radius:5px;margin-top:3px;font-size:14px">
         </label>
-        <label style="font-size:14px;color:#334155;font-weight:600"><span class="pn">8.6</span>Università
+        <label style="font-size:14px;color:#334155;font-weight:600"><span class="pn">8.5</span>Università
           <input type="text" id="f-cv-laurea_universita" maxlength="120" class="cv-in" style="width:100%;padding:8px 10px;border:1px solid #cbd5e1;border-radius:5px;margin-top:3px;font-size:14px">
         </label>
-        <label style="font-size:14px;color:#334155;font-weight:600"><span class="pn">8.7</span>Sede di servizio
+        <label style="font-size:14px;color:#334155;font-weight:600"><span class="pn">8.6</span>Sede di servizio
           <input type="text" id="f-cv-sede" maxlength="160" class="cv-in" style="width:100%;padding:8px 10px;border:1px solid #cbd5e1;border-radius:5px;margin-top:3px;font-size:14px" placeholder="Città in cui presta servizio">
         </label>
-        <!-- v316.3 — campo 8.8 "Specializzazioni" rimosso: era l'ultimo a
+        <!-- v316.3 — il campo "Specializzazioni" (allora 8.8) rimosso: era l'ultimo a
              scrivere la colonna di testo libero 3-19. La specializzazione che
              conta per l'ECM e' la disciplina AGENAS, gia' dichiarata al passo 3
              ed ereditata qui sotto. -->
         <!-- v290.1 — Qualifica a tutta larghezza e su più righe: nei dati reali
              è spesso una descrizione lunga (ruolo + struttura + azienda) che in
              un campo a mezza riga restava tagliata e non verificabile. -->
-        <label style="font-size:14px;color:#334155;font-weight:600;grid-column:1/-1"><span class="pn">8.9</span>Qualifica
+        <label style="font-size:14px;color:#334155;font-weight:600;grid-column:1/-1"><span class="pn">8.7</span>Qualifica
           <textarea id="f-cv-qualifica" maxlength="300" rows="3" class="cv-in" style="width:100%;padding:8px 10px;border:1px solid #cbd5e1;border-radius:5px;margin-top:3px;font-size:14px;resize:vertical;font-family:inherit;line-height:1.45"></textarea>
         </label>
-        <label style="font-size:14px;color:#334155;font-weight:600"><span class="pn">8.10</span>Professione (ECM)
+        <label style="font-size:14px;color:#334155;font-weight:600"><span class="pn">8.8</span>Professione (ECM)
           <input type="text" id="f-cv-professione" maxlength="120" class="cv-in" style="width:100%;padding:8px 10px;border:1px solid #cbd5e1;border-radius:5px;margin-top:3px;font-size:14px">
         </label>
-        <label style="font-size:14px;color:#334155;font-weight:600"><span class="pn">8.11</span>Disciplina (ECM)
+        <label style="font-size:14px;color:#334155;font-weight:600"><span class="pn">8.9</span>Disciplina (ECM)
           <input type="text" id="f-cv-disciplina" maxlength="120" class="cv-in" style="width:100%;padding:8px 10px;border:1px solid #cbd5e1;border-radius:5px;margin-top:3px;font-size:14px">
         </label>
       </div>
-      <label style="display:block;font-size:14px;color:#334155;font-weight:600;margin-top:14px"><span class="pn">8.12</span>Altre informazioni professionali
+      <label style="display:block;font-size:14px;color:#334155;font-weight:600;margin-top:14px"><span class="pn">8.10</span>Altre informazioni professionali
         <span style="font-weight:400;color:#64748b">— attività clinica, incarichi, società scientifiche, pubblicazioni</span>
         <textarea id="f-cv-note_extra" maxlength="2000" rows="6" class="cv-in" style="width:100%;padding:8px 10px;border:1px solid #cbd5e1;border-radius:5px;margin-top:3px;font-size:14px;resize:vertical;font-family:inherit;line-height:1.45"></textarea>
       </label>
@@ -720,7 +722,7 @@
   </div>
 </div>
 
-<script src="/static/js/contratto-form.js?v=314.6"></script>
+<script src="js/contratto-form.js?v=314.6"></script>
 
 </body>
 </html>

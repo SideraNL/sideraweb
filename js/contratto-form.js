@@ -62,7 +62,7 @@ const STEP_NAMES = {
 // v289.9 — Campi del curriculum semplificato. Devono corrispondere a CV_FIELDS
 // in blueprints/contratti_cv.py: il backend accetta solo queste chiavi.
 const CV_FIELDS = [
-  'albo_ordine', 'albo_provincia', 'albo_numero',
+  'albo_ordine', 'albo_numero',   // v321.0 — via 'albo_provincia': vedi contratto.html 8.1
   'laurea', 'laurea_universita', 'laurea_data',
   'qualifica', 'sede',   // v316.3 — via 'specializzazioni' (colonna 3-19 ritirata)
   'professione', 'disciplina', 'note_extra',
