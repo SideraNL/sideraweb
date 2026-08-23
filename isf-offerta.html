@@ -284,8 +284,76 @@
           <label for="f-azienda">Azienda farmaceutica<span class="req">*</span></label>
           <input type="text" id="f-azienda" name="azienda" required maxlength="200"
                  placeholder="Ragione sociale completa (es. NOVARTIS FARMA S.P.A.)"
-                 autocomplete="organization" style="text-transform:uppercase">
-          <div class="hint">Scrivi la ragione sociale completa. Sidera collegherà internamente al codice DBCLIENT.</div>
+                 autocomplete="organization" style="text-transform:uppercase" list="aziende-farma">
+<!-- AZIENDE:START — generato da MedFIND/scripts/gen_isf_aziende_datalist.py -->
+          <datalist id="aziende-farma">
+            <option value="AMGEN S.R.L">
+            <option value="ANGELINI PHARMA S.P.A.">
+            <option value="ARCAPHARMA S.R.L.">
+            <option value="ASTELLAS PHARMA S.P.A.">
+            <option value="ASTRAZENECA S.P.A.">
+            <option value="BAYER S.P.A.">
+            <option value="BOEHRINGER INGELHEIM ITALIA S.P.A.">
+            <option value="BRACCO IMAGING ITALIA SRL">
+            <option value="BRISTOL - MYERS SQUIBB S.R.L.">
+            <option value="CA.DI.GROUP S.P.A.">
+            <option value="CELGENE S.R.L.">
+            <option value="DOC GENERICI S.R.L.">
+            <option value="DOMPE' FARMACEUTICI S.P.A.">
+            <option value="ECUPHARMA S.R.L.">
+            <option value="EISAI S.R.L.">
+            <option value="ELI LILLY ITALIA SPA">
+            <option value="FERRING S.P.A.">
+            <option value="FIDIA FARMACEUTICI S.P.A.">
+            <option value="GILEAD SCIENCES S.R.L.">
+            <option value="GLAXOSMITHKLINE S.P.A.">
+            <option value="GRIFOLS ITALIA SPA">
+            <option value="IDORSIA PHARMACEUTICALS ITALY S.R.L.">
+            <option value="INNOVA PHARMA S.P.A. - GRUPPO RECORDATI">
+            <option value="IPSEN S.P.A.">
+            <option value="ISTITUTO GENTILI S.R.L.">
+            <option value="ITALFARMACO S.P.A.">
+            <option value="JANSSEN PHARMACEUTICA N.V.">
+            <option value="JANSSEN-CILAG S.P.A.">
+            <option value="KYOWA KIRIN S.R.L.">
+            <option value="L. MOLTENI &amp; C. DEI FRATELLI ALITTI S.P.A.">
+            <option value="LABORATORI GUIDOTTI S.P.A.">
+            <option value="LABORATORIO FARMACEUTICO SIT SPECIALITA IGIENICO TERAPEUTICHE S.R.L.">
+            <option value="LEO PHARMA S.P.A.">
+            <option value="LUNDBECK ITALIA S.P.A.">
+            <option value="MALESCI ISTITUTO FARMACOLOGICO SPA">
+            <option value="MERCK SERONO S.P.A.">
+            <option value="MSD ITALIA S.R.L.">
+            <option value="MUNDIPHARMA PHARMACEUTICALS SRL">
+            <option value="NEURAXPHARM ITALY SPA">
+            <option value="NOVARTIS FARMA S.P.A.">
+            <option value="OTSUKA PHARMACEUTICAL ITALY S.R.L.">
+            <option value="PFIZER ITALIA S.R.L.">
+            <option value="PFIZER S.R.L.">
+            <option value="PHARMA MAR S.R.L.">
+            <option value="PIERRE FABRE PHARMA S.R.L.">
+            <option value="POLIFARMA S.P.A.">
+            <option value="RECKITT BENCKISER HEALTHCARE ITALIA S.P.A.">
+            <option value="RECORDATI INDUSTRIA CHIMICA E FARMACEUTICA S.P.A.">
+            <option value="REGENERON ITALY S.R.L.">
+            <option value="ROCHE S.P.A.">
+            <option value="ROVI BIOTECH S.R.L.">
+            <option value="SANDOZ S.P.A.">
+            <option value="SANOFI S.R.L.">
+            <option value="SERVIER ITALIA S.P.A.">
+            <option value="SO.SE.PHARM S.R.L.">
+            <option value="SOFAR S.P.A.">
+            <option value="SOPHOS BIOTECH SRL">
+            <option value="STERYLAB S.R.L.">
+            <option value="SUN PHARMA ITALY S.R.L.">
+            <option value="TAKEDA ITALIA S.P.A.">
+            <option value="TESARO BIO ITALY S.R.L.">
+            <option value="TEVA ITALIA S.R.L.">
+            <option value="VIATRIS ITALIA S.R.L.">
+            <option value="ZAMBON ITALIA S.R.L.">
+          </datalist>
+          <!-- AZIENDE:END -->
+          <div class="hint">Inizia a digitare: se la tua azienda è tra quelle suggerite scegli quella. Se non c'è, scrivi la ragione sociale completa.</div>
         </div>
 
         <div class="field">
