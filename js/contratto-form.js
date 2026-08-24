@@ -1396,9 +1396,6 @@ async function loadClausole() {
   }
 }
 
-function escapeHtml(s) {
-  return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-}
 // Reportlab usa <b>...</b> nei template Python — li lasciamo passare. Tutto il resto è escape.
 function richText(s) {
   // Permettiamo SOLO i tag <b> ... </b> (e <i>, <br/>) che vengono dai TPL Python
@@ -2022,27 +2019,6 @@ function cmSubmitPrivata() {
   closeCompanyModal();
 }
 
-function _populateCitiesDatalist() {
-  // Riempie la datalist con le città distinte presenti in DBAO (Pubblica).
-  const dl = _cm('cm-cities-datalist');
-  if (!dl) return;
-  const setCitta = new Map(); // citta_upper → display "Citta (PROV)"
-  for (const r of cmDbaoCache) {
-    const c = (r.CITTA || '').trim();
-    const p = (r.Prov || r.PROV || '').trim();
-    if (!c) continue;
-    const key = c.toUpperCase() + '|' + p.toUpperCase();
-    if (!setCitta.has(key)) setCitta.set(key, c);
-  }
-  const sortedCitta = [...setCitta.values()].sort((a, b) => a.localeCompare(b, 'it'));
-  dl.innerHTML = '';
-  for (const c of sortedCitta) {
-    const o = document.createElement('option');
-    o.value = c;
-    dl.appendChild(o);
-  }
-}
-
 function _cmFindCitta(input) {
   // Match case-insensitive sul campo CITTA di DBAO. Ritorna provincia desunta
   // dal primo match (omonimie ignorate per ora — accetta la prima provincia trovata).
@@ -2151,6 +2127,41 @@ function cmSelectStruttura(id) {
   }
   cmShowStep('cm-step-conferma');
   setTimeout(() => _cm('cm-pub-pec').focus(), 50);
+  // v324.6 — L'ente viene dal nostro archivio, la cui PEC puo' essere vecchia
+  // (l'ente cambia nome o dominio e noi non ce ne accorgiamo). Se lo stesso
+  // ente c'e' nell'Indice PA, si passa a quei dati: sono il domicilio digitale
+  // che l'ente ha eletto, quindi valgono piu' della nostra copia.
+  cmRisolviSuIpa(rec);
+}
+
+async function cmRisolviSuIpa(rec) {
+  const nome = _cmSoloDenominazione(rec.NOME || '');
+  const prov = (rec.Prov || rec.PROV || '').trim().toUpperCase();
+  if (nome.length < 3) return;
+  let enti = [];
+  try {
+    if (IPA_IN_LOCALE) {
+      const r = await fetch('/api/ipa/search?q=' + encodeURIComponent(nome)
+                          + '&prov=' + encodeURIComponent(prov));
+      const d = await r.json();
+      enti = d.ok ? (d.enti || []) : [];
+    } else {
+      enti = (_ipaCerca(await _ipaArchivio(false), nome, prov, false, 5) || {}).enti || [];
+    }
+  } catch (e) { return; }          // IPA non raggiungibile: resta il campo digitabile
+  // Un solo ente nella stessa citta': ambiguo non e'. Con piu' risultati non
+  // scelgo io — meglio la PEC digitata dal relatore che quella dell'ente sbagliato.
+  const cit = _ipaNorm(rec.CITTA || '');
+  const q = enti.filter(e => _ipaNorm(e.comune) === cit && e.pec);
+  if (q.length !== 1) return;
+  if (cmState.struttura !== rec) return;   // il relatore ha gia' cambiato scelta
+  cmState.ipa = q[0];
+  _cm('cm-struttura-info').innerHTML =
+    '<b>' + _cfEsc(q[0].nome) + '</b><br><span style="color:#64748b;font-size:14px">'
+    + _cfEsc(q[0].tipologia || '') + ' · ' + _cfEsc(q[0].comune) + ' (' + _cfEsc(q[0].prov) + ')</span>';
+  _cm('cm-pec-ipa').textContent = q[0].pec;
+  _cm('cm-pec-ipa-box').style.display = '';
+  _cm('cm-pec-man-box').style.display = 'none';
 }
 
 function cmAltroChoice() {
@@ -2175,7 +2186,11 @@ function cmSubmitPubblica() {
     _cm('f-azienda-tipo').value = e.tipologia || '';
     _cm('f-azienda-citta').value = e.comune || '';
     _cm('f-azienda-prov').value = e.prov || '';
-    _cm('f-dbao-id').value = '';
+    // v324.6 — Se l'ente veniva dal nostro archivio ed e' stato riconosciuto
+    // in IPA, l'IDASL va conservato: senza, il submit non riaggancia il record
+    // e l'ente finisce in coda come "nuovo da censire" (caso 1355-2 AMATULLI).
+    _cm('f-dbao-id').value = (cmState.struttura && cmState.struttura.ID)
+                             ? String(cmState.struttura.ID) : '';
     _cm('f-ipa-cod').value = e.cod || '';
     updateAziendaSummary();
     closeCompanyModal();
