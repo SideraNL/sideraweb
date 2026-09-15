@@ -72,7 +72,7 @@ const CV_FIELDS = [
 // ha sempre sottomano, e bloccare la firma su un dato che non ricorda sarebbe
 // un ostacolo pagato per niente: nel curriculum ECM il numero pesa per il
 // medico, non per gli altri.
-const CV_OBBLIGATORI = { laurea: 'Laurea' };
+const CV_OBBLIGATORI = { laurea: 'Laurea', laurea_universita: 'Università' };
 const CV_RX_MEDICO = /MEDIC(O|I)\b|ODONTOIATR/i;
 
 function cvEMedico() {
