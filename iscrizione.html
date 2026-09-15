@@ -1075,6 +1075,22 @@ async function init() {
 // ─────────────────────────────────────────────────────────────────────────────
 // STEP 1 — OTP
 // ─────────────────────────────────────────────────────────────────────────────
+
+// Un errore di JSON.parse (SyntaxError, "Unexpected token '<'"...) significa che
+// il server ha risposto con una pagina HTML invece dei dati attesi — quasi sempre
+// un filtro di rete aziendale/ospedaliero che intercetta il dominio esterno, non
+// un problema del form. Un fetch che non parte nemmeno (rete assente, sito
+// irraggiungibile) resta invece un TypeError generico: messaggio diverso.
+function _otpConnErrMsg(e) {
+  if (e instanceof SyntaxError) {
+    return '⚠️ La rete che stai usando (spesso quella di un ospedale o di un\'azienda) '
+      + 'ha bloccato la risposta del server. Prova a ripetere l\'iscrizione da una rete '
+      + 'diversa — dati mobili del telefono, o wifi di casa — invece di quella del posto '
+      + 'di lavoro.';
+  }
+  return 'Errore di connessione: ' + e.message + '. Controlla la connessione e riprova.';
+}
+
 async function reqOtp() {
   const email = document.getElementById('u-email').value.trim();
   if (!email || !email.includes('@') || !email.includes('.')) {
@@ -1102,7 +1118,7 @@ async function reqOtp() {
       spin(btn, false);
     }
   } catch (e) {
-    showMsg('msg-otp', 'Errore connessione: ' + e.message, 'err');
+    showMsg('msg-otp', _otpConnErrMsg(e), 'err');
     spin(btn, false);
   }
 }
@@ -1130,7 +1146,7 @@ async function verOtp() {
       showMsg('msg-otp', '❌ ' + (d.error || 'Codice OTP errato o scaduto. Richiedine uno nuovo.'), 'err');
     }
   } catch (e) {
-    showMsg('msg-otp', 'Errore connessione: ' + e.message, 'err');
+    showMsg('msg-otp', _otpConnErrMsg(e), 'err');
   }
   spin(btn, false);
 }
