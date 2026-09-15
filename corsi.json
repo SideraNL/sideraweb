@@ -172,7 +172,29 @@
     "idPgt": "1358",
     "luogo": "TORINO",
     "data": "09/12/2026",
-    "titolo": "ILD: DALL’IPF ALLA PPF"
+    "titolo": "ILD: DALL’IPF ALLA PPF",
+    "orari": [
+      {
+        "giorno": "1",
+        "data": "09/12/2026",
+        "ora_in": "09:00",
+        "ora_out": "18:00",
+        "pause": [
+          {
+            "in": "10:55",
+            "out": "11:15"
+          },
+          {
+            "in": "12:45",
+            "out": "13:45"
+          },
+          {
+            "in": "15:30",
+            "out": "15:50"
+          }
+        ]
+      }
+    ]
   },
   {
     "idPgt": "1356",
