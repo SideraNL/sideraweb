@@ -100,7 +100,21 @@
     "idPgt": "1357",
     "luogo": "BRESCIA",
     "data": "06/11/2026",
-    "titolo": "DETERMINANTI SOCIALI E SALUTE MENTALE: UNO SGUARDO INTERSEZIONALE"
+    "titolo": "DETERMINANTI SOCIALI E SALUTE MENTALE: UNO SGUARDO INTERSEZIONALE",
+    "orari": [
+      {
+        "giorno": "1",
+        "data": "",
+        "ora_in": "09:30",
+        "ora_out": "15:30",
+        "pause": [
+          {
+            "in": "12:30",
+            "out": "14:00"
+          }
+        ]
+      }
+    ]
   },
   {
     "idPgt": "1346",
