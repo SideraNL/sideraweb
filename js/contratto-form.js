@@ -20,9 +20,9 @@ let CLAUSOLE_INLINE = null;  // Strada B: clausole arrivano dentro al prefill
 const AGENAS_DATA = {"professioni":[{"cod":1,"nome":"MEDICO CHIRURGO"},{"cod":2,"nome":"ODONTOIATRA"},{"cod":3,"nome":"FARMACISTA"},{"cod":4,"nome":"VETERINARIO"},{"cod":5,"nome":"PSICOLOGO"},{"cod":6,"nome":"BIOLOGO"},{"cod":7,"nome":"CHIMICO"},{"cod":8,"nome":"FISICO"},{"cod":9,"nome":"ASSISTENTE SANITARIO"},{"cod":10,"nome":"DIETISTA"},{"cod":11,"nome":"EDUCATORE PROFESSIONALE"},{"cod":12,"nome":"FISIOTERAPISTA"},{"cod":13,"nome":"IGIENISTA DENTALE"},{"cod":14,"nome":"INFERMIERE"},{"cod":15,"nome":"INFERMIERE PEDIATRICO"},{"cod":16,"nome":"LOGOPEDISTA"},{"cod":17,"nome":"ORTOTTISTA/ASSISTENTE DI OFTALMOLOGIA"},{"cod":18,"nome":"OSTETRICA/O"},{"cod":19,"nome":"PODOLOGO"},{"cod":20,"nome":"TECNICO AUDIOMETRISTA"},{"cod":21,"nome":"TECNICO AUDIOPROTESISTA"},{"cod":22,"nome":"TECNICO DELLA FISIOPATOLOGIA CARDIOCIRCOLATORIA E PERFUSIONE CARDIOVASCOLARE"},{"cod":23,"nome":"TECNICO DELLA PREVENZIONE NELL'AMBIENTE E NEI LUOGHI DI LAVORO"},{"cod":24,"nome":"TECNICO DELLA RIABILITAZIONE PSICHIATRICA"},{"cod":25,"nome":"TECNICO DI NEUROFISIOPATOLOGIA"},{"cod":26,"nome":"TECNICO ORTOPEDICO"},{"cod":27,"nome":"TECNICO SANITARIO DI RADIOLOGIA MEDICA"},{"cod":28,"nome":"TECNICO SANITARIO LABORATORIO BIOMEDICO"},{"cod":29,"nome":"TERAPISTA DELLA NEURO E PSICOMOTRICITA' DELL'ETA' EVOLUTIVA"},{"cod":30,"nome":"TERAPISTA OCCUPAZIONALE"},{"cod":33,"nome":"MASSOFISIOTERAPISTA ISCRITTO ALL'ELENCO SPECIALE EX ART.5 D.M. 9 AGOSTO 2019"}],"discipline_per_prof":{"1":[{"cod":1,"nome":"ALLERGOLOGIA ED IMMUNOLOGIA CLINICA"},{"cod":42,"nome":"ANATOMIA PATOLOGICA"},{"cod":43,"nome":"ANESTESIA E RIANIMAZIONE"},{"cod":2,"nome":"ANGIOLOGIA"},{"cod":111,"nome":"AUDIOLOGIA E FONIATRIA"},{"cod":44,"nome":"BIOCHIMICA CLINICA"},{"cod":29,"nome":"CARDIOCHIRURGIA"},{"cod":3,"nome":"CARDIOLOGIA"},{"cod":30,"nome":"CHIRURGIA GENERALE"},{"cod":31,"nome":"CHIRURGIA MAXILLO-FACCIALE"},{"cod":32,"nome":"CHIRURGIA PEDIATRICA"},{"cod":33,"nome":"CHIRURGIA PLASTICA E RICOSTRUTTIVA"},{"cod":34,"nome":"CHIRURGIA TORACICA"},{"cod":35,"nome":"CHIRURGIA VASCOLARE"},{"cod":59,"nome":"CONTINUITA' ASSISTENZIALE"},{"cod":114,"nome":"CURE PALLIATIVE"},{"cod":4,"nome":"DERMATOLOGIA E VENEREOLOGIA"},{"cod":107,"nome":"DIREZIONE MEDICA DI PRESIDIO OSPEDALIERO"},{"cod":5,"nome":"EMATOLOGIA"},{"cod":6,"nome":"ENDOCRINOLOGIA"},{"cod":115,"nome":"EPIDEMIOLOGIA"},{"cod":45,"nome":"FARMACOLOGIA E TOSSICOLOGIA CLINICA"},{"cod":7,"nome":"GASTROENTEROLOGIA"},{"cod":8,"nome":"GENETICA MEDICA"},{"cod":9,"nome":"GERIATRIA"},{"cod":36,"nome":"GINECOLOGIA E OSTETRICIA"},{"cod":56,"nome":"IGIENE DEGLI ALIMENTI E DELLA NUTRIZIONE"},{"cod":55,"nome":"IGIENE, EPIDEMIOLOGIA E SANITA' PUBBLICA"},{"cod":46,"nome":"LABORATORIO DI GENETICA MEDICA"},{"cod":11,"nome":"MALATTIE DELL'APPARATO RESPIRATORIO"},{"cod":12,"nome":"MALATTIE INFETTIVE"},{"cod":10,"nome":"MALATTIE METABOLICHE E DIABETOLOGIA"},{"cod":17,"nome":"MEDICINA AERONAUTICA E SPAZIALE"},{"cod":13,"nome":"MEDICINA D'EMERGENZA-URGENZA"},{"cod":57,"nome":"MEDICINA DEL LAVORO E SICUREZZA DEGLI AMBIENTI DI LAVORO"},{"cod":18,"nome":"MEDICINA DELLO SPORT"},{"cod":116,"nome":"MEDICINA DI COMUNITA' E DELLE CURE PRIMARIE"},{"cod":14,"nome":"MEDICINA FISICA E RIABILITAZIONE"},{"cod":58,"nome":"MEDICINA GENERALE (MEDICI DI FAMIGLIA)"},{"cod":15,"nome":"MEDICINA INTERNA"},{"cod":48,"nome":"MEDICINA LEGALE"},{"cod":49,"nome":"MEDICINA NUCLEARE"},{"cod":117,"nome":"MEDICINA SUBACQUEA E IPERBARICA"},{"cod":16,"nome":"MEDICINA TERMALE"},{"cod":47,"nome":"MEDICINA TRASFUSIONALE"},{"cod":50,"nome":"MICROBIOLOGIA E VIROLOGIA"},{"cod":19,"nome":"NEFROLOGIA"},{"cod":20,"nome":"NEONATOLOGIA"},{"cod":37,"nome":"NEUROCHIRURGIA"},{"cod":51,"nome":"NEUROFISIOPATOLOGIA"},{"cod":21,"nome":"NEUROLOGIA"},{"cod":22,"nome":"NEUROPSICHIATRIA INFANTILE"},{"cod":52,"nome":"NEURORADIOLOGIA"},{"cod":38,"nome":"OFTALMOLOGIA"},{"cod":23,"nome":"ONCOLOGIA"},{"cod":108,"nome":"ORGANIZZAZIONE DEI SERVIZI SANITARI DI BASE"},{"cod":39,"nome":"ORTOPEDIA E TRAUMATOLOGIA"},{"cod":40,"nome":"OTORINOLARINGOIATRIA"},{"cod":53,"nome":"PATOLOGIA CLINICA (LABORATORIO DI ANALISI CHIMICO-CLINICHE E MICROBIOLOGIA)"},{"cod":24,"nome":"PEDIATRIA"},{"cod":60,"nome":"PEDIATRIA (PEDIATRI DI LIBERA SCELTA)"},{"cod":113,"nome":"PRIVO DI SPECIALIZZAZIONE"},{"cod":25,"nome":"PSICHIATRIA"},{"cod":112,"nome":"PSICOTERAPIA"},{"cod":54,"nome":"RADIODIAGNOSTICA"},{"cod":26,"nome":"RADIOTERAPIA"},{"cod":27,"nome":"REUMATOLOGIA"},{"cod":106,"nome":"SCIENZA DELL'ALIMENTAZIONE E DIETETICA"},{"cod":41,"nome":"UROLOGIA"}],"2":[{"cod":64,"nome":"ODONTOIATRIA"}],"3":[{"cod":118,"nome":"FARMACISTA DI ALTRO SETTORE"},{"cod":66,"nome":"FARMACISTA PUBBLICO DEL SSN"},{"cod":67,"nome":"FARMACISTA TERRITORIALE"}],"4":[{"cod":61,"nome":"IGIENE DEGLI ALLEVAMENTI E DELLE PRODUZIONI ZOOTECNICHE"},{"cod":62,"nome":"IGIENE PROD., TRASF., COMMERCIAL., CONSERV. E TRAS. ALIMENTI DI ORIGINE ANIMALE E DERIVATI"},{"cod":63,"nome":"SANITA' ANIMALE"}],"5":[{"cod":78,"nome":"PSICOLOGIA"},{"cod":77,"nome":"PSICOTERAPIA"}],"6":[{"cod":68,"nome":"BIOLOGO"}],"7":[{"cod":76,"nome":"CHIMICA"}],"8":[{"cod":79,"nome":"FISICA"}],"9":[{"cod":80,"nome":"ASSISTENTE SANITARIO"}],"10":[{"cod":81,"nome":"DIETISTA"},{"cod":119,"nome":"ISCRITTO NELL'ELENCO SPECIALE AD ESAURIMENTO"}],"11":[{"cod":83,"nome":"EDUCATORE PROFESSIONALE"},{"cod":120,"nome":"ISCRITTO NELL'ELENCO SPECIALE AD ESAURIMENTO"}],"12":[{"cod":82,"nome":"FISIOTERAPISTA"},{"cod":121,"nome":"ISCRITTO NELL'ELENCO SPECIALE AD ESAURIMENTO"}],"13":[{"cod":84,"nome":"IGIENISTA DENTALE"},{"cod":122,"nome":"ISCRITTO NELL'ELENCO SPECIALE AD ESAURIMENTO"}],"14":[{"cod":85,"nome":"INFERMIERE"}],"15":[{"cod":86,"nome":"INFERMIERE PEDIATRICO"}],"16":[{"cod":123,"nome":"ISCRITTO NELL'ELENCO SPECIALE AD ESAURIMENTO"},{"cod":87,"nome":"LOGOPEDISTA"}],"17":[{"cod":124,"nome":"ISCRITTO NELL'ELENCO SPECIALE AD ESAURIMENTO"},{"cod":88,"nome":"ORTOTTISTA/ASSISTENTE DI OFTALMOLOGIA"}],"18":[{"cod":89,"nome":"OSTETRICA/O"}],"19":[{"cod":125,"nome":"ISCRITTO NELL'ELENCO SPECIALE AD ESAURIMENTO"},{"cod":90,"nome":"PODOLOGO"}],"20":[{"cod":126,"nome":"ISCRITTO NELL'ELENCO SPECIALE AD ESAURIMENTO"},{"cod":95,"nome":"TECNICO AUDIOMETRISTA"}],"21":[{"cod":127,"nome":"ISCRITTO NELL'ELENCO SPECIALE AD ESAURIMENTO"},{"cod":96,"nome":"TECNICO AUDIOPROTESISTA"}],"22":[{"cod":128,"nome":"ISCRITTO NELL'ELENCO SPECIALE AD ESAURIMENTO"},{"cod":92,"nome":"TECNICO DELLA FISIOPATOLOGIA CARDIOCIRCOLATORIA E PERFUSIONE CARDIOVASCOLARE"}],"23":[{"cod":129,"nome":"ISCRITTO NELL'ELENCO SPECIALE AD ESAURIMENTO"},{"cod":105,"nome":"TECNICO DELLA PREVENZIONE NELL'AMBIENTE E NEI LUOGHI DI LAVORO"}],"24":[{"cod":130,"nome":"ISCRITTO NELL'ELENCO SPECIALE AD ESAURIMENTO"},{"cod":91,"nome":"TECNICO DELLA RIABILITAZIONE PSICHIATRICA"}],"25":[{"cod":131,"nome":"ISCRITTO NELL'ELENCO SPECIALE AD ESAURIMENTO"},{"cod":98,"nome":"TECNICO DI NEUROFISIOPATOLOGIA"}],"26":[{"cod":132,"nome":"ISCRITTO NELL'ELENCO SPECIALE AD ESAURIMENTO"},{"cod":99,"nome":"TECNICO ORTOPEDICO"}],"27":[{"cod":94,"nome":"TECNICO SANITARIO DI RADIOLOGIA MEDICA"}],"28":[{"cod":133,"nome":"ISCRITTO NELL'ELENCO SPECIALE AD ESAURIMENTO"},{"cod":93,"nome":"TECNICO SANITARIO LABORATORIO BIOMEDICO"}],"29":[{"cod":134,"nome":"ISCRITTO NELL'ELENCO SPECIALE AD ESAURIMENTO"},{"cod":100,"nome":"TERAPISTA DELLA NEURO E PSICOMOTRICITA' DELL'ETA' EVOLUTIVA"}],"30":[{"cod":135,"nome":"ISCRITTO NELL'ELENCO SPECIALE AD ESAURIMENTO"},{"cod":101,"nome":"TERAPISTA OCCUPAZIONALE"}],"33":[{"cod":136,"nome":"ISCRITTO NELL'ELENCO SPECIALE AD ESAURIMENTO EX ART.5 D.M. 09.08.2019"}]}};
 
 const FIELDS = [
-  'cognome','nome','cf','nato_il','nato_a','provincia',
+  'titolo','cognome','nome','cf','nato_il','nato_a','provincia',
   'indirizzo','cap','citta','cellulare','email',
-  'ente','pec','qualifica','specialita',
+  'ente','pec','qualifica','specialita','occupazione',
   'iban','partita_iva',
 ];
 
@@ -267,7 +267,13 @@ function populate(data) {
   for (const k of FIELDS) {
     const el = $('f-' + k);
     if (!el) continue;
-    let val = a[k] || '';
+    // v336.7 — 'f-provincia' e' la Provincia di NASCITA (v. contratto.html 1.5,
+    // "NON di residenza"): il dato lo tiene DBDOC in 'pv', non in 'provincia'
+    // ('provincia' e', dal v316.7, la provincia di RESIDENZA — che il form
+    // pubblico non chiede affatto). Precompilare da 'provincia' lasciava questo
+    // campo vuoto ogni volta che la residenza in DBDOC non coincideva col luogo
+    // di nascita (caso PETRARCA, 1346-11: PV=TE ma Provincia residenza vuota).
+    let val = (k === 'provincia' ? a.pv : a[k]) || '';
     if (k === 'nato_il') val = normalizeDateInput(val);
     if (k === 'provincia') val = (val || '').toUpperCase();
     el.value = val;
@@ -752,6 +758,14 @@ function _decodeCfData(cf) {
   let provincia = '';
   if (estero) {
     provincia = 'EE';
+    // v337.0 — la tabella cf_codes.json ha anche i 288 codici Z (Stato estero,
+    // es. Z100 → ALBANIA), nello stesso formato dei comuni italiani: prima
+    // questo ramo non la consultava affatto e lasciava sempre "Luogo di
+    // nascita" da compilare a mano, anche quando il nome dello Stato era già
+    // deducibile dal codice fiscale come per un comune italiano.
+    if (CF_CODES_CACHE && CF_CODES_CACHE[cod_comune]) {
+      luogo_nascita = CF_CODES_CACHE[cod_comune][0];
+    }
   } else if (CF_CODES_CACHE && CF_CODES_CACHE[cod_comune]) {
     luogo_nascita = CF_CODES_CACHE[cod_comune][0];
     provincia     = CF_CODES_CACHE[cod_comune][1];
@@ -800,12 +814,20 @@ async function onCfExtract() {
   if (provSel) provSel.value = d.provincia;
   // Lock condizionale
   if (d.estero) {
-    // Italiano nato all'estero: data + provincia="EE" bloccati, luogo editabile (lo stato estero)
+    // Italiano nato all'estero: data + provincia="EE" bloccati; il nome dello
+    // Stato (v337.0: dedotto anch'esso dal codice catastale Z, se presente in
+    // cf_codes.json) resta comunque editabile — la tabella può avere uno Stato
+    // che nel frattempo ha cambiato denominazione o confini, e la parola finale
+    // spetta a chi legge il proprio documento, non alla tabella.
     _setAnagraficaLocked(true);
     $('f-nato_a').readOnly = false;
     $('f-nato_a').style.background = '';
     $('f-nato_a').style.color = '';
-    showFormMsg('Estrazione completata. Lei risulta nato all\'estero (codice catastale ' + d.cod_comune + '): indichi il Nome dello Stato di nascita nel campo "Luogo di nascita".', 'info');
+    if (d.luogo_nascita) {
+      showFormMsg('Estrazione completata. Lei risulta nato a <b>' + d.luogo_nascita + '</b> (codice catastale ' + d.cod_comune + '). Verifichi che il campo "Luogo di nascita" sia corretto e lo corregga se necessario.', 'success');
+    } else {
+      showFormMsg('Estrazione completata. Lei risulta nato all\'estero (codice catastale ' + d.cod_comune + ', Stato non presente in archivio): indichi il Nome dello Stato di nascita nel campo "Luogo di nascita".', 'info');
+    }
   } else if (!d.luogo_nascita) {
     _setAnagraficaLocked(false);
     showFormMsg('Codice comune "' + d.cod_comune + '" non trovato in archivio. Compili manualmente Luogo e Provincia di nascita.', 'warning');
@@ -1448,7 +1470,7 @@ function renderSummary() {
     <tr><td>Cognome e Nome</td><td>${get('f-cognome')} ${get('f-nome')}</td></tr>
     <tr><td>Codice fiscale</td><td>${get('f-cf')}</td></tr>
     <tr><td>Nato a / il</td><td>${get('f-nato_a')} (${get('f-provincia')}) — ${dataNasc}</td></tr>
-    <tr><td>Indirizzo</td><td>${get('f-indirizzo')} — ${get('f-cap')} ${get('f-citta')} ${get('f-provincia')}</td></tr>
+    <tr><td>Indirizzo</td><td>${get('f-indirizzo')} — ${get('f-cap')} ${get('f-citta')}</td></tr>
     <tr><td>Cellulare / Email</td><td>${get('f-cellulare')} — ${get('f-email')}</td></tr>
     <tr><td>Azienda / Professione</td><td>${get('f-ente')} — ${get('f-qualifica')}</td></tr>
     <tr><td>PEC aziendale</td><td>${get('f-pec')}</td></tr>
@@ -1621,7 +1643,13 @@ async function submitForm() {
     let v = (el.value || '').trim();
     if (k === 'nato_il') v = normalizeDateInput(v);
     if (k === 'cf' || k === 'iban' || k === 'provincia') v = v.toUpperCase();
-    anag[k] = v;
+    // v336.7 — 'f-provincia' e' la Provincia di NASCITA: va inviata come 'pv',
+    // la chiave che il PDF (ART.2, contratti_link_pdf.py) e DBDOC usano per la
+    // nascita. Mandarla come 'provincia' la faceva atterrare — silenziosamente,
+    // per il filtro "solo valori non vuoti" del merge in _generate_contratto_pdf —
+    // nello slot di 'provincia' di RESIDENZA (v316.7), lasciando la Provincia di
+    // nascita in bianco ogni volta che DBDOC non l'aveva gia' precompilata.
+    anag[k === 'provincia' ? 'pv' : k] = v;
   }
   // v318.5 — Scelta esplicita del metodo di pagamento (vuota se incarico gratuito).
   anag.metodo_pagamento = metodoPagamento();
