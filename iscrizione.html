@@ -993,6 +993,28 @@ async function init() {
     return;
   }
 
+  // Link «vecchio» (solo ?id=, senza backend): se l'evento vive su Hostinger si
+  // riparte dal link completo. Senza questo il form scriveva sul backend Google
+  // iscritti che MedFIND non vede e che il guardiano Zoom cancella (1330, 21/09/2026).
+  // Se Hostinger non risponde entro 4 secondi si prosegue come sempre su Google.
+  if (BACKEND !== 'hostinger') {
+    try {
+      const ctl = new AbortController();
+      const tmr = setTimeout(() => ctl.abort(), 4000);
+      const rr = await fetch(HOSTINGER_BASE + '/link_iscrizione.php?idpgt=' + encodeURIComponent(idPgt),
+                             { signal: ctl.signal });
+      clearTimeout(tmr);
+      const lk = await rr.json();
+      if (lk && lk.ok && lk.qui) {
+        const q = new URLSearchParams(window.location.search);
+        q.set('backend', 'hostinger');
+        if (lk.token) q.set('token', lk.token);
+        window.location.replace(window.location.pathname + '?' + q.toString());
+        return;
+      }
+    } catch (e) { /* Hostinger irraggiungibile: flusso Google storico */ }
+  }
+
   try {
     const d = await getEventWithRetry(idPgt);
     if (!d.ok) {
