@@ -1326,9 +1326,17 @@ function a3Calcola() {
   A3.sub = (A3.legacy === 'C')
     ? ((A3.univ === 'pieno' || A3.univ === 'definito') ? 'UNIV' : 'SSN') : '';
 
+  // v347.6 — Azienda privata: l'opzione A è forzata dal modale del punto 3.1 e il
+  // passo 5 non viene nemmeno mostrato, quindi nessuna risposta la ricostruirebbe.
+  // Questo ricalcolo parte anche dal punto 3.2 (onUnivChange), che si compila DOPO
+  // il modale: senza questa riga azzerava la A e l'invio finale falliva sempre con
+  // «Selezione opzione mancante» (caso Frega, 1352-15, 21/09/2026).
+  const privata = ((($('f-company-type') || {}).value || '').toLowerCase() === 'privata');
+  const legacyRadio = privata ? 'A' : A3.legacy;
+
   // Allinea i radio storici, che pilotano ancora flusso, clausole e PDF.
   document.querySelectorAll('input[name="opzione"]').forEach(r => {
-    r.checked = (!!A3.legacy && r.value === A3.legacy);
+    r.checked = (!!legacyRadio && r.value === legacyRadio);
   });
   document.querySelectorAll('input[name="op-C-tipo"]').forEach(r => {
     r.checked = (!!A3.sub && r.value === A3.sub);
@@ -1596,7 +1604,13 @@ function cvValidate() {
 }
 
 async function submitForm() {
-  const sel = document.querySelector('input[name="opzione"]:checked');
+  let sel = document.querySelector('input[name="opzione"]:checked');
+  // v347.6 — Rete di sicurezza: a chi ha dichiarato un'azienda privata il passo 5
+  // non è mai stato mostrato, quindi non ha modo di rimediare a un'opzione vuota.
+  if (!sel && (($('f-company-type') || {}).value || '').toLowerCase() === 'privata') {
+    sel = document.querySelector('input[name="opzione"][value="A"]');
+    if (sel) { sel.checked = true; updateOpzione(); }
+  }
   if (!sel) { showFormMsg('Selezione opzione mancante.', 'error'); return; }
 
   // v126.8 — Final PEC check (defensive, lo step 5 dovrebbe già aver bloccato)
