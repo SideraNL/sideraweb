@@ -50,7 +50,10 @@
         <p class="section-lead">Informazioni utili per la partecipazione ai nostri corsi ECM</p>
       </div>
 
-      <div class="accordion-group fade-in">
+      <!-- Il testo vero sta su https://sideraecm.eu/regolamento.php, unica copia,
+           letta anche da SideraAPP. Quello qui sotto e' il ripiego mostrato se
+           l'endpoint non risponde: va riallineato quando si modifica il testo. -->
+      <div class="accordion-group fade-in" id="regolamento-accordion">
         <details class="accordion-item">
           <summary class="accordion-header">Iscrizione &amp; Accesso</summary>
           <div class="accordion-body">
@@ -355,6 +358,23 @@
       }
 
       // Catalogo da MedFIND/Hostinger (sostituisce Google Sheets/gviz).
+      // Regolamento: una sola copia, su Hostinger. Se non risponde resta quello
+      // statico gia' nel markup, che e' la rete e non la fonte.
+      fetch('https://sideraecm.eu/regolamento.php', { cache: 'no-store' })
+        .then(function (r) { return r.ok ? r.json() : null; })
+        .then(function (d) {
+          var reg = d && d.ok && d.regolamento;
+          var box = document.getElementById('regolamento-accordion');
+          if (!reg || !reg.sezioni || !reg.sezioni.length || !box) return;
+          box.innerHTML = reg.sezioni.map(function (sez) {
+            var voci = (sez.voci || []).map(function (v) { return '<li>' + v + '</li>'; }).join('');
+            return '<details class="accordion-item">' +
+              '<summary class="accordion-header">' + sez.titolo + '</summary>' +
+              '<div class="accordion-body"><ul>' + voci + '</ul></div></details>';
+          }).join('');
+        })
+        .catch(function () { /* resta il testo statico */ });
+
       var CORSI_API = 'https://sideraecm.eu/corsi.php';
       function fetchFromNetwork() {
         return fetch(CORSI_API, { cache: 'no-store' })
