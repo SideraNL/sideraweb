@@ -4,6 +4,7 @@
     "luogo": "MILANO",
     "data": "24/09/2026",
     "titolo": "CONVEGNO CIPOMO LOMBARDIA",
+    "backend": "hostinger",
     "orari": [
       {
         "giorno": "1",
@@ -12,14 +13,14 @@
         "ora_out": "20:00",
         "pause": []
       }
-    ],
-    "backend": "hostinger"
+    ]
   },
   {
     "idPgt": "1351",
     "luogo": "PADOVA",
     "data": "09/10/2026",
     "titolo": "TARGET & CARE",
+    "backend": "hostinger",
     "orari": [
       {
         "giorno": "1",
@@ -28,14 +29,14 @@
         "ora_out": "18:00",
         "pause": []
       }
-    ],
-    "backend": "hostinger"
+    ]
   },
   {
     "idPgt": "1355",
     "luogo": "MILANO",
     "data": "13/10/2026",
     "titolo": "EVIDENZE IN SCHIZOFRENIA",
+    "backend": "hostinger",
     "orari": [
       {
         "giorno": "1",
@@ -49,14 +50,14 @@
           }
         ]
       }
-    ],
-    "backend": "hostinger"
+    ]
   },
   {
     "idPgt": "1353",
     "luogo": "VICENZA",
     "data": "16/10/2026",
     "titolo": "TARGET & CARE",
+    "backend": "hostinger",
     "orari": [
       {
         "giorno": "1",
@@ -65,14 +66,14 @@
         "ora_out": "18:30",
         "pause": []
       }
-    ],
-    "backend": "hostinger"
+    ]
   },
   {
     "idPgt": "1341",
     "luogo": "COCCAGLIO",
     "data": "20/10/2026",
     "titolo": "DEPRESSIONE, DOLORE E DISTURBI CORRELATI",
+    "backend": "hostinger",
     "orari": [
       {
         "giorno": "1",
@@ -98,8 +99,7 @@
           }
         ]
       }
-    ],
-    "backend": "hostinger"
+    ]
   },
   {
     "idPgt": "1357",
@@ -126,6 +126,7 @@
     "luogo": "L'AQUILA",
     "data": "07/11/2026",
     "titolo": "GESTIONE DELLA MALATTIA DI CROHN E DELLA COLITE ULCEROSA",
+    "backend": "hostinger",
     "orari": [
       {
         "giorno": "1",
@@ -134,14 +135,14 @@
         "ora_out": "13:30",
         "pause": []
       }
-    ],
-    "backend": "hostinger"
+    ]
   },
   {
     "idPgt": "1345",
     "luogo": "MILANO",
     "data": "18/11/2026",
     "titolo": "MENTAL HEALTH IN THE CITIES",
+    "backend": "hostinger",
     "orari": [
       {
         "giorno": "1",
@@ -171,14 +172,14 @@
           }
         ]
       }
-    ],
-    "backend": "hostinger"
+    ]
   },
   {
     "idPgt": "1350",
     "luogo": "LECCO",
     "data": "28/11/2026",
     "titolo": "TERAPIE ADIUVANTI E NEOADIUVANTI",
+    "backend": "hostinger",
     "orari": [
       {
         "giorno": "1",
@@ -187,8 +188,7 @@
         "ora_out": "13:30",
         "pause": []
       }
-    ],
-    "backend": "hostinger"
+    ]
   },
   {
     "idPgt": "1359",
@@ -201,6 +201,7 @@
     "luogo": "TORINO",
     "data": "09/12/2026",
     "titolo": "ILD: DALL’IPF ALLA PPF",
+    "backend": "hostinger",
     "orari": [
       {
         "giorno": "1",
@@ -222,8 +223,7 @@
           }
         ]
       }
-    ],
-    "backend": "hostinger"
+    ]
   },
   {
     "idPgt": "1356",
