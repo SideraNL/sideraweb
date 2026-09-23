@@ -338,7 +338,7 @@
         <span class="material-icons" style="vertical-align:middle;font-size:18px">login</span>
         Accedi
       </button>
-      <div class="login-ver">Scanner Presenze ECM — v3.0</div>
+      <div class="login-ver">Scanner Presenze ECM — v3.1</div>
     </div>
   </div>
 
@@ -347,7 +347,7 @@
     <img src="img/sidera_logo.jpg" alt="Sidera" style="border-radius:6px" onerror="this.style.display='none'">
     <div style="flex:1">
       <div class="title">SideraDA10</div>
-      <div class="ver">Scanner Presenze ECM — v3.0</div>
+      <div class="ver">Scanner Presenze ECM — v3.1</div>
     </div>
     <button class="logout-btn" onclick="logout()" title="Esci" id="btn-logout" style="display:none">
       <span class="material-icons">logout</span>
@@ -461,12 +461,16 @@
 
 <script>
 /* ========================================================
-   SideraDA10 — Scanner Presenze ECM v3.0
+   SideraDA10 — Scanner Presenze ECM v3.1
    GitHub Pages + GAS endpoint
    PAX: verifica CF contro lista iscritti
    ======================================================== */
 
 const GAS_ENDPOINT = "https://script.google.com/macros/s/AKfycbzxDPL5nOTryyxaWDfs43dVPFYD4vFhIoQPd5umPGSJYj8OUs4bHvfSYecuMDYbJaF7/exec";
+// v3.1 — iscritti degli eventi nati su Hostinger (niente foglio R Google).
+// Le scansioni IN/OUT vanno sempre al GAS (foglio DA).
+const HOSTINGER_PAX = "https://sideraecm.eu/siderada_pax.php";
+const SRC_HOSTINGER = "hostinger";   // valore di currentSsId per gli eventi Hostinger
 const INACTIVITY_MS = 8 * 60 * 60 * 1000; // 8 ore
 
 let currentProject = null;
@@ -619,9 +623,9 @@ function avviaTimerInattivita() {
         if (ev && ev.orari) currentOrari = ev.orari;
       }
       const oggi = new Date(); oggi.setHours(0,0,0,0);
-      // Solo eventi futuri con ssId
+      // Solo eventi futuri con una fonte iscritti (foglio Google o Hostinger)
       const prossimi = eventi.filter(e => {
-        if (!e.ssId) return false;
+        if (!_fontePax(e)) return false;
         const parts = e.data.split('/');
         if (parts.length !== 3) return false;
         const d = new Date(parts[2], parts[1]-1, parts[0]);
@@ -644,10 +648,18 @@ function selezionaDaDropdown() {
   const sel = document.getElementById('select-evento');
   if (!sel.value) return;
   const evt = eventiData.find(e => e.idPgt === sel.value);
-  if (evt && evt.ssId) {
+  if (_fontePax(evt)) {
     document.getElementById('input-idpgt').value = sel.value;
-    setProgetto(evt.ssId);
+    setProgetto(_fontePax(evt));
   }
+}
+
+// Fonte degli iscritti: l'ssId del foglio Google, oppure SRC_HOSTINGER
+function _fontePax(evt) {
+  if (!evt) return null;
+  if (evt.ssId) return evt.ssId;
+  if (evt.backend === SRC_HOSTINGER) return SRC_HOSTINGER;
+  return null;
 }
 
 // --- PROGETTO ---
@@ -659,7 +671,7 @@ function setProgetto(ssId) {
   // Se non è passato ssId, prova a cercarlo da eventiData
   if (!ssId) {
     const evt = eventiData.find(e => e.idPgt === id);
-    ssId = evt ? evt.ssId : null;
+    ssId = _fontePax(evt);
   }
   if (!ssId) {
     toast('Progetto non trovato — usa il menu a tendina', 'error');
@@ -688,8 +700,11 @@ function caricaPax(ssId) {
   document.querySelectorAll('.scanner-wrap').forEach(el => el.classList.add('active'));
   document.getElementById('btn-scan').disabled = true;
 
-  const url = GAS_ENDPOINT + '?action=pax&ssId=' + encodeURIComponent(ssId) +
-              '&pin=' + encodeURIComponent(authPin);
+  const url = ssId === SRC_HOSTINGER
+    ? HOSTINGER_PAX + '?idpgt=' + encodeURIComponent(currentProject) +
+      '&pin=' + encodeURIComponent(authPin)
+    : GAS_ENDPOINT + '?action=pax&ssId=' + encodeURIComponent(ssId) +
+      '&pin=' + encodeURIComponent(authPin);
   fetch(url, { redirect: 'follow' })
     .then(r => r.json())
     .then(result => {
