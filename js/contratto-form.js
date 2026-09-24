@@ -72,7 +72,9 @@ const CV_FIELDS = [
 // ha sempre sottomano, e bloccare la firma su un dato che non ricorda sarebbe
 // un ostacolo pagato per niente: nel curriculum ECM il numero pesa per il
 // medico, non per gli altri.
-const CV_OBBLIGATORI = { laurea: 'Laurea', laurea_universita: 'Università' };
+// v356.8 — anche la qualifica: senza, il relatore arriva in DBDOC, nel CSV
+// relatori e in brochure con il solo nome dell'ente (caso Scattolin, 1354).
+const CV_OBBLIGATORI = { laurea: 'Laurea', laurea_universita: 'Università', qualifica: 'Qualifica' };
 const CV_RX_MEDICO = /MEDIC(O|I)\b|ODONTOIATR/i;
 
 function cvEMedico() {
@@ -98,12 +100,24 @@ function showState(which) {
 function showError(msg) { $('error-msg').textContent = msg; showState('error-screen'); }
 
 function populateProvince() {
-  const sel = $('f-provincia');
-  if (!sel) return;
   let html = '<option value="">— seleziona —</option>';
   for (const sigla of PROVINCE_IT) html += `<option value="${sigla}">${sigla}</option>`;
   html += '<option value="EE">EE — Estero</option>';
-  sel.innerHTML = html;
+  // v356.8 — stesso elenco per nascita (1.6) e residenza (2.4)
+  for (const id of ['f-provincia', 'f-pvr']) {
+    const sel = $(id);
+    if (sel) sel.innerHTML = html;
+  }
+}
+
+// v356.8 — Codice fiscale di un nato all'estero: codice catastale Z nella 12a posizione.
+function _cfNatoEstero(cf) {
+  const c = String(cf || '').trim().toUpperCase();
+  return c.length === 16 && c[11] === 'Z';
+}
+function _forzaEeSeEstero() {
+  const sel = $('f-provincia');
+  if (sel && _cfNatoEstero(($('f-cf') || {}).value)) sel.value = 'EE';
 }
 
 function normalizeDateInput(v) {
@@ -278,6 +292,15 @@ function populate(data) {
     if (k === 'provincia') val = (val || '').toUpperCase();
     el.value = val;
   }
+  // v356.8 — nato all'estero = provincia di nascita EE, sempre. In DBDOC ci sono
+  // schede con la sigla del Paese (CH = Svizzera, PT = Portogallo) che coincide
+  // con una provincia italiana (Chieti, Pistoia): precompilate cosi' diventavano
+  // un nato a Chieti. Il codice fiscale lo dice senza ambiguita' (Z in 12a posizione).
+  _forzaEeSeEstero();
+
+  // v356.8 — provincia di residenza: il backend la manda in anagrafica.provincia
+  // (DBDOC.PVR, v321.1). Se non la sappiamo resta vuota e la dichiara lui.
+  if ($('f-pvr')) $('f-pvr').value = String(a.provincia || '').trim().toUpperCase();
 
   if ($('f-dip-pubblico')) $('f-dip-pubblico').value = a.dip_pubblico || '';
 
@@ -938,10 +961,14 @@ async function validateStep() {
   // vuote in ART.2 perché il form non bloccava il passaggio allo step successivo.
   // Cellulare resta facoltativo (scelta esplicita).
   if (stepKey === '2') {
+    // v356.8 — anche provincia di residenza ed email (servono a DBDOC:
+    // PVR per contratto e dati fiscali, email per ogni comunicazione).
     const reqFields = {
       'indirizzo': 'Indirizzo',
       'cap'      : 'CAP',
       'citta'    : 'Città',
+      'pvr'      : 'Provincia di residenza',
+      'email'    : 'Email',
     };
     for (const [k, label] of Object.entries(reqFields)) {
       const el = $('f-' + k);
@@ -950,6 +977,12 @@ async function validateStep() {
         el.focus();
         return false;
       }
+    }
+    const em = ($('f-email').value || '').trim();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(em)) {
+      showFormMsg('Email non valida: verifichi l\'indirizzo inserito.', 'error');
+      $('f-email').focus();
+      return false;
     }
     // CAP italiano: 5 cifre numeriche.
     const cap = ($('f-cap').value || '').trim();
@@ -1590,6 +1623,10 @@ function getCvPayload() {
 function cvValidate() {
   const richiesti = Object.assign({}, CV_OBBLIGATORI);
   if (cvEMedico()) richiesti.albo_numero = 'Numero di iscrizione all\'albo';
+  // v356.8 — l'Ordine per ogni professione sanitaria (scelta ECM al passo 3):
+  // il numero resta obbligatorio solo per i medici (v290.3), ma l'Ordine a
+  // cui si e' iscritti lo sa chiunque abbia un albo.
+  if ((($('f-ecm-flag') || {}).value || '') === '1') richiesti.albo_ordine = 'Ordine professionale';
   for (const [k, label] of Object.entries(richiesti)) {
     const el = $('f-cv-' + k);
     if (!el || (el.value || '').trim()) continue;
@@ -1665,6 +1702,10 @@ async function submitForm() {
     // nascita in bianco ogni volta che DBDOC non l'aveva gia' precompilata.
     anag[k === 'provincia' ? 'pv' : k] = v;
   }
+  if (_cfNatoEstero(anag.cf)) anag.pv = 'EE';   // v356.8 — vedi _forzaEeSeEstero
+  // v356.8 — lo slot 'provincia' e' la RESIDENZA (DBDOC.PVR, riga "Provincia"
+  // dell'ART.2 nel PDF): ora il form la chiede al punto 2.4.
+  if ($('f-pvr')) anag.provincia = ($('f-pvr').value || '').trim().toUpperCase();
   // v318.5 — Scelta esplicita del metodo di pagamento (vuota se incarico gratuito).
   anag.metodo_pagamento = metodoPagamento();
 

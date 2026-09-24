@@ -178,9 +178,9 @@
         <div style="grid-column:1/-1;display:grid;grid-template-columns:2fr 1fr 1fr;gap:14px">
           <div class="field"><label><span class="pn">1.5</span>Luogo di nascita <span class="req">*</span></label><input id="f-nato_a" required></div>
           <div class="field">
-            <label><span class="pn">1.6</span>Provincia di nascita <span class="req">*</span> <small style="color:#dc2626;font-weight:600">(NON di residenza)</small></label>
+            <label><span class="pn">1.6</span>Provincia di nascita <span class="req">*</span> <small style="color:#dc2626;font-weight:600">(NON di residenza · <b>EE</b> se nato all'estero)</small></label>
             <select id="f-provincia" required></select>
-            <div class="hint">Sigla della provincia del Suo <b>comune di nascita</b> (es. <code>MI</code> se nato a Milano). Selezioni <code>EE</code> se nato all'estero. Per evitare errori, usi il pulsante <b>📋 Estrai dati</b> sopra dopo aver inserito il codice fiscale.</div>
+            <div class="hint">Sigla della provincia del Suo <b>comune di nascita</b> (es. <code>MI</code> se nato a Milano). <b>Se è nato all'estero selezioni <code>EE</code></b> (non la sigla del Paese) e scriva lo Stato in «Luogo di nascita». Per evitare errori, usi il pulsante <b>📋 Estrai dati</b> sopra dopo aver inserito il codice fiscale.</div>
           </div>
           <div class="field">
             <label><span class="pn">1.7</span>Data di nascita <span class="req">*</span></label>
@@ -200,8 +200,12 @@
         <div class="field full"><label><span class="pn">2.1</span>Indirizzo <span class="req">*</span></label><input id="f-indirizzo" required></div>
         <div class="field"><label><span class="pn">2.2</span>CAP <span class="req">*</span></label><input id="f-cap" maxlength="5" inputmode="numeric" required></div>
         <div class="field"><label><span class="pn">2.3</span>Città <span class="req">*</span></label><input id="f-citta" required></div>
-        <div class="field"><label><span class="pn">2.4</span>Cellulare</label><input id="f-cellulare"></div>
-        <div class="field"><label><span class="pn">2.5</span>Email</label><input id="f-email" type="email"></div>
+        <!-- v356.8 — provincia di RESIDENZA (DBDOC.PVR): prima il form non la
+             chiedeva e in DBDOC arrivava solo a mano. Da non confondere con la
+             1.6, che e' la provincia di nascita. -->
+        <div class="field"><label><span class="pn">2.4</span>Provincia di residenza <span class="req">*</span></label><select id="f-pvr" required></select><div class="hint"><code>EE</code> se risiede all'estero.</div></div>
+        <div class="field"><label><span class="pn">2.5</span>Cellulare</label><input id="f-cellulare"></div>
+        <div class="field"><label><span class="pn">2.6</span>Email <span class="req">*</span></label><input id="f-email" type="email" required></div>
       </div>
     </div>
 
@@ -466,7 +470,7 @@
 
 
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px" id="cv-grid">
-        <label style="font-size:14px;color:#334155;font-weight:600"><span class="pn">8.1</span>Ordine professionale
+        <label style="font-size:14px;color:#334155;font-weight:600"><span class="pn">8.1</span>Ordine professionale <small style="font-weight:400;color:#64748b">(obbligatorio per le professioni sanitarie)</small>
           <input type="text" id="f-cv-albo_ordine" maxlength="80" class="cv-in" style="width:100%;padding:8px 10px;border:1px solid #cbd5e1;border-radius:5px;margin-top:3px;font-size:14px">
         </label>
         <!-- v321.0 — campo 8.2 "Provincia dell'albo" rimosso: la provincia e'
@@ -496,7 +500,7 @@
         <!-- v290.1 — Qualifica a tutta larghezza e su più righe: nei dati reali
              è spesso una descrizione lunga (ruolo + struttura + azienda) che in
              un campo a mezza riga restava tagliata e non verificabile. -->
-        <label style="font-size:14px;color:#334155;font-weight:600;grid-column:1/-1"><span class="pn">8.7</span>Qualifica
+        <label style="font-size:14px;color:#334155;font-weight:600;grid-column:1/-1"><span class="pn">8.7</span>Qualifica * <small style="font-weight:400;color:#64748b">(ruolo e struttura, es. «Dirigente medico – UOC Oncologia, Ospedale …»)</small>
           <textarea id="f-cv-qualifica" maxlength="300" rows="3" class="cv-in" style="width:100%;padding:8px 10px;border:1px solid #cbd5e1;border-radius:5px;margin-top:3px;font-size:14px;resize:vertical;font-family:inherit;line-height:1.45"></textarea>
         </label>
         <label style="font-size:14px;color:#334155;font-weight:600"><span class="pn">8.8</span>Professione (ECM)
@@ -771,7 +775,7 @@
   </div>
 </div>
 
-<script src="js/contratto-form.js?v=347.6"></script>
+<script src="js/contratto-form.js?v=356.9"></script>
 
 </body>
 </html>
