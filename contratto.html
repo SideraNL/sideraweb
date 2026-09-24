@@ -198,12 +198,15 @@
       <p class="lead">Indirizzo di residenza e recapiti per le comunicazioni.</p>
       <div class="grid">
         <div class="field full"><label><span class="pn">2.1</span>Indirizzo <span class="req">*</span></label><input id="f-indirizzo" required></div>
-        <div class="field"><label><span class="pn">2.2</span>CAP <span class="req">*</span></label><input id="f-cap" maxlength="5" inputmode="numeric" required></div>
+        <div class="field"><label><span class="pn">2.2</span>CAP <span class="req">*</span></label><input id="f-cap" maxlength="5" inputmode="numeric" required><div class="hint" id="cap-hint" style="display:none">Codice postale del Paese di residenza.</div></div>
         <div class="field"><label><span class="pn">2.3</span>Città <span class="req">*</span></label><input id="f-citta" required></div>
         <!-- v356.8 — provincia di RESIDENZA (DBDOC.PVR): prima il form non la
              chiedeva e in DBDOC arrivava solo a mano. Da non confondere con la
              1.6, che e' la provincia di nascita. -->
         <div class="field"><label><span class="pn">2.4</span>Provincia di residenza <span class="req">*</span></label><select id="f-pvr" required></select><div class="hint"><code>EE</code> se risiede all'estero.</div></div>
+        <!-- v357.0 — residenza estera: la guida EE nel 2.4. Niente flag separato,
+             che direbbe la stessa cosa della provincia e prima o poi la contraddirebbe. -->
+        <div class="field" id="stato-res-row" style="display:none"><label><span class="pn">2.4b</span>Stato di residenza <span class="req">*</span></label><input id="f-stato" maxlength="60" placeholder="es. SVIZZERA"></div>
         <div class="field"><label><span class="pn">2.5</span>Cellulare</label><input id="f-cellulare"></div>
         <div class="field"><label><span class="pn">2.6</span>Email <span class="req">*</span></label><input id="f-email" type="email" required></div>
       </div>
@@ -775,7 +778,7 @@
   </div>
 </div>
 
-<script src="js/contratto-form.js?v=356.9"></script>
+<script src="js/contratto-form.js?v=357.0"></script>
 
 </body>
 </html>

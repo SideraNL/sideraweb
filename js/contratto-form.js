@@ -110,6 +110,25 @@ function populateProvince() {
   }
 }
 
+// v357.0 — Residenza estera: la provincia 2.4 = EE apre il campo Stato e
+// rende il CAP un codice postale estero (lettere, numeri, spazi, 3-10).
+function _residenzaEstera() {
+  return ((($('f-pvr') || {}).value) || '').toUpperCase() === 'EE';
+}
+function _aggiornaResidenzaEstera() {
+  const est = _residenzaEstera();
+  const row = $('stato-res-row'), cap = $('f-cap'), hint = $('cap-hint');
+  if (row) row.style.display = est ? '' : 'none';
+  if (hint) hint.style.display = est ? '' : 'none';
+  if (cap) {
+    cap.maxLength = est ? 10 : 5;
+    cap.inputMode = est ? 'text' : 'numeric';
+  }
+}
+document.addEventListener('change', e => {
+  if (e.target && e.target.id === 'f-pvr') _aggiornaResidenzaEstera();
+});
+
 // v356.8 — Codice fiscale di un nato all'estero: codice catastale Z nella 12a posizione.
 function _cfNatoEstero(cf) {
   const c = String(cf || '').trim().toUpperCase();
@@ -301,6 +320,10 @@ function populate(data) {
   // v356.8 — provincia di residenza: il backend la manda in anagrafica.provincia
   // (DBDOC.PVR, v321.1). Se non la sappiamo resta vuota e la dichiara lui.
   if ($('f-pvr')) $('f-pvr').value = String(a.provincia || '').trim().toUpperCase();
+  // v357.0 — Stato di residenza: si precompila solo se non e' l'Italia
+  const statoA = String(a.stato || '').trim().toUpperCase();
+  if ($('f-stato') && statoA && statoA !== 'IT' && statoA !== 'ITALIA') $('f-stato').value = statoA;
+  _aggiornaResidenzaEstera();
 
   if ($('f-dip-pubblico')) $('f-dip-pubblico').value = a.dip_pubblico || '';
 
@@ -984,10 +1007,22 @@ async function validateStep() {
       $('f-email').focus();
       return false;
     }
-    // CAP italiano: 5 cifre numeriche.
+    // v357.0 — residenza estera (2.4 = EE): Stato obbligatorio, CAP estero.
     const cap = ($('f-cap').value || '').trim();
-    if (!/^\d{5}$/.test(cap)) {
-      showFormMsg('CAP non valido: deve essere di 5 cifre numeriche.', 'error');
+    if (_residenzaEstera()) {
+      if (!(($('f-stato') || {}).value || '').trim()) {
+        showFormMsg('Campo obbligatorio mancante: Stato di residenza', 'error');
+        $('f-stato').focus();
+        return false;
+      }
+      if (!/^[A-Za-z0-9][A-Za-z0-9 \-]{1,8}[A-Za-z0-9]$/.test(cap)) {
+        showFormMsg('Codice postale non valido: da 3 a 10 caratteri fra lettere, numeri e spazi.', 'error');
+        $('f-cap').focus();
+        return false;
+      }
+    } else if (!/^\d{5}$/.test(cap)) {
+      // CAP italiano: 5 cifre numeriche.
+      showFormMsg("CAP non valido: deve essere di 5 cifre numeriche. Se risiede all'estero selezioni EE come provincia.", 'error');
       $('f-cap').focus();
       return false;
     }
@@ -1511,7 +1546,7 @@ function renderSummary() {
     <tr><td>Cognome e Nome</td><td>${get('f-cognome')} ${get('f-nome')}</td></tr>
     <tr><td>Codice fiscale</td><td>${get('f-cf')}</td></tr>
     <tr><td>Nato a / il</td><td>${get('f-nato_a')} (${get('f-provincia')}) — ${dataNasc}</td></tr>
-    <tr><td>Indirizzo</td><td>${get('f-indirizzo')} — ${get('f-cap')} ${get('f-citta')}</td></tr>
+    <tr><td>Indirizzo</td><td>${get('f-indirizzo')} — ${get('f-cap')} ${get('f-citta')}${_residenzaEstera() ? ' — ' + get('f-stato') : ''}</td></tr>
     <tr><td>Cellulare / Email</td><td>${get('f-cellulare')} — ${get('f-email')}</td></tr>
     <tr><td>Azienda / Professione</td><td>${get('f-ente')} — ${get('f-qualifica')}</td></tr>
     <tr><td>PEC aziendale</td><td>${get('f-pec')}</td></tr>
@@ -1706,6 +1741,8 @@ async function submitForm() {
   // v356.8 — lo slot 'provincia' e' la RESIDENZA (DBDOC.PVR, riga "Provincia"
   // dell'ART.2 nel PDF): ora il form la chiede al punto 2.4.
   if ($('f-pvr')) anag.provincia = ($('f-pvr').value || '').trim().toUpperCase();
+  // v357.0 — lo Stato si invia solo per la residenza estera (DBDOC.Stato)
+  if (_residenzaEstera()) anag.stato = (($('f-stato') || {}).value || '').trim().toUpperCase();
   // v318.5 — Scelta esplicita del metodo di pagamento (vuota se incarico gratuito).
   anag.metodo_pagamento = metodoPagamento();
 
