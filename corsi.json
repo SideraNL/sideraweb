@@ -1,21 +1,5 @@
 [
   {
-    "idPgt": "1347",
-    "luogo": "MILANO",
-    "data": "24/09/2026",
-    "titolo": "CONVEGNO CIPOMO LOMBARDIA",
-    "backend": "hostinger",
-    "orari": [
-      {
-        "giorno": "1",
-        "data": "24/09/2026",
-        "ora_in": "14:30",
-        "ora_out": "20:00",
-        "pause": []
-      }
-    ]
-  },
-  {
     "idPgt": "1351",
     "luogo": "PADOVA",
     "data": "09/10/2026",
