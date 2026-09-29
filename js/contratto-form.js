@@ -199,6 +199,7 @@ async function init() {
   if (!TOKEN) { showError('Link non valido: token mancante.'); return; }
 
   populateProvince();
+  cdiCaricaAziende();       // v367.1 — elenco aziende farma per il CDI
   _populateProfDropdown();  // v128.0 — dropdown professioni AGENAS
 
   // v140.9 — Auto-format data nato_il mentre l'utente digita: "07041973" → "07/04/1973"
@@ -1557,7 +1558,35 @@ function renderSummary() {
   `;
 }
 
-// CDI: toggle checkbox "no collaborazioni" → disabilita le 5 input azienda
+// CDI (v367.1): tre campi con l'elenco delle aziende farmaceutiche di DBCLIENT,
+// lo stesso file del form RS (respsci_aziende.json, scripts/gen_respsci_aziende.py),
+// servito alla radice da Flask e da GitHub Pages. Se non si carica, i campi
+// restano di testo libero.
+const CDI_N_AZIENDE = 3;
+let CDI_AZIENDE = [];
+
+async function cdiCaricaAziende() {
+  try {
+    const r = await fetch('respsci_aziende.json');
+    const d = await r.json();
+    CDI_AZIENDE = Array.isArray(d) ? d : [];
+  } catch (e) {
+    CDI_AZIENDE = [];
+  }
+  const dl = $('cdi-aziende-list');
+  if (dl) dl.innerHTML = CDI_AZIENDE.map(a => {
+    const o = document.createElement('option'); o.value = a; return o.outerHTML;
+  }).join('');
+}
+
+// Nome dell'elenco se coincide (maiuscole a parte): nomi uniformi nel CDI.
+function cdiNormalizzaAzienda(el) {
+  const v = (el.value || '').replace(/\s+/g, ' ').trim();
+  const hit = CDI_AZIENDE.find(a => a.toUpperCase() === v.toUpperCase());
+  el.value = hit || v;
+}
+
+// CDI: toggle checkbox "no collaborazioni" → disabilita le 3 input azienda
 function cdiToggleNoCollab() {
   const cb = $('cdi-no-collab');
   const block = $('cdi-aziende-block');
@@ -1565,7 +1594,7 @@ function cdiToggleNoCollab() {
   const off = cb.checked;
   block.style.opacity = off ? '0.45' : '1';
   block.style.pointerEvents = off ? 'none' : 'auto';
-  for (let i = 1; i <= 5; i++) {
+  for (let i = 1; i <= CDI_N_AZIENDE; i++) {
     const el = $('cdi-az-' + i);
     if (el) {
       el.disabled = off;
@@ -1578,7 +1607,7 @@ function getCdiPayload() {
   const noCollab = !!($('cdi-no-collab') && $('cdi-no-collab').checked);
   const aziende = [];
   if (!noCollab) {
-    for (let i = 1; i <= 5; i++) {
+    for (let i = 1; i <= CDI_N_AZIENDE; i++) {
       const el = $('cdi-az-' + i);
       if (el && (el.value || '').trim()) aziende.push(el.value.trim());
     }
