@@ -8,6 +8,11 @@
 // un GAS Web App pubblico che fa da proxy verso un Google Sheet "Contratti".
 // MedFIND polla quel Sheet quando è acceso e processa i submit pendenti.
 const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbxUciq4e30VetpXvNSqfv3d0axKCh8G65JMHTx2YTDuXolEUJMTIbwdOWrFX850yhM0/exec';
+// v367.2 — I link inviati da questa versione portano `&backend=hostinger`:
+// prefill e invio vanno a sideraecm.eu (tabella contratti_link) e non piu' al
+// GAS Web App. I link partiti prima restano su Google fino alla scadenza.
+const HOSTINGER_URL = 'https://sideraecm.eu';
+const SU_HOSTINGER = (new URLSearchParams(location.search).get('backend') || '').toLowerCase() === 'hostinger';
 
 let TOKEN = '';
 let CURRENT_STEP_INDEX = 0;
@@ -249,7 +254,9 @@ async function init() {
     const isLocal = ['localhost', '127.0.0.1'].includes(window.location.hostname);
     const url = isLocal
       ? ('/api/contratti/prefill/' + encodeURIComponent(TOKEN))
-      : (GAS_API_URL + '?action=prefill&t=' + encodeURIComponent(TOKEN));
+      : SU_HOSTINGER
+        ? (HOSTINGER_URL + '/contratto_prefill.php?tipo=contratto&t=' + encodeURIComponent(TOKEN))
+        : (GAS_API_URL + '?action=prefill&t=' + encodeURIComponent(TOKEN));
     const res = await fetch(url);
     const data = await res.json();
     if (!data.ok) { showError(data.error || 'Errore caricamento dati.'); return; }
@@ -1810,7 +1817,8 @@ async function submitForm() {
     // scriveva una riga sul Foglio Pipeline e tornava indietro col polling
     // qualche minuto dopo, che per un test è insieme lento e sporco.
     const submitLocal = ['localhost', '127.0.0.1'].includes(window.location.hostname);
-    const submitUrl = submitLocal ? '/api/contratti/submit' : GAS_API_URL;
+    const submitUrl = submitLocal ? '/api/contratti/submit'
+      : SU_HOSTINGER ? (HOSTINGER_URL + '/contratto_submit.php') : GAS_API_URL;
     const res = await fetch(submitUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'text/plain;charset=utf-8' },  // GAS doPost evita preflight CORS con text/plain

@@ -240,6 +240,9 @@
 // Pages, sempre online) così funziona anche a PC di Nicola spento; MedFIND
 // polla il foglio "NotulaPipeline" quando è acceso e processa i submit.
 const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbxUciq4e30VetpXvNSqfv3d0axKCh8G65JMHTx2YTDuXolEUJMTIbwdOWrFX850yhM0/exec';
+// v367.2 — Link con `&backend=hostinger`: prefill e invio su sideraecm.eu.
+const HOSTINGER_URL = 'https://sideraecm.eu';
+const SU_HOSTINGER = (new URLSearchParams(location.search).get('backend') || '').toLowerCase() === 'hostinger';
 
 let TOKEN = '';
 
@@ -322,7 +325,7 @@ async function doSubmit() {
       });
       data = await res.json();
     } else {
-      res = await fetch(GAS_API_URL, {
+      res = await fetch(SU_HOSTINGER ? (HOSTINGER_URL + '/contratto_submit.php') : GAS_API_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'text/plain;charset=utf-8' },
         body: JSON.stringify(body),
@@ -360,7 +363,9 @@ async function init() {
     const isLocal = ['localhost', '127.0.0.1'].includes(window.location.hostname);
     const url = isLocal
       ? ('/api/contratti/notula/prefill/' + encodeURIComponent(TOKEN))
-      : (GAS_API_URL + '?action=notula-prefill&t=' + encodeURIComponent(TOKEN));
+      : SU_HOSTINGER
+        ? (HOSTINGER_URL + '/contratto_prefill.php?tipo=notula&t=' + encodeURIComponent(TOKEN))
+        : (GAS_API_URL + '?action=notula-prefill&t=' + encodeURIComponent(TOKEN));
     const res = await fetch(url);
     const data = await res.json();
     if (!data.ok) { showError(data.error || 'Errore caricamento dati.'); return; }
