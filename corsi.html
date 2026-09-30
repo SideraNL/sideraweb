@@ -9,7 +9,6 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
-  <link rel="preconnect" href="https://docs.google.com">
   <link rel="preconnect" href="https://drive.google.com">
   <link rel="dns-prefetch" href="https://lh3.googleusercontent.com">
   <link rel="stylesheet" href="css/style.css">
@@ -160,17 +159,12 @@
   <script>
     // ── Course Catalog — integrated from SitoCorsi_embed.html ─────────────
     (function() {
-      var SHEET_ID  = '1HaX8FdzhkNqVSt5WKMbCyjiykVCvM3Y2zegQppO_KgM';
-      var GVIZ_URL  = 'https://docs.google.com/spreadsheets/d/' + SHEET_ID
-                    + '/gviz/tq?tqx=out:json&sheet=Dati';
+      // Catalogo: sideraecm.eu/corsi.php (piu' sotto). Il vecchio lettore del foglio
+      // Google DBCORSI e' stato tolto il 30/09/2026: il foglio non si aggiorna piu'.
 
       var CACHE_KEY      = 'dbcorsi_catalogo';
       var CACHE_TS_KEY   = 'dbcorsi_catalogo_ts';
       var CACHE_MAX_AGE  = 10 * 60 * 1000;
-
-      var COL = { ID:0, TITOLO:1, SOTT:2, DATA:3, DATAFIN:4, LUOGO:5,
-                  CREDITI:6, COSTO:7, DEST:8, IMG:9, ISCR:10,
-                  PDF:11, AREA:12, IMGNUM:13, STATO:14 };
 
       // Palette AREA TERAPEUTICA — allineata a MedFIND/BROCHURE (_BR_AREA_COLORS
       // in blueprints/brochure.py): la card del sito e la brochure stampata dello
@@ -183,17 +177,6 @@
 
       var allCorsi = [];
 
-      function parseGviz(text) {
-        var json = text.replace(/^[^{]*\{/, '{').replace(/\}\s*\)\s*;?\s*$/, '}');
-        return JSON.parse(json);
-      }
-
-      function gVal(cell) {
-        if (!cell || cell.v === null || cell.v === undefined) return '';
-        if (cell.f !== null && cell.f !== undefined) return cell.f;
-        return String(cell.v);
-      }
-
       function convertDriveLink(url) {
         if (!url) return '';
         if (url.indexOf('drive.google.com/file/d/') >= 0) {
@@ -201,31 +184,6 @@
           if (m) return 'https://drive.google.com/thumbnail?id=' + m[1] + '&sz=w400';
         }
         return url;
-      }
-
-      function gvizToCorsi(table) {
-        var result = [];
-        (table.rows || []).forEach(function(row) {
-          var c = row.c || [];
-          if (!c[COL.ID] || !c[COL.ID].v) return;
-          var stato = gVal(c[COL.STATO]).toUpperCase().trim();
-          if (stato !== 'ATTIVO') return;
-          result.push({
-            id:             gVal(c[COL.ID]),
-            titolo:         gVal(c[COL.TITOLO]),
-            sottotitolo:    gVal(c[COL.SOTT]),
-            data:           gVal(c[COL.DATA]),
-            dataFin:        gVal(c[COL.DATAFIN]),
-            luogo:          gVal(c[COL.LUOGO]),
-            crediti:        gVal(c[COL.CREDITI]),
-            costo:          gVal(c[COL.COSTO]),
-            img:            convertDriveLink(gVal(c[COL.IMG])),
-            linkIscrizione: gVal(c[COL.ISCR]),
-            linkPdf:        gVal(c[COL.PDF]),
-            area:           gVal(c[COL.AREA])
-          });
-        });
-        return result;
       }
 
       function saveToCache(corsi) {
