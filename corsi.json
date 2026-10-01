@@ -178,7 +178,25 @@
     "idPgt": "1359",
     "luogo": "BARI",
     "data": "04/12/2026",
-    "titolo": "GESTIONE OPERATIVA DELLE TOSSICITA'"
+    "titolo": "GESTIONE OPERATIVA DELLE TOSSICITÀ DI AMIVANTAMAB + LAZERTINIB",
+    "orari": [
+      {
+        "giorno": "1",
+        "data": "04/12/2026",
+        "ora_in": "13:00",
+        "ora_out": "18:30",
+        "pause": [
+          {
+            "in": "15:40",
+            "out": "15:50"
+          },
+          {
+            "in": "17:20",
+            "out": "17:30"
+          }
+        ]
+      }
+    ]
   },
   {
     "idPgt": "1358",
