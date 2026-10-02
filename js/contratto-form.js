@@ -2131,11 +2131,22 @@ function cmIpaRender(enti, meta) {
       + '</div>';
     return;
   }
+  // v372.9 — La città in evidenza, e un avviso quando lo stesso nome compare
+  // in più città: è così che si sceglie un omonimo (caso 1346-4, Cortemilia
+  // invece di Pescara).
+  const conta = {};
+  enti.forEach(e => { const k = _ipaNorm(e.nome); conta[k] = (conta[k] || 0) + 1; });
+  const omonimi = Object.values(conta).some(n => n > 1);
+  if (omonimi) {
+    testa += '<div style="padding:8px 10px;margin-bottom:8px;background:#fffbeb;'
+           + 'border-left:3px solid #f59e0b;border-radius:5px;font-size:14px;color:#78350f">'
+           + 'Ci sono enti con lo stesso nome in città diverse: scelga quello della <b>Sua città</b>.</div>';
+  }
   box.innerHTML = testa + enti.map((e, i) =>
     '<div class="cm-strut-item" onclick="cmIpaSelect(' + i + ')">'
     + '<b>' + _cfEsc(e.nome) + '</b>'
-    + '<div style="color:#64748b;font-size:14px">'
-    + _cfEsc(e.comune) + ' (' + _cfEsc(e.prov) + ') · ' + _cfEsc(e.tipologia || '')
+    + '<div style="font-size:14px;color:#64748b">'
+    + '<b style="color:#1e293b">📍 ' + _cfEsc(e.comune) + ' (' + _cfEsc(e.prov) + ')</b> · ' + _cfEsc(e.tipologia || '')
     + '</div></div>').join('');
 }
 
@@ -2151,12 +2162,31 @@ function cmIpaSelect(i) {
   cmState.ipa = e;
   cmState.struttura = null;
   _cm('cm-struttura-info').innerHTML =
-    '<b>' + _cfEsc(e.nome) + '</b><br><span style="color:#64748b;font-size:14px">'
-    + _cfEsc(e.tipologia || '') + ' · ' + _cfEsc(e.comune) + ' (' + _cfEsc(e.prov) + ')</span>';
+    '<b>' + _cfEsc(e.nome) + '</b><br>'
+    + '<span style="font-size:15px;font-weight:700;color:#1e293b">📍 Sede: '
+    + _cfEsc(e.comune) + ' (' + _cfEsc(e.prov) + ')</span>'
+    + '<br><span style="color:#64748b;font-size:14px">' + _cfEsc(e.tipologia || '') + '</span>';
+  _cmSedeAvviso(e.prov, e.comune);
   _cm('cm-pec-ipa').textContent = e.pec || '';
   _cm('cm-pec-ipa-box').style.display = '';
   _cm('cm-pec-man-box').style.display = 'none';
   cmShowStep('cm-step-conferma');
+}
+
+/* v372.9 — Avviso (non blocca) quando la provincia dell'ente non coincide con
+   quella di residenza del punto 2.4: si può lavorare fuori provincia, ma è il
+   momento giusto per accorgersi di aver scelto un omonimo. */
+function _cmSedeAvviso(prov, comune) {
+  const box = _cm('cm-sede-avviso');
+  if (!box) return;
+  const pvr = (($('f-pvr') || {}).value || '').trim().toUpperCase();
+  prov = String(prov || '').trim().toUpperCase();
+  if (!prov || !pvr || pvr === 'EE' || pvr === prov) { box.style.display = 'none'; return; }
+  box.innerHTML = 'L’ente scelto ha sede a <b>' + _cfEsc(comune) + ' (' + _cfEsc(prov) + ')</b>, '
+    + 'mentre Lei risiede in provincia di <b>' + _cfEsc(pvr) + '</b>. Se lavora davvero lì prosegua pure; '
+    + 'altrimenti torni indietro e scelga l’ente della Sua città: a questa PEC invieremo le comunicazioni '
+    + 'previste per i dipendenti pubblici.';
+  box.style.display = '';
 }
 
 function cmSubmitPrivata() {
@@ -2279,6 +2309,7 @@ function cmSelectStruttura(id) {
     '<span style="color:#64748b;font-size:14px">' +
     (rec.TIPO || '') + ' · ' + (rec.CITTA || '') + ' (' + (rec.Prov || rec.PROV || '') + ')' +
     '</span>';
+  _cmSedeAvviso(rec.Prov || rec.PROV, rec.CITTA);
   // Hint PEC dinamico
   const hint = _cm('cm-pec-hint');
   if (hint) {
@@ -2324,6 +2355,7 @@ async function cmRisolviSuIpa(rec) {
   _cm('cm-struttura-info').innerHTML =
     '<b>' + _cfEsc(q[0].nome) + '</b><br><span style="color:#64748b;font-size:14px">'
     + _cfEsc(q[0].tipologia || '') + ' · ' + _cfEsc(q[0].comune) + ' (' + _cfEsc(q[0].prov) + ')</span>';
+  _cmSedeAvviso(q[0].prov, q[0].comune);
   _cm('cm-pec-ipa').textContent = q[0].pec;
   _cm('cm-pec-ipa-box').style.display = '';
   _cm('cm-pec-man-box').style.display = 'none';
