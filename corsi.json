@@ -179,6 +179,7 @@
     "luogo": "BARI",
     "data": "04/12/2026",
     "titolo": "PATIENT JOURNEY",
+    "backend": "hostinger",
     "orari": [
       {
         "giorno": "1",
