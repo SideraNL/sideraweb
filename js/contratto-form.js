@@ -1088,6 +1088,14 @@ async function validateStep() {
         }
       }
     }
+    // v372.8 — Occupazione (3.6) obbligatoria (Nicola, 02/10/2026): lasciata
+    // vuota, DBDOC resta con la valutazione dell'operatore e la tabella
+    // Differenze la ripropone a ogni apertura del contratto.
+    if (!($('f-occupazione').value || '').trim()) {
+      showFormMsg('Indichi la Sua occupazione (punto 3.6).', 'error');
+      $('f-occupazione').focus();
+      return false;
+    }
   }
 
   // v120.5 — Validazione IBAN allo step 4
