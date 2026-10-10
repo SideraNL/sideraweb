@@ -1,21 +1,5 @@
 [
   {
-    "idPgt": "1351",
-    "luogo": "PADOVA",
-    "data": "09/10/2026",
-    "titolo": "TARGET & CARE",
-    "backend": "hostinger",
-    "orari": [
-      {
-        "giorno": "1",
-        "data": "09/10/2026",
-        "ora_in": "14:00",
-        "ora_out": "18:00",
-        "pause": []
-      }
-    ]
-  },
-  {
     "idPgt": "1355",
     "luogo": "MILANO",
     "data": "13/10/2026",
