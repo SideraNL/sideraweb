@@ -1250,7 +1250,8 @@ function _a3Show(id, on) {
    delle lettere esistenti: B = con autorizzazione, C = esonerato. */
 /* v302.7 — Via la chiave D: il caso "docenza esclusa ex lett. f-bis" non esiste
    piu' ne' nel form (dalla v300.7) ne' nel contratto. */
-const A3_LEGACY = { A: 'A', A1: 'A', A2: 'A', B: 'C', B1: 'C', G: 'C', C: 'B' };
+/* v382.0 — AD = dottorando di ricerca (CTR-18): non dipendente, quindi lettera A. */
+const A3_LEGACY = { A: 'A', A1: 'A', A2: 'A', AD: 'A', B: 'C', B1: 'C', G: 'C', C: 'B' };
 
 /* L'obbligo che sopravvive all'esclusione dall'autorizzazione grava sul
    dipendente e nasce dal codice di comportamento, non dall'art. 53: la
@@ -1265,6 +1266,8 @@ const A3_TESTI = {
        'Nessuna autorizzazione da chiedere e nessuna comunicazione dovuta. Nel contratto dichiarerà, ai sensi dell’art. 76 del D.P.R. 445/2000, di non prestare servizio presso alcuna delle amministrazioni indicate dall’art. 1, comma 2, del D.Lgs. 165/2001.'],
   A1: ['Non è dipendente pubblico ed è in formazione specialistica.',
        'Verifichi che l’incarico sia compatibile con il vincolo di esclusività della Sua Scuola: se serve un nulla osta del Direttore, ce lo faccia avere prima dell’evento.'],
+  AD: ['Non è dipendente pubblico ed è iscritto a un corso di dottorato di ricerca.',
+       'Il dottorato richiede un impegno esclusivo: le attività retribuite vanno autorizzate dal Collegio dei docenti (art. 12 D.M. 226/2021). Ci faccia avere copia dell’autorizzazione prima dell’evento.'],
   A2: ['Non è dipendente pubblico, essendo legato al SSN da rapporto convenzionale.',
        'Le eventuali incompatibilità previste dall’Accordo Collettivo Nazionale restano da valutare con la Sua Azienda di riferimento.'],
   B:  ['È dipendente pubblico, in una posizione che la legge esclude dal regime autorizzatorio.',
@@ -1390,7 +1393,7 @@ function a3Calcola() {
 
   let det = '';
   if (A3.dip === 'no') {
-    det = { nessuno: 'A', spec: 'A1', conv: 'A2', univpriv: 'A' }[A3.vinc] || '';
+    det = { nessuno: 'A', spec: 'A1', dott: 'AD', conv: 'A2', univpriv: 'A' }[A3.vinc] || '';
   } else if (dipSi && A3.reg) {
     if (gratuito) det = 'G';
     else if (A3.reg === 'pt50') det = 'B';
