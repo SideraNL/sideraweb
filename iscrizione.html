@@ -826,6 +826,9 @@ let cfgCounts = { byProfession: {}, nonEcmTotal: 0 };
 let cfgNonEcmEnabled = true;   // default retrocompat: legacy events = abilitato
 let imgBase64 = '';
 let unsubToken = '';
+// Omonimo NON ECM: la persona ha dichiarato di non essere gia' iscritta (14/10/2026).
+let omonimoConfermato = false;
+let _lastSubmitBtn = null;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // HELPER quota — semantica unificata per i limiti iscrizioni
@@ -943,6 +946,7 @@ function _hMapRegistration(f) {
     n_iscrizione:         f.NumIscrizione || '',
     informativa:          isEcm ? 'Sì' : '',
     consenso_privacy:     'Sì',
+    omonimo_confermato:   omonimoConfermato ? 1 : '',
   };
 }
 
@@ -1240,6 +1244,7 @@ function _confirmNonECM() {
   hideMsg('msg-choice');
   document.getElementById('ana-ecm').style.display = 'none';
   document.getElementById('ana-noecm').style.display = 'block';
+  omonimoConfermato = false;
   showStep('s-ana');
 }
 
@@ -1702,6 +1707,7 @@ async function goFromManual(btn) {
 }
 
 function goToAna() {
+  omonimoConfermato = false;
   document.getElementById('f-cognome').value      = ocrData.cognome      || '';
   document.getElementById('f-nome').value         = ocrData.nome         || '';
   document.getElementById('f-datanascita').value  = ocrData.dataNascita  || '';
@@ -1715,6 +1721,27 @@ function goToAna() {
 // ─────────────────────────────────────────────────────────────────────────────
 // STEP 5 — ANAGRAFICA
 // ─────────────────────────────────────────────────────────────────────────────
+// Stesso nome e cognome di un iscritto: se e' la stessa persona e' gia' iscritta,
+// se e' un omonimo conferma e prosegue (il server avvisa Sidera).
+function _omonimoHtml(azione) {
+  return '<strong>⚠️ Risulta già iscritta a questo corso una persona con questo nome e cognome.</strong>'
+    + '<div style="margin-top:8px">Se sei tu, sei già iscritto: non serve iscriversi di nuovo.</div>'
+    + '<div style="margin-top:6px">Se sei <strong>un’altra persona</strong> con lo stesso nome, conferma per proseguire.</div>'
+    + '<button type="button" class="btn-prim" style="margin-top:10px" onclick="' + azione + '">'
+    + 'Sono un’altra persona: prosegui</button>';
+}
+
+function omonimoConferma(dove) {
+  omonimoConfermato = true;
+  if (dove === 'submit') {
+    hideMsg('msg-submit');
+    doSubmit(_lastSubmitBtn);
+  } else {
+    hideMsg('msg-ana');
+    goFromAna(document.getElementById('btn-ana'));
+  }
+}
+
 async function goFromAna(btn) {
   hideMsg('msg-ana');
   let cognome, nome;
@@ -1746,8 +1773,8 @@ async function goFromAna(btn) {
     spin(btn, true);
     try {
       const d = await gasPost('checkDuplicateNomeCognome', { nome, cognome, idpgt: idPgt });
-      if (d.isDuplicate) {
-        showMsg('msg-ana', '⚠️ Risulti già iscritto a questo corso con questo nominativo.', 'err');
+      if (d.isDuplicate && !omonimoConfermato) {
+        showMsg('msg-ana', _omonimoHtml("omonimoConferma('ana')"), 'err');
         spin(btn, false); return;
       }
     } catch (e) { /* non bloccare */ }
@@ -2111,7 +2138,13 @@ async function doSubmit(btn) {
 
   spin(btn, true);
   try {
+    _lastSubmitBtn = btn;
     const d = await gasPost('saveRegistration', formData);
+    if (!d.ok && d.omonimo && !omonimoConfermato) {
+      showMsg('msg-submit', _omonimoHtml("omonimoConferma('submit')"), 'err');
+      spin(btn, false);
+      return;
+    }
     if (d.ok) {
       const ev = d.eventData || {};
       document.getElementById('s-success-msg').innerHTML =
