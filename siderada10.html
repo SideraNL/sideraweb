@@ -470,6 +470,9 @@ const GAS_ENDPOINT = "https://script.google.com/macros/s/AKfycbzxDPL5nOTryyxaWDf
 // v3.1 — iscritti degli eventi nati su Hostinger (niente foglio R Google).
 // Le scansioni IN/OUT vanno sempre al GAS (foglio DA).
 const HOSTINGER_PAX = "https://sideraecm.eu/siderada_pax.php";
+// 14/10/2026 — scansioni, PIN e storico su Hostinger (prima GAS: 2-4 s a chiamata e un lock unico,
+// all'uscita del 1355 lo scanner restava a girare). Il GAS resta solo per gli iscritti degli eventi Google.
+const HOSTINGER_SCAN = "https://sideraecm.eu/siderada_scan.php";
 const SRC_HOSTINGER = "hostinger";   // valore di currentSsId per gli eventi Hostinger
 const INACTIVITY_MS = 8 * 60 * 60 * 1000; // 8 ore
 
@@ -540,7 +543,7 @@ function verificaPin() {
   btn.disabled = true;
   btn.innerHTML = '<span class="material-icons" style="vertical-align:middle;font-size:18px">hourglass_empty</span> Verifica…';
 
-  fetch(GAS_ENDPOINT + '?action=auth&pin=' + encodeURIComponent(pin), { redirect: 'follow' })
+  fetch(HOSTINGER_SCAN + '?action=auth&pin=' + encodeURIComponent(pin), { redirect: 'follow' })
     .then(r => r.json())
     .then(result => {
       btn.disabled = false;
@@ -889,7 +892,7 @@ function registra(tipo) {
 
 // Helper POST scansione
 function _postScan(payload) {
-  return fetch(GAS_ENDPOINT, {
+  return fetch(HOSTINGER_SCAN, {
     method: 'POST',
     headers: { 'Content-Type': 'text/plain' },
     body: JSON.stringify(payload),
@@ -1022,7 +1025,7 @@ function caricaScansECalcola() {
     const ev = eventiData.find(e => e.idPgt === currentProject);
     if (ev && ev.orari) currentOrari = ev.orari;
   }
-  const url = GAS_ENDPOINT + '?action=scans&idPgt=' + encodeURIComponent(currentProject) +
+  const url = HOSTINGER_SCAN + '?action=scans&idPgt=' + encodeURIComponent(currentProject) +
               '&pin=' + encodeURIComponent(authPin);
   return fetch(url, { redirect: 'follow' })
     .then(r => r.json())
