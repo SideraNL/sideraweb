@@ -473,6 +473,28 @@ const HOSTINGER_PAX = "https://sideraecm.eu/siderada_pax.php";
 // 14/10/2026 — scansioni, PIN e storico su Hostinger (prima GAS: 2-4 s a chiamata e un lock unico,
 // all'uscita del 1355 lo scanner restava a girare). Il GAS resta solo per gli iscritti degli eventi Google.
 const HOSTINGER_SCAN = "https://sideraecm.eu/siderada_scan.php";
+
+// 14/10/2026 — tempo massimo per ogni chiamata di rete: senza, una risposta persa
+// (rete della sala congestionata) lasciava la rotellina a girare per sempre.
+// Scaduto il tempo la chiamata si interrompe e l'errore finisce nel .catch() di
+// chi chiama, che riabilita i bottoni e mostra il messaggio: l'operatore riprova.
+// Se la scansione era arrivata lo stesso, il riprovo risponde «gia' registrato».
+const FETCH_TIMEOUT_MS = 15000;
+function fetchT(url, opts) {
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), FETCH_TIMEOUT_MS);
+  // Il corpo si legge qui dentro, cosi' il tempo massimo copre anche la risposta lenta;
+  // chi chiama riceve un oggetto con lo stesso .json() di prima.
+  return fetch(url, Object.assign({}, opts || {}, { signal: ctrl.signal }))
+    .then(r => r.text().then(t => ({ ok: r.ok, status: r.status, json: () => Promise.resolve().then(() => JSON.parse(t)) })))
+    .catch(err => {
+      if (err && err.name === 'AbortError') {
+        throw new Error('rete lenta, nessuna risposta in ' + (FETCH_TIMEOUT_MS / 1000) + ' secondi. Riprova');
+      }
+      throw err;
+    })
+    .finally(() => clearTimeout(timer));
+}
 const SRC_HOSTINGER = "hostinger";   // valore di currentSsId per gli eventi Hostinger
 const INACTIVITY_MS = 8 * 60 * 60 * 1000; // 8 ore
 
@@ -543,7 +565,7 @@ function verificaPin() {
   btn.disabled = true;
   btn.innerHTML = '<span class="material-icons" style="vertical-align:middle;font-size:18px">hourglass_empty</span> Verifica…';
 
-  fetch(HOSTINGER_SCAN + '?action=auth&pin=' + encodeURIComponent(pin), { redirect: 'follow' })
+  fetchT(HOSTINGER_SCAN + '?action=auth&pin=' + encodeURIComponent(pin), { redirect: 'follow' })
     .then(r => r.json())
     .then(result => {
       btn.disabled = false;
@@ -615,7 +637,7 @@ function avviaTimerInattivita() {
 // --- CARICA EVENTI DA corsi.json ---
 
 (function caricaEventi() {
-  fetch('corsi.json?' + Date.now())
+  fetchT('corsi.json?' + Date.now())
     .then(r => r.json())
     .then(eventi => {
       eventiData = eventi;
@@ -708,7 +730,7 @@ function caricaPax(ssId) {
       '&pin=' + encodeURIComponent(authPin)
     : GAS_ENDPOINT + '?action=pax&ssId=' + encodeURIComponent(ssId) +
       '&pin=' + encodeURIComponent(authPin);
-  fetch(url, { redirect: 'follow' })
+  fetchT(url, { redirect: 'follow' })
     .then(r => r.json())
     .then(result => {
       document.getElementById('spinner').classList.remove('active');
@@ -892,7 +914,7 @@ function registra(tipo) {
 
 // Helper POST scansione
 function _postScan(payload) {
-  return fetch(HOSTINGER_SCAN, {
+  return fetchT(HOSTINGER_SCAN, {
     method: 'POST',
     headers: { 'Content-Type': 'text/plain' },
     body: JSON.stringify(payload),
@@ -1027,7 +1049,7 @@ function caricaScansECalcola() {
   }
   const url = HOSTINGER_SCAN + '?action=scans&idPgt=' + encodeURIComponent(currentProject) +
               '&pin=' + encodeURIComponent(authPin);
-  return fetch(url, { redirect: 'follow' })
+  return fetchT(url, { redirect: 'follow' })
     .then(r => r.json())
     .then(result => {
       if (_handleAuthFail(result)) return;
