@@ -1291,7 +1291,7 @@ const A3_TESTI = {
   A1: ['Non è dipendente pubblico ed è in formazione specialistica.',
        'Verifichi che l’incarico sia compatibile con il vincolo di esclusività della Sua Scuola: se serve un nulla osta del Direttore, ce lo faccia avere prima dell’evento.'],
   AD: ['Non è dipendente pubblico ed è iscritto a un corso di dottorato di ricerca.',
-       'Il dottorato richiede un impegno esclusivo: le attività retribuite vanno autorizzate dal Collegio dei docenti (art. 12 D.M. 226/2021). Ci faccia avere copia dell’autorizzazione prima dell’evento.'],
+       'Nessuna autorizzazione da chiedere e nessuna comunicazione dovuta da parte di Sidera. Il dottorato richiede un impegno esclusivo: l’eventuale autorizzazione del Collegio dei docenti alle attività retribuite (art. 12 D.M. 226/2021) è un adempimento Suo verso l’ateneo, che non riguarda Sidera.'],
   A2: ['Non è dipendente pubblico, essendo legato al SSN da rapporto convenzionale.',
        'Le eventuali incompatibilità previste dall’Accordo Collettivo Nazionale restano da valutare con la Sua Azienda di riferimento.'],
   B:  ['È dipendente pubblico, in una posizione che la legge esclude dal regime autorizzatorio.',
