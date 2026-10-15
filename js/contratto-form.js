@@ -629,6 +629,7 @@ function renderStep() {
     updateEcmBadge();
     univPrefill();          // v298.5 — suggerisce il 3.2 solo se DBDOC lo dichiara
     univCoerenza();         // v299.0 — segnala 3.1 e 3.2 in contrasto
+    rapportoEnteCheck();    // v386.3 — privata che pare pubblica: 3.1 bis
     applyEcmModeToStep3();  // v128.0 — sincronizza visibilità dropdown/free text
     const enteAlreadyFilled = ($('f-ente').value || '').trim();
     const ctypeFilled = ($('f-company-type').value || '').trim();
@@ -1065,6 +1066,22 @@ async function validateStep() {
       if (r) r.scrollIntoView({ behavior: 'smooth', block: 'center' });
       return false;
     }
+    // v386.3 — Azienda privata che ha l'aria di un ente pubblico: con la privata
+    // il passo 5 non compare, quindi è l'unico punto in cui chiederlo.
+    if (rapportoEnteCheck()) {
+      const rr = document.querySelector('input[name="f-rapporto-ente"]:checked');
+      const row = $('rapporto-ente-row');
+      if (!rr) {
+        showFormMsg('Risponda al punto 3.1 bis: qual è il Suo rapporto con l’ente indicato?', 'error');
+        if (row) row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        return false;
+      }
+      if (rr.value === 'dipendente') {
+        showFormMsg('Se è dipendente dell’ente, lo indichi fra le amministrazioni pubbliche: card «Azienda» → Pubblica.', 'error');
+        openCompanyModal();
+        return false;
+      }
+    }
     // v127.9 — italiani: scelta ECM/Non ECM obbligatoria
     if (!CONTRATTO_INFO.straniero) {
       const ecmFlag = ($('f-ecm-flag').value || '').trim();
@@ -1142,6 +1159,13 @@ async function validateStep() {
     }
     if (!A3.det) {
       showFormMsg('Manca ancora una risposta: controlli le domande qui sopra.', 'error');
+      return false;
+    }
+    // v386.3 — "Nessuna delle seguenti" con un ente pubblico: serve la spunta.
+    if (_a3RappConfermaDovuta() && !($('f-rapp-conferma') || {}).checked) {
+      showFormMsg('Ha indicato un ente pubblico: se ne è dipendente scelga la voce giusta al punto 5.1, altrimenti spunti la conferma.', 'error');
+      const bx = $('a3-rapp-conferma');
+      if (bx) bx.scrollIntoView({ behavior: 'smooth', block: 'center' });
       return false;
     }
     const sel = document.querySelector('input[name="opzione"]:checked');
@@ -1313,6 +1337,7 @@ function univPrefill() {
    non è il "tempo pieno" del rapporto d'impiego comune. */
 function onUnivChange() {
   univCoerenza();
+  rapportoEnteCheck();
   a3Calcola();
 }
 
@@ -1353,6 +1378,8 @@ function univCoerenza() {
     box.style.display = 'none';
   }
 }
+
+// v386.3 — controlli di coerenza ente/opzione: js/contratto-ente.js
 
 function a3Calcola() {
   const gratuito = (CONTRATTO_INFO.importo === 0);
@@ -1409,6 +1436,8 @@ function a3Calcola() {
   }
   A3.det = det;
   _a3Show('a3-prot', det === 'C');
+  _a3Show('a3-rapp-conferma', _a3RappConfermaDovuta());
+  if ($('a3-rapp-ente')) $('a3-rapp-ente').textContent = (($('f-ente') || {}).value || '').trim();
   A3.legacy = det ? A3_LEGACY[det] : '';
   A3.sub = (A3.legacy === 'C')
     ? ((A3.univ === 'pieno' || A3.univ === 'definito') ? 'UNIV' : 'SSN') : '';
@@ -1821,6 +1850,7 @@ async function submitForm() {
       dbao_id:     $('f-dbao-id').value || '',                         // '' se Altro
       ipa_cod:     $('f-ipa-cod').value || '',                         // Codice IPA se scelto dall'Indice PA
       pec_attuale: cmState.pec_attuale || '',                          // PEC originale in DBAO
+      rapporto_ente: rapportoEnteValore(),                             // v386.3 — vedi rapportoEnteCheck
     };
 
     // v290.0 — Aperto da localhost il submit resta locale, come già faceva il
@@ -2207,6 +2237,8 @@ function cmSubmitPrivata() {
   _cm('f-azienda-citta').value = '';
   _cm('f-azienda-prov').value = '';
   _cm('f-dbao-id').value = '';
+  // v386.3 — nuova azienda, nuova risposta al 3.1 bis
+  document.querySelectorAll('input[name="f-rapporto-ente"]').forEach(r => { r.checked = false; });
   // Privata → forza Opzione A in Art. 3 (e auto-skip step 5/6/7)
   const radioA = document.querySelector('input[name="opzione"][value="A"]');
   if (radioA) {
@@ -2448,6 +2480,8 @@ function cmSubmitAltro() {
 }
 
 function updateAziendaSummary() {
+  // v386.3 — a ogni cambio di azienda si rivaluta il 3.1 bis (contratto-ente.js)
+  if (typeof rapportoEnteCheck === 'function') setTimeout(rapportoEnteCheck, 0);
   // Aggiorna la card riassunto in Step 3 in base a quanto scelto nel modale.
   // v299.0 — punto unico in cui l'azienda cambia: da qui si rivaluta anche la
   // coerenza con la risposta 3.2.

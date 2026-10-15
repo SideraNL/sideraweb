@@ -264,6 +264,22 @@
                quale conseguenza avrà, e lascia decidere a lui. -->
           <div id="univ-avviso" style="display:none;margin-top:8px;padding:9px 12px;background:#fffbeb;border-left:3px solid #f59e0b;border-radius:5px;font-size:14px;color:#78350f;line-height:1.55"></div>
         </div>
+        <!-- v386.3 — Azienda indicata come privata, ma il nome (o la risposta
+             3.2, o la nostra anagrafica) dice ente pubblico. Caso Carra'
+             (1355-5): con un'azienda privata il passo 5 non compare, quindi
+             nessuno gli chiedeva se fosse dipendente pubblico. Si chiede qui. -->
+        <div class="field full" id="rapporto-ente-row" style="display:none">
+          <label><span class="pn">3.1 bis</span>Qual è il Suo rapporto con <b id="rapporto-ente-nome"></b>? <span class="req">*</span></label>
+          <div class="hint" id="rapporto-ente-perche"></div>
+          <div class="a3-scelte a3-col">
+            <label class="a3-opt"><input type="radio" name="f-rapporto-ente" value="dipendente" onchange="onRapportoEnteChange()"><span><b>Ne sono dipendente</b>, a tempo pieno o a tempo parziale (anche fino al 50% dell&#8217;orario)</span></label>
+            <label class="a3-opt"><input type="radio" name="f-rapporto-ente" value="non_dipendente" onchange="onRapportoEnteChange()"><span><b>Ci lavoro senza esserne dipendente</b> — medico convenzionato con il SSN, specializzando, dottorando o borsista, libero professionista con contratto di collaborazione</span></label>
+            <label class="a3-opt"><input type="radio" name="f-rapporto-ente" value="privato" onchange="onRapportoEnteChange()"><span><b>È un&#8217;azienda o un ente privato</b> e ci lavoro come dipendente o collaboratore (ad esempio una società, una clinica, un IRCCS o un&#8217;università non statale di diritto privato)</span></label>
+          </div>
+          <div id="rapporto-ente-avviso" style="display:none;margin-top:8px;padding:9px 12px;background:#fffbeb;border-left:3px solid #f59e0b;border-radius:5px;font-size:14px;color:#78350f;line-height:1.55">
+            Se ne è dipendente, l&#8217;ente va indicato fra le <b>amministrazioni pubbliche</b>: riapra la card <b>Azienda</b> qui sopra e scelga <b>Pubblica</b>. Ci serve la PEC dell&#8217;ente per le comunicazioni previste dall&#8217;art. 53 del D.Lgs. 165/2001.
+          </div>
+        </div>
         <!-- v127.9 — Badge ECM / Non ECM (solo italiani). Hidden field f-ecm-flag = '1' | '0' | '' -->
         <input type="hidden" id="f-ecm-flag">
         <div id="ecm-badge-row" class="field full" style="display:none">
@@ -427,6 +443,21 @@
       </div>
 
       <!-- Promemoria copia autorizzazione: compare quando l'esito è il caso C. -->
+        <!-- v386.3 — "Non dipendente pubblico" + "nessuna delle condizioni" con
+             un ente scelto fra le amministrazioni pubbliche: si chiede conferma
+             esplicita. Chi e' libero professionista a contratto in ospedale
+             esiste, ma deve dirlo lui. -->
+        <div id="a3-rapp-conferma" style="display:none;margin-top:14px;padding:12px 14px;background:#fffbeb;border:1px solid #fcd34d;border-radius:6px">
+          <div style="font-size:14.5px;color:#78350f;line-height:1.6">
+            Al punto <b>3.1</b> ha indicato <b id="a3-rapp-ente"></b>, che è una pubblica amministrazione.
+            Se ne è <b>dipendente</b>, anche a tempo parziale fino al 50%, scelga al punto <b>5.1</b> la voce che descrive il Suo rapporto di lavoro.
+          </div>
+          <label style="display:flex;gap:8px;align-items:flex-start;margin-top:8px;font-size:14.5px;color:#0f172a;cursor:pointer">
+            <input type="checkbox" id="f-rapp-conferma" style="margin-top:4px">
+            <span>Confermo di <b>non essere dipendente</b> di questo ente: ci lavoro come libero professionista o con un contratto di collaborazione.</span>
+          </label>
+        </div>
+
         <div id="a3-prot" style="display:none;margin-top:16px;padding:12px 14px;background:#fffbeb;border:1px solid #fcd34d;border-radius:6px">
           <div style="font-size:14.5px;color:#78350f;line-height:1.6">
             Ci faccia avere <b>copia dell&#8217;autorizzazione</b> non appena il Suo ente la rilascia,
@@ -784,7 +815,8 @@
   </div>
 </div>
 
-<script src="js/contratto-form.js?v=357.0"></script>
+<script src="js/contratto-form.js?v=386.3"></script>
+<script src="js/contratto-ente.js?v=386.3"></script>
 
 </body>
 </html>
