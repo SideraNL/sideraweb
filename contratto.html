@@ -272,7 +272,8 @@
           <label><span class="pn">3.1 bis</span>Qual è il Suo rapporto con <b id="rapporto-ente-nome"></b>? <span class="req">*</span></label>
           <div class="hint" id="rapporto-ente-perche"></div>
           <div class="a3-scelte a3-col">
-            <label class="a3-opt"><input type="radio" name="f-rapporto-ente" value="dipendente" onchange="onRapportoEnteChange()"><span><b>Ne sono dipendente</b>, a tempo pieno o a tempo parziale (anche fino al 50% dell&#8217;orario)</span></label>
+            <label class="a3-opt"><input type="radio" name="f-rapporto-ente" value="dipendente" onchange="onRapportoEnteChange()"><span><b>Ne sono dipendente</b> a tempo pieno, o a tempo parziale oltre il 50% dell&#8217;orario</span></label>
+            <label class="a3-opt"><input type="radio" name="f-rapporto-ente" value="dipendente_pt50" onchange="onRapportoEnteChange()"><span><b>Ne sono dipendente a tempo parziale fino al 50%</b> dell&#8217;orario, oppure sono <b>docente universitario a tempo definito</b> (non serve l&#8217;autorizzazione: l&#8217;ente va solo informato)</span></label>
             <label class="a3-opt"><input type="radio" name="f-rapporto-ente" value="non_dipendente" onchange="onRapportoEnteChange()"><span><b>Ci lavoro senza esserne dipendente</b> — medico convenzionato con il SSN, specializzando, dottorando o borsista, libero professionista con contratto di collaborazione</span></label>
             <label class="a3-opt"><input type="radio" name="f-rapporto-ente" value="privato" onchange="onRapportoEnteChange()"><span><b>È un&#8217;azienda o un ente privato</b> e ci lavoro come dipendente o collaboratore (ad esempio una società, una clinica, un IRCCS o un&#8217;università non statale di diritto privato)</span></label>
           </div>
@@ -450,7 +451,7 @@
         <div id="a3-rapp-conferma" style="display:none;margin-top:14px;padding:12px 14px;background:#fffbeb;border:1px solid #fcd34d;border-radius:6px">
           <div style="font-size:14.5px;color:#78350f;line-height:1.6">
             Al punto <b>3.1</b> ha indicato <b id="a3-rapp-ente"></b>, che è una pubblica amministrazione.
-            Se ne è <b>dipendente</b>, anche a tempo parziale fino al 50%, scelga al punto <b>5.1</b> la voce che descrive il Suo rapporto di lavoro.
+            Se ne è <b>dipendente</b> (anche a tempo parziale fino al 50%, o docente universitario a tempo definito), scelga al punto <b>5.1</b> la voce che descrive il Suo rapporto di lavoro.
           </div>
           <label style="display:flex;gap:8px;align-items:flex-start;margin-top:8px;font-size:14.5px;color:#0f172a;cursor:pointer">
             <input type="checkbox" id="f-rapp-conferma" style="margin-top:4px">
@@ -815,8 +816,8 @@
   </div>
 </div>
 
-<script src="js/contratto-form.js?v=386.3"></script>
-<script src="js/contratto-ente.js?v=386.3"></script>
+<script src="js/contratto-form.js?v=386.5"></script>
+<script src="js/contratto-ente.js?v=386.5"></script>
 
 </body>
 </html>

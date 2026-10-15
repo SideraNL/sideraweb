@@ -1076,7 +1076,7 @@ async function validateStep() {
         if (row) row.scrollIntoView({ behavior: 'smooth', block: 'center' });
         return false;
       }
-      if (rr.value === 'dipendente') {
+      if (rr.value.startsWith('dipendente')) {
         showFormMsg('Se è dipendente dell’ente, lo indichi fra le amministrazioni pubbliche: card «Azienda» → Pubblica.', 'error');
         openCompanyModal();
         return false;

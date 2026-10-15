@@ -47,7 +47,7 @@ function rapportoEnteCheck() {
 function onRapportoEnteChange() {
   const rr = document.querySelector('input[name="f-rapporto-ente"]:checked');
   const av = $('rapporto-ente-avviso');
-  if (av) av.style.display = (rr && rr.value === 'dipendente' && _privataMaPubblica()) ? '' : 'none';
+  if (av) av.style.display = (rr && rr.value.startsWith('dipendente') && _privataMaPubblica()) ? '' : 'none';
 }
 
 function _a3RappConfermaDovuta() {
