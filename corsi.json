@@ -1,21 +1,5 @@
 [
   {
-    "idPgt": "1353",
-    "luogo": "VICENZA",
-    "data": "16/10/2026",
-    "titolo": "TARGET & CARE",
-    "backend": "hostinger",
-    "orari": [
-      {
-        "giorno": "1",
-        "data": "16/10/2026",
-        "ora_in": "14:30",
-        "ora_out": "18:30",
-        "pause": []
-      }
-    ]
-  },
-  {
     "idPgt": "1341",
     "luogo": "COCCAGLIO",
     "data": "20/10/2026",
