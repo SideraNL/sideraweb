@@ -11,7 +11,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
   <link rel="preconnect" href="https://drive.google.com">
   <link rel="dns-prefetch" href="https://lh3.googleusercontent.com">
-  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/style.css?v=388.5">
 </head>
 <body>
 
@@ -304,6 +304,13 @@
                 return '<div class="corso-sponsor-card"><img src="' + convertDriveLink(url) + '" alt="" loading="lazy"></div>';
               }).join('') +
             '</div>';
+          // Codice che lo sponsor assegna all'evento (Viatris), sotto i loghi come in brochure.
+          if (c.codiceSponsor) {
+            var cod = document.createElement('p');
+            cod.className = 'corso-sponsor-codice';
+            cod.textContent = c.codiceSponsor;
+            sponsorBox.appendChild(cod);
+          }
         } else {
           sponsorBox.style.display = 'none';
         }

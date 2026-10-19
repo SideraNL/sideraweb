@@ -1467,6 +1467,13 @@ img { max-width: 100%; display: block; }
   margin-bottom: 14px;
 }
 
+.corso-sponsor-codice {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 10px;
+  letter-spacing: .3px;
+}
+
 .corso-sponsor-logos {
   display: flex;
   flex-wrap: wrap;
