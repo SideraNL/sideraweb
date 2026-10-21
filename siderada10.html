@@ -338,7 +338,7 @@
         <span class="material-icons" style="vertical-align:middle;font-size:18px">login</span>
         Accedi
       </button>
-      <div class="login-ver">Scanner Presenze ECM — v3.1</div>
+      <div class="login-ver">Scanner Presenze ECM — v3.2</div>
     </div>
   </div>
 
@@ -347,7 +347,7 @@
     <img src="img/sidera_logo.jpg" alt="Sidera" style="border-radius:6px" onerror="this.style.display='none'">
     <div style="flex:1">
       <div class="title">SideraDA10</div>
-      <div class="ver">Scanner Presenze ECM — v3.1</div>
+      <div class="ver">Scanner Presenze ECM — v3.2</div>
     </div>
     <button class="logout-btn" onclick="logout()" title="Esci" id="btn-logout" style="display:none">
       <span class="material-icons">logout</span>
@@ -651,7 +651,9 @@ function avviaTimerInattivita() {
       // Solo eventi futuri con una fonte iscritti (foglio Google o Hostinger)
       const prossimi = eventi.filter(e => {
         if (!_fontePax(e)) return false;
-        const parts = e.data.split('/');
+        // v3.2 — multi-day events stay until their LAST day (1341, 20-21/10/2026)
+        const ultima = (e.orari && e.orari.length) ? e.orari[e.orari.length - 1].data : e.data;
+        const parts = String(ultima || e.data).split('/');
         if (parts.length !== 3) return false;
         const d = new Date(parts[2], parts[1]-1, parts[0]);
         return d >= oggi;
