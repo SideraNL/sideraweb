@@ -132,7 +132,31 @@ function _aggiornaResidenzaEstera() {
 }
 document.addEventListener('change', e => {
   if (e.target && e.target.id === 'f-pvr') _aggiornaResidenzaEstera();
+  if (e.target && (e.target.id === 'f-citta' || e.target.id === 'f-pvr')) _residenzaCittaProvincia(e.target.id === 'f-citta');
 });
+
+// v391.2 — Città (2.3) ↔ provincia di residenza (2.4). With the city typed and 2.4
+// still empty, the province comes from the comuni table; if the two disagree a
+// non-blocking warning appears (Falco 1352-19: Bassano del Grappa + VT). The table
+// has some outdated provinces (Busnago MI, now MB): it suggests, never decides.
+// Provinces born from a split: the table may still list the old one, so neither fill nor warn there.
+const _PROV_SPLIT = { MB: 'MI', FM: 'AP', BT: 'BA FG', SU: 'CA CI VS OG OT NU OR SS' };
+async function _residenzaCittaProvincia(fill) {
+  const sel = $('f-pvr'); if (!sel) return;
+  let w = $('pvr-avviso');
+  if (!w) { w = document.createElement('div'); w.id = 'pvr-avviso'; w.className = 'hint'; w.style.color = '#b45309'; sel.parentNode.appendChild(w); }
+  w.innerHTML = '';
+  const citta = (($('f-citta') || {}).value || '').trim().toUpperCase();
+  if (!citta || !(await _ensureCfCodesLoaded())) return;
+  const sig = new Set(Object.entries(CF_CODES_CACHE).filter(([k, v]) => k[0] !== 'Z' && String(v[0]).toUpperCase() === citta).map(([, v]) => v[1]));
+  let prov = sig.size === 1 ? [...sig][0] : '';
+  if (!PROVINCE_IT.includes(prov) || Object.values(_PROV_SPLIT).join(' ').split(' ').includes(prov)) prov = '';
+  if (fill && prov && !sel.value) { sel.value = prov; _aggiornaResidenzaEstera(); }
+  const pvr = (sel.value || '').toUpperCase();
+  if (_PROV_SPLIT[pvr]) return;
+  w.innerHTML = (prov && pvr && pvr !== 'EE' && pvr !== prov)
+    ? `⚠ ${_cfEsc(citta)} risulta in provincia di <b>${prov}</b>, non ${_cfEsc(pvr)}. Verifichi la provincia di <b>residenza</b> (non quella di nascita).` : '';
+}
 
 // v356.8 — Codice fiscale di un nato all'estero: codice catastale Z nella 12a posizione.
 function _cfNatoEstero(cf) {
@@ -328,6 +352,7 @@ function populate(data) {
   // v356.8 — provincia di residenza: il backend la manda in anagrafica.provincia
   // (DBDOC.PVR, v321.1). Se non la sappiamo resta vuota e la dichiara lui.
   if ($('f-pvr')) $('f-pvr').value = String(a.provincia || '').trim().toUpperCase();
+  _residenzaCittaProvincia(true);   // v391.2 — prefilled city/province checked too
   // v357.0 — Stato di residenza: si precompila solo se non e' l'Italia
   const statoA = String(a.stato || '').trim().toUpperCase();
   if ($('f-stato') && statoA && statoA !== 'IT' && statoA !== 'ITALIA') $('f-stato').value = statoA;
