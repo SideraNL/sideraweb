@@ -338,7 +338,7 @@
         <span class="material-icons" style="vertical-align:middle;font-size:18px">login</span>
         Accedi
       </button>
-      <div class="login-ver">Scanner Presenze ECM — v3.2</div>
+      <div class="login-ver">Scanner Presenze ECM — v3.3</div>
     </div>
   </div>
 
@@ -347,7 +347,7 @@
     <img src="img/sidera_logo.jpg" alt="Sidera" style="border-radius:6px" onerror="this.style.display='none'">
     <div style="flex:1">
       <div class="title">SideraDA10</div>
-      <div class="ver">Scanner Presenze ECM — v3.2</div>
+      <div class="ver">Scanner Presenze ECM — v3.3</div>
     </div>
     <button class="logout-btn" onclick="logout()" title="Esci" id="btn-logout" style="display:none">
       <span class="material-icons">logout</span>
@@ -663,7 +663,7 @@ function avviaTimerInattivita() {
       prossimi.forEach(e => {
         const opt = document.createElement('option');
         opt.value = e.idPgt;
-        opt.textContent = e.idPgt + ' — ' + e.luogo + ' — ' + e.data;
+        opt.textContent = e.idPgt + ' — ' + e.luogo + ' — ' + _dateEvento(e);
         sel.appendChild(opt);
       });
       document.getElementById('eventi-dropdown').style.display = 'block';
@@ -679,6 +679,19 @@ function selezionaDaDropdown() {
     document.getElementById('input-idpgt').value = sel.value;
     setProgetto(_fontePax(evt));
   }
+}
+
+// v3.3 — multi-day events show the span: "20-21 ottobre 2026"
+function _dateEvento(e) {
+  const fin = (e.orari && e.orari.length) ? e.orari[e.orari.length - 1].data : '';
+  if (!fin || fin === e.data) return e.data;
+  const MESI = ['gennaio','febbraio','marzo','aprile','maggio','giugno','luglio',
+                'agosto','settembre','ottobre','novembre','dicembre'];
+  const a = String(e.data).split('/').map(Number), b = String(fin).split('/').map(Number);
+  if (a.length !== 3 || b.length !== 3) return e.data;
+  if (a[2] !== b[2]) return a[0] + ' ' + MESI[a[1]-1] + ' ' + a[2] + '-' + b[0] + ' ' + MESI[b[1]-1] + ' ' + b[2];
+  if (a[1] !== b[1]) return a[0] + ' ' + MESI[a[1]-1] + '-' + b[0] + ' ' + MESI[b[1]-1] + ' ' + b[2];
+  return a[0] + '-' + b[0] + ' ' + MESI[b[1]-1] + ' ' + b[2];
 }
 
 // Fonte degli iscritti: l'ssId del foglio Google, oppure SRC_HOSTINGER
