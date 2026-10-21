@@ -47,7 +47,7 @@ const PROVINCE_IT = [
   'OR',
   'PA','PC','PD','PE','PG','PI','PN','PO','PR','PT','PU','PV','PZ',
   'RA','RC','RE','RG','RI','RM','RN','RO',
-  'SA','SI','SO','SP','SR','SS','SU',
+  'SA','SI','SO','SP','SR','SS','SU','SV',
   'TA','TE','TN','TO','TP','TR','TS','TV',
   'UD',
   'VA','VB','VC','VE','VI','VR','VT','VV',
@@ -137,10 +137,8 @@ document.addEventListener('change', e => {
 
 // v391.2 — Città (2.3) ↔ provincia di residenza (2.4). With the city typed and 2.4
 // still empty, the province comes from the comuni table; if the two disagree a
-// non-blocking warning appears (Falco 1352-19: Bassano del Grappa + VT). The table
-// has some outdated provinces (Busnago MI, now MB): it suggests, never decides.
-// Provinces born from a split: the table may still list the old one, so neither fill nor warn there.
-const _PROV_SPLIT = { MB: 'MI', FM: 'AP', BT: 'BA FG', SU: 'CA CI VS OG OT NU OR SS' };
+// non-blocking warning appears (Falco 1352-19: Bassano del Grappa + VT). Table
+// refreshed from ISTAT on 21/10/2026 (v391.3): it suggests, never decides.
 async function _residenzaCittaProvincia(fill) {
   const sel = $('f-pvr'); if (!sel) return;
   let w = $('pvr-avviso');
@@ -148,12 +146,12 @@ async function _residenzaCittaProvincia(fill) {
   w.innerHTML = '';
   const citta = (($('f-citta') || {}).value || '').trim().toUpperCase();
   if (!citta || !(await _ensureCfCodesLoaded())) return;
-  const sig = new Set(Object.entries(CF_CODES_CACHE).filter(([k, v]) => k[0] !== 'Z' && String(v[0]).toUpperCase() === citta).map(([, v]) => v[1]));
+  // Only current comuni (ISTAT list, v391.3): suppressed ones carry 'S' and old provinces.
+  const sig = new Set(Object.entries(CF_CODES_CACHE).filter(([k, v]) => k[0] !== 'Z' && v[2] !== 'S' && String(v[0]).toUpperCase() === citta).map(([, v]) => v[1]));
   let prov = sig.size === 1 ? [...sig][0] : '';
-  if (!PROVINCE_IT.includes(prov) || Object.values(_PROV_SPLIT).join(' ').split(' ').includes(prov)) prov = '';
+  if (!PROVINCE_IT.includes(prov)) prov = '';
   if (fill && prov && !sel.value) { sel.value = prov; _aggiornaResidenzaEstera(); }
   const pvr = (sel.value || '').toUpperCase();
-  if (_PROV_SPLIT[pvr]) return;
   w.innerHTML = (prov && pvr && pvr !== 'EE' && pvr !== prov)
     ? `⚠ ${_cfEsc(citta)} risulta in provincia di <b>${prov}</b>, non ${_cfEsc(pvr)}. Verifichi la provincia di <b>residenza</b> (non quella di nascita).` : '';
 }
