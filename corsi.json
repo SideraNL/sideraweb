@@ -1,38 +1,5 @@
 [
   {
-    "idPgt": "1341",
-    "luogo": "COCCAGLIO",
-    "data": "20/10/2026",
-    "titolo": "DEPRESSIONE, DOLORE E DISTURBI CORRELATI",
-    "backend": "hostinger",
-    "orari": [
-      {
-        "giorno": "1",
-        "data": "20/10/2026",
-        "ora_in": "14:30",
-        "ora_out": "19:30",
-        "pause": [
-          {
-            "in": "16:45",
-            "out": "17:15"
-          }
-        ]
-      },
-      {
-        "giorno": "2",
-        "data": "21/10/2026",
-        "ora_in": "09:00",
-        "ora_out": "13:30",
-        "pause": [
-          {
-            "in": "10:45",
-            "out": "11:05"
-          }
-        ]
-      }
-    ]
-  },
-  {
     "idPgt": "1357",
     "luogo": "BRESCIA",
     "data": "06/11/2026",
