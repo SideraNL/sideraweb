@@ -150,6 +150,12 @@
     .choice-box .icon { font-size: 1.8rem; }
     .choice-box h3 { font-size: .9rem; font-weight: 700; margin: 8px 0 4px; color: var(--blue); }
     .choice-box p { font-size: .78rem; color: var(--gray-500); margin: 0; }
+    /* Gruppo NON ECM (v391.6): le tre voci senza crediti stanno in un riquadro a parte */
+    .noecm-group { border: 2px dashed #f59e0b; border-radius: 12px; background: #fffbeb; padding: 12px 12px 14px; }
+    .noecm-group-head { font-size: .85rem; color: #92400e; margin: 0 2px 10px; line-height: 1.35; }
+    .noecm-group-head strong { color: #b45309; }
+    .noecm-group .choice-box { background: #fff; }
+    .noecm-tag { display: inline-block; margin-top: 6px; font-size: .68rem; font-weight: 700; color: #b45309; background: #fef3c7; border: 1px solid #fcd34d; border-radius: 10px; padding: 1px 8px; }
 
     /* ── Upload zone ── */
     .upload-zone { border: 2px dashed var(--gray-200); border-radius: 10px; padding: 26px 16px; text-align: center; cursor: pointer; transition: border-color .15s, background .15s; background: var(--gray-50); }
@@ -357,26 +363,43 @@
         ℹ️ <strong>Questo evento accoglie esclusivamente iscrizioni con crediti ECM.</strong>
       </div>
       <div class="row g-3 mb-3">
-        <div class="col-12 col-sm-4">
+        <div class="col-12">
           <div class="choice-box" id="choice-ecm" onclick="selChoice('ECM')">
             <div class="icon">🎓</div>
             <h3>CON CREDITI ECM</h3>
             <p>Partecipo per ottenere i crediti formativi ECM. Richiede verifica dei dati anagrafici.</p>
           </div>
         </div>
-        <!-- Personale delle aziende sponsor (v391.5): canale NON ECM a parte, l'azienda si sceglie solo fra gli sponsor dell'evento -->
-        <div class="col-12 col-sm-4" id="col-choice-farma">
-          <div class="choice-box" id="choice-farma" onclick="selChoice('FARMA')">
-            <div class="icon">🏢</div>
-            <h3>PERSONALE AZIENDA SPONSOR</h3>
-            <p>Dipendenti e collaboratori delle aziende farmaceutiche o biomedicali sponsor dell'evento. Senza crediti ECM.</p>
+      </div>
+      <!-- Voci NON ECM (v391.6): riquadro evidenziato, per nessuna delle tre sono previsti crediti ECM -->
+      <div class="noecm-group mb-3" id="noecm-group">
+        <p class="noecm-group-head">⚠️ <strong>SENZA CREDITI ECM</strong> — per le voci qui sotto <strong>non sono previsti crediti ECM</strong>: si partecipa all'evento ma non si ricevono crediti formativi.</p>
+        <div class="row g-3">
+          <!-- Personale delle aziende sponsor (v391.5): l'azienda si sceglie solo fra gli sponsor dell'evento -->
+          <div class="col-12 col-sm-4" id="col-choice-farma">
+            <div class="choice-box" id="choice-farma" onclick="selChoice('FARMA')">
+              <div class="icon">🏢</div>
+              <h3>PERSONALE AZIENDA SPONSOR</h3>
+              <p>Dipendenti e collaboratori delle aziende farmaceutiche o biomedicali sponsor dell'evento.</p>
+              <span class="noecm-tag">NO CREDITI ECM</span>
+            </div>
           </div>
-        </div>
-        <div class="col-12 col-sm-4" id="col-choice-noecm">
-          <div class="choice-box" id="choice-noecm" onclick="selChoice('NON_ECM')">
-            <div class="icon">👤</div>
-            <h3>ALTRO SENZA CREDITI ECM</h3>
-            <p>Specializzandi, studenti, non sanitari o chi non necessita di crediti ECM.</p>
+          <!-- Medici specializzandi (v391.6): solo eventi accreditati per i medici -->
+          <div class="col-12 col-sm-4" id="col-choice-spec">
+            <div class="choice-box" id="choice-spec" onclick="selChoice('SPEC')">
+              <div class="icon">🩺</div>
+              <h3>MEDICI SPECIALIZZANDI</h3>
+              <p>Medici iscritti a una scuola di specializzazione.</p>
+              <span class="noecm-tag">NO CREDITI ECM</span>
+            </div>
+          </div>
+          <div class="col-12 col-sm-4" id="col-choice-noecm">
+            <div class="choice-box" id="choice-noecm" onclick="selChoice('NON_ECM')">
+              <div class="icon">👤</div>
+              <h3>ALTRO SENZA CREDITI ECM</h3>
+              <p>Studenti, non sanitari o chi non necessita di crediti ECM.</p>
+              <span class="noecm-tag">NO CREDITI ECM</span>
+            </div>
           </div>
         </div>
       </div>
@@ -845,9 +868,10 @@ let cfgNonEcmEnabled = true;   // default retrocompat: legacy events = abilitato
 // _nonEcmCanali(): da Hostinger arriva gia' risolto, dal backend GAS (eventi legacy)
 // i due canali condividono interruttore e tetto come prima.
 let cfgCanali = null;
-let gruppoNonEcm = '';   // 'FARMA' | 'ALTRO' (solo con tipoIscrizione NON_ECM)
+let gruppoNonEcm = '';   // 'FARMA' | 'SPEC' | 'ALTRO' (solo con tipoIscrizione NON_ECM)
 const PROF_FARMA = 'DIPENDENTE / COLLABORATORE DI AZIENDA FARMACEUTICA O BIOMEDICALE';
 const PROF_ALTRO = 'ALTRO NON ECM';
+const PROF_SPEC  = 'MEDICO SPECIALIZZANDO';
 let imgBase64 = '';
 let unsubToken = '';
 // Omonimo NON ECM: la persona ha dichiarato di non essere gia' iscritta (14/10/2026).
@@ -876,12 +900,15 @@ function _quotaStatus(raw, currentCount) {
 // tetto __NON_ECM__ di sempre, contati su tutte le iscrizioni NON ECM.
 function _nonEcmCanali(d) {
   const c = d.nonEcmCanali;
+  // Medici specializzandi (v391.6): solo da Hostinger; senza il dato il canale e' chiuso
+  const off = { enabled: false, max: null, count: 0 };
   if (c && c.farma && c.altro) {
-    return { farma: Object.assign({}, c.farma), altro: Object.assign({}, c.altro), separati: !!c.separati };
+    return { farma: Object.assign({}, c.farma), altro: Object.assign({}, c.altro),
+             spec: Object.assign({}, c.spec || off), separati: !!c.separati };
   }
   const q = _quotaStatus(cfgQuote['__NON_ECM__'], cfgCounts.nonEcmTotal);
   const one = () => ({ enabled: cfgNonEcmEnabled, max: q.hasLimit ? q.max : null, count: cfgCounts.nonEcmTotal || 0 });
-  return { farma: one(), altro: one(), separati: false };
+  return { farma: one(), altro: one(), spec: off, separati: false };
 }
 
 // Stato quota di un canale NON ECM ('farma' | 'altro'), stessa forma di _quotaStatus.
@@ -1115,15 +1142,18 @@ async function init() {
     cfgCanali = _nonEcmCanali(d);
     // Personale sponsor: senza sponsor configurati il riquadro non ha senso
     if (cfgSponsor.length === 0) cfgCanali.farma.enabled = false;
-    cfgNonEcmEnabled = cfgCanali.farma.enabled || cfgCanali.altro.enabled;
+    cfgNonEcmEnabled = cfgCanali.farma.enabled || cfgCanali.altro.enabled || cfgCanali.spec.enabled;
 
     // NB: la select f-professione viene popolata DINAMICAMENTE in populateProfessionSelect()
     // quando l'utente arriva allo step professione, in base al tipoIscrizione scelto.
 
     // Riquadri NON ECM: nascosti se il canale e' chiuso, spenti se posti esauriti
     _applyCanaleBox('farma', 'col-choice-farma', 'choice-farma');
+    _applyCanaleBox('spec', 'col-choice-spec', 'choice-spec');
     _applyCanaleBox('altro', 'col-choice-noecm', 'choice-noecm');
     if (!cfgNonEcmEnabled) {
+      const grp = document.getElementById('noecm-group');
+      if (grp) grp.style.display = 'none';
       // NON ECM completamente disabilitato: mostra messaggi informativi
       const notice = document.getElementById('only-ecm-notice');
       if (notice) notice.style.display = 'block';
@@ -1235,9 +1265,10 @@ async function verOtp() {
 function selChoice(tipo) {
   // 'FARMA' e 'NON_ECM' sono entrambe iscrizioni NON ECM: cambia solo il gruppo
   tipoIscrizione = (tipo === 'ECM') ? 'ECM' : 'NON_ECM';
-  gruppoNonEcm = tipo === 'FARMA' ? 'FARMA' : (tipo === 'NON_ECM' ? 'ALTRO' : '');
+  gruppoNonEcm = tipo === 'FARMA' ? 'FARMA' : (tipo === 'SPEC' ? 'SPEC' : (tipo === 'NON_ECM' ? 'ALTRO' : ''));
   document.getElementById('choice-ecm').classList.toggle('sel', tipo === 'ECM');
   document.getElementById('choice-farma').classList.toggle('sel', tipo === 'FARMA');
+  document.getElementById('choice-spec').classList.toggle('sel', tipo === 'SPEC');
   document.getElementById('choice-noecm').classList.toggle('sel', tipo === 'NON_ECM');
   document.getElementById('btn-choice').disabled = false;
   hideMsg('msg-choice');
@@ -1255,7 +1286,8 @@ function updateBadgeTipo() {
     badge.style.border = '1px solid rgba(255,255,255,.2)';
     badge.style.display = 'inline-block';
   } else if (tipoIscrizione === 'NON_ECM') {
-    badge.textContent = gruppoNonEcm === 'FARMA' ? 'personale sponsor' : 'senza ECM';
+    badge.textContent = gruppoNonEcm === 'FARMA' ? 'personale sponsor'
+      : (gruppoNonEcm === 'SPEC' ? 'specializzando · senza ECM' : 'senza ECM');
     badge.style.background = 'rgba(255,255,255,.12)';
     badge.style.color = '#bfdbfe';
     badge.style.border = '1px solid rgba(255,255,255,.2)';
@@ -1853,9 +1885,9 @@ function populateProfessionSelect() {
 
   if (tipoIscrizione === 'NON_ECM') {
     // Una sola professione, data dal riquadro scelto (v391.5): gia' selezionata
-    const isFarma = gruppoNonEcm === 'FARMA';
-    const p = isFarma ? PROF_FARMA : PROF_ALTRO;
-    const q = _canaleQuota(isFarma ? 'farma' : 'altro');
+    const k = gruppoNonEcm === 'FARMA' ? 'farma' : (gruppoNonEcm === 'SPEC' ? 'spec' : 'altro');
+    const p = k === 'farma' ? PROF_FARMA : (k === 'spec' ? PROF_SPEC : PROF_ALTRO);
+    const q = _canaleQuota(k);
     const suffix = q.max === 0 ? ' — iscrizioni non ammesse' : ' — posti esauriti';
     const o = document.createElement('option');
     o.value = p;
@@ -1926,7 +1958,8 @@ function goFromProf() {
     : document.getElementById('f2-nome').value;
 
   document.getElementById('rie-tipo').textContent  = tipoIscrizione === 'ECM' ? 'CON CREDITI ECM'
-    : (gruppoNonEcm === 'FARMA' ? 'PERSONALE AZIENDA SPONSOR' : 'SENZA CREDITI ECM');
+    : (gruppoNonEcm === 'FARMA' ? 'PERSONALE AZIENDA SPONSOR (SENZA CREDITI ECM)'
+      : (gruppoNonEcm === 'SPEC' ? 'MEDICO SPECIALIZZANDO (SENZA CREDITI ECM)' : 'SENZA CREDITI ECM'));
   document.getElementById('rie-email').textContent = emailVerificata;
   document.getElementById('rie-nome').textContent  = cognome + ' ' + nome;
   document.getElementById('rie-prof').textContent  = azienda ? (prof + ' — ' + azienda) : prof;
@@ -2070,7 +2103,7 @@ function buildClosedWarning() {
   const seen = {};
   cfgProfessioni.forEach(function(p) {
     const upper = (p || '').toUpperCase();
-    if (upper.indexOf('ALTRO NON ECM') >= 0 || upper.indexOf('FARMACEUTICA') >= 0 || upper.indexOf('BIOMEDICALE') >= 0) return;
+    if (upper.indexOf('ALTRO NON ECM') >= 0 || upper.indexOf('FARMACEUTICA') >= 0 || upper.indexOf('BIOMEDICALE') >= 0 || upper.indexOf('SPECIALIZZAND') >= 0) return;
     const base = p.split(' - ')[0].trim();
     if (!base || seen[base]) return;
     seen[base] = true;
@@ -2083,13 +2116,17 @@ function buildClosedWarning() {
   // per questo evento e non va segnalato come "chiuso".
   // Due canali (v391.5): si segnala ognuno per conto suo.
   const canaliChiusi = [];
-  [['altro', 'senza crediti ECM'], ['farma', 'del personale delle aziende sponsor']].forEach(function(c) {
+  [['altro', 'senza crediti ECM'], ['farma', 'del personale delle aziende sponsor'], ['spec', 'dei medici specializzandi']].forEach(function(c) {
     if (!cfgCanali || !cfgCanali[c[0]].enabled) return;
     const q = _canaleQuota(c[0]);
     if (q.full) canaliChiusi.push({ chi: c[1], blocked: q.max === 0 });
   });
   // Eventi legacy: i due canali sono lo stesso, una riga basta
-  if (canaliChiusi.length === 2 && !cfgCanali.separati) canaliChiusi.pop();
+  // Eventi legacy: sponsor e altro sono lo stesso canale, una riga basta
+  if (!cfgCanali.separati) {
+    const i = canaliChiusi.findIndex(function(x){ return x.chi.indexOf('sponsor') >= 0; });
+    if (i >= 0 && canaliChiusi.some(function(x){ return x.chi === 'senza crediti ECM'; })) canaliChiusi.splice(i, 1);
+  }
 
   if (closedBases.length === 0 && canaliChiusi.length === 0) return false;
 
