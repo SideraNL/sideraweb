@@ -357,18 +357,26 @@
         ℹ️ <strong>Questo evento accoglie esclusivamente iscrizioni con crediti ECM.</strong>
       </div>
       <div class="row g-3 mb-3">
-        <div class="col-6">
+        <div class="col-12 col-sm-4">
           <div class="choice-box" id="choice-ecm" onclick="selChoice('ECM')">
             <div class="icon">🎓</div>
             <h3>CON CREDITI ECM</h3>
             <p>Partecipo per ottenere i crediti formativi ECM. Richiede verifica dei dati anagrafici.</p>
           </div>
         </div>
-        <div class="col-6">
+        <!-- Personale delle aziende sponsor (v391.5): canale NON ECM a parte, l'azienda si sceglie solo fra gli sponsor dell'evento -->
+        <div class="col-12 col-sm-4" id="col-choice-farma">
+          <div class="choice-box" id="choice-farma" onclick="selChoice('FARMA')">
+            <div class="icon">🏢</div>
+            <h3>PERSONALE AZIENDA SPONSOR</h3>
+            <p>Dipendenti e collaboratori delle aziende farmaceutiche o biomedicali sponsor dell'evento. Senza crediti ECM.</p>
+          </div>
+        </div>
+        <div class="col-12 col-sm-4" id="col-choice-noecm">
           <div class="choice-box" id="choice-noecm" onclick="selChoice('NON_ECM')">
             <div class="icon">👤</div>
-            <h3>SENZA CREDITI ECM</h3>
-            <p>Studenti, non sanitari o chi non necessita di crediti ECM.</p>
+            <h3>ALTRO SENZA CREDITI ECM</h3>
+            <p>Specializzandi, studenti, non sanitari o chi non necessita di crediti ECM.</p>
           </div>
         </div>
       </div>
@@ -591,6 +599,14 @@
         <select id="f-professione" class="form-select" onchange="onProfChange()">
           <option value="">— Seleziona la professione —</option>
         </select>
+      </div>
+      <!-- Solo personale azienda sponsor: l'azienda si sceglie fra gli sponsor dell'evento -->
+      <div id="blk-azienda" class="mb-3" style="display:none">
+        <label class="f-label">Azienda *</label>
+        <select id="f-azienda" class="form-select">
+          <option value="">— Seleziona la tua azienda —</option>
+        </select>
+        <div style="font-size:.78rem;color:#666;margin-top:6px">Sono elencate solo le aziende sponsor di questo evento.</div>
       </div>
       <!-- Solo ECM -->
       <div id="blk-occ" style="display:none">
@@ -824,6 +840,14 @@ let cfgProfessioni = [];
 let cfgQuote = {};
 let cfgCounts = { byProfession: {}, nonEcmTotal: 0 };
 let cfgNonEcmEnabled = true;   // default retrocompat: legacy events = abilitato
+// Due canali NON ECM (v391.5): personale delle aziende sponsor ('FARMA') e 'ALTRO'.
+// Per ciascuno {enabled, max, count}; max null = senza limite. Calcolato da
+// _nonEcmCanali(): da Hostinger arriva gia' risolto, dal backend GAS (eventi legacy)
+// i due canali condividono interruttore e tetto come prima.
+let cfgCanali = null;
+let gruppoNonEcm = '';   // 'FARMA' | 'ALTRO' (solo con tipoIscrizione NON_ECM)
+const PROF_FARMA = 'DIPENDENTE / COLLABORATORE DI AZIENDA FARMACEUTICA O BIOMEDICALE';
+const PROF_ALTRO = 'ALTRO NON ECM';
 let imgBase64 = '';
 let unsubToken = '';
 // Omonimo NON ECM: la persona ha dichiarato di non essere gia' iscritta (14/10/2026).
@@ -845,6 +869,44 @@ function _quotaStatus(raw, currentCount) {
   if (isNaN(max)) return { hasLimit: false, max: Infinity, full: false };
   if (max === 0)  return { hasLimit: true, max: 0, full: true };
   return { hasLimit: true, max, full: (currentCount || 0) >= max };
+}
+
+// Canali NON ECM dalla risposta getEvent. Hostinger li manda gia' risolti
+// (nonEcmCanali); il backend GAS no: i due canali seguono allora il flag e il
+// tetto __NON_ECM__ di sempre, contati su tutte le iscrizioni NON ECM.
+function _nonEcmCanali(d) {
+  const c = d.nonEcmCanali;
+  if (c && c.farma && c.altro) {
+    return { farma: Object.assign({}, c.farma), altro: Object.assign({}, c.altro), separati: !!c.separati };
+  }
+  const q = _quotaStatus(cfgQuote['__NON_ECM__'], cfgCounts.nonEcmTotal);
+  const one = () => ({ enabled: cfgNonEcmEnabled, max: q.hasLimit ? q.max : null, count: cfgCounts.nonEcmTotal || 0 });
+  return { farma: one(), altro: one(), separati: false };
+}
+
+// Stato quota di un canale NON ECM ('farma' | 'altro'), stessa forma di _quotaStatus.
+function _canaleQuota(k) {
+  const c = cfgCanali && cfgCanali[k];
+  if (!c) return { hasLimit: false, max: Infinity, full: false };
+  return _quotaStatus(c.max === null || c.max === undefined ? undefined : c.max, c.count);
+}
+
+// Riquadro di un canale NON ECM: nascosto se chiuso, spento se pieno.
+function _applyCanaleBox(k, colId, boxId) {
+  const col = document.getElementById(colId);
+  const box = document.getElementById(boxId);
+  if (!col || !box) return;
+  if (!cfgCanali[k].enabled) { col.style.display = 'none'; return; }
+  const q = _canaleQuota(k);
+  if (!q.full) return;
+  box.style.opacity = '0.45';
+  box.style.cursor = 'not-allowed';
+  box.style.pointerEvents = 'none';
+  box.setAttribute('aria-disabled', 'true');
+  const p = box.querySelector('p');
+  if (p) p.innerHTML = q.max === 0
+    ? '<strong style="color:#c62828;">⛔ Iscrizioni non ammesse</strong>'
+    : '<strong style="color:#c62828;">⛔ Posti esauriti</strong>';
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -1050,36 +1112,24 @@ async function init() {
     cfgCounts      = d.counts || { byProfession: {}, nonEcmTotal: 0 };
     // Flag NON ECM abilitato: retrocompat → true se assente (legacy events)
     cfgNonEcmEnabled = (d.nonEcmEnabled === undefined) ? true : (d.nonEcmEnabled === true);
+    cfgCanali = _nonEcmCanali(d);
+    // Personale sponsor: senza sponsor configurati il riquadro non ha senso
+    if (cfgSponsor.length === 0) cfgCanali.farma.enabled = false;
+    cfgNonEcmEnabled = cfgCanali.farma.enabled || cfgCanali.altro.enabled;
 
     // NB: la select f-professione viene popolata DINAMICAMENTE in populateProfessionSelect()
     // quando l'utente arriva allo step professione, in base al tipoIscrizione scelto.
 
+    // Riquadri NON ECM: nascosti se il canale e' chiuso, spenti se posti esauriti
+    _applyCanaleBox('farma', 'col-choice-farma', 'choice-farma');
+    _applyCanaleBox('altro', 'col-choice-noecm', 'choice-noecm');
     if (!cfgNonEcmEnabled) {
-      // NON ECM completamente disabilitato: nascondi la choice box e mostra messaggi informativi
-      const box = document.getElementById('choice-noecm');
-      if (box) box.style.display = 'none';
+      // NON ECM completamente disabilitato: mostra messaggi informativi
       const notice = document.getElementById('only-ecm-notice');
       if (notice) notice.style.display = 'block';
       // Banner persistente in alto su tutti gli step
       const topBanner = document.getElementById('only-ecm-top-banner');
       if (topBanner) topBanner.style.display = 'block';
-    } else {
-      // Se le iscrizioni NON ECM sono bloccate (quota = 0) o esaurite (counts >= quota),
-      // disabilita la choice box SENZA CREDITI ECM
-      const nonEcmQuota = _quotaStatus(cfgQuote['__NON_ECM__'], cfgCounts.nonEcmTotal);
-      if (nonEcmQuota.full) {
-        const box = document.getElementById('choice-noecm');
-        if (box) {
-          box.style.opacity = '0.45';
-          box.style.cursor = 'not-allowed';
-          box.style.pointerEvents = 'none';
-          box.setAttribute('aria-disabled', 'true');
-          const p = box.querySelector('p');
-          if (p) p.innerHTML = nonEcmQuota.max === 0
-            ? '<strong style="color:#c62828;">⛔ Iscrizioni non ammesse</strong>'
-            : '<strong style="color:#c62828;">⛔ Posti esauriti</strong>';
-        }
-      }
     }
 
     // NB: la select sponsor è ora nello step Consensi (sotto la radio RECLUTATO).
@@ -1183,8 +1233,11 @@ async function verOtp() {
 // STEP 2 — SCELTA TIPO ISCRIZIONE
 // ─────────────────────────────────────────────────────────────────────────────
 function selChoice(tipo) {
-  tipoIscrizione = tipo;
+  // 'FARMA' e 'NON_ECM' sono entrambe iscrizioni NON ECM: cambia solo il gruppo
+  tipoIscrizione = (tipo === 'ECM') ? 'ECM' : 'NON_ECM';
+  gruppoNonEcm = tipo === 'FARMA' ? 'FARMA' : (tipo === 'NON_ECM' ? 'ALTRO' : '');
   document.getElementById('choice-ecm').classList.toggle('sel', tipo === 'ECM');
+  document.getElementById('choice-farma').classList.toggle('sel', tipo === 'FARMA');
   document.getElementById('choice-noecm').classList.toggle('sel', tipo === 'NON_ECM');
   document.getElementById('btn-choice').disabled = false;
   hideMsg('msg-choice');
@@ -1202,7 +1255,7 @@ function updateBadgeTipo() {
     badge.style.border = '1px solid rgba(255,255,255,.2)';
     badge.style.display = 'inline-block';
   } else if (tipoIscrizione === 'NON_ECM') {
-    badge.textContent = 'senza ECM';
+    badge.textContent = gruppoNonEcm === 'FARMA' ? 'personale sponsor' : 'senza ECM';
     badge.style.background = 'rgba(255,255,255,.12)';
     badge.style.color = '#bfdbfe';
     badge.style.border = '1px solid rgba(255,255,255,.2)';
@@ -1785,6 +1838,7 @@ async function goFromAna(btn) {
   document.getElementById('blk-occ').style.display = tipoIscrizione === 'ECM' ? 'block' : 'none';
   // Popola la select professione in base al tipo iscrizione scelto
   populateProfessionSelect();
+  populateAziendaSelect();
   showStep('s-prof');
 }
 
@@ -1798,20 +1852,16 @@ function populateProfessionSelect() {
   selProf.innerHTML = '<option value="">— Seleziona la professione —</option>';
 
   if (tipoIscrizione === 'NON_ECM') {
-    // Solo due opzioni fisse per NON ECM
-    const opts = [
-      'ALTRO NON ECM',
-      'DIPENDENTE / COLLABORATORE DI AZIENDA FARMACEUTICA O BIOMEDICALE'
-    ];
-    const nonEcmQuota = _quotaStatus(cfgQuote['__NON_ECM__'], cfgCounts.nonEcmTotal);
-    const suffix = nonEcmQuota.max === 0 ? ' — iscrizioni non ammesse' : ' — posti esauriti';
-    opts.forEach(p => {
-      const o = document.createElement('option');
-      o.value = p;
-      o.textContent = nonEcmQuota.full ? (p + suffix) : p;
-      if (nonEcmQuota.full) o.disabled = true;
-      selProf.appendChild(o);
-    });
+    // Una sola professione, data dal riquadro scelto (v391.5): gia' selezionata
+    const isFarma = gruppoNonEcm === 'FARMA';
+    const p = isFarma ? PROF_FARMA : PROF_ALTRO;
+    const q = _canaleQuota(isFarma ? 'farma' : 'altro');
+    const suffix = q.max === 0 ? ' — iscrizioni non ammesse' : ' — posti esauriti';
+    const o = document.createElement('option');
+    o.value = p;
+    o.textContent = q.full ? (p + suffix) : p;
+    if (q.full) o.disabled = true; else o.selected = true;
+    selProf.appendChild(o);
   } else {
     // ECM: SOLO professioni accreditate dal config (escludi NON ECM / farmaceutica / biomedicale).
     // NON aggiungere "ALTRO — Altra professione": chi non trova la propria professione deve
@@ -1834,6 +1884,21 @@ function populateProfessionSelect() {
   }
 }
 
+// Select azienda (solo personale sponsor): i soli sponsor dell'evento.
+function populateAziendaSelect() {
+  const blk = document.getElementById('blk-azienda');
+  const sel = document.getElementById('f-azienda');
+  const isFarma = tipoIscrizione === 'NON_ECM' && gruppoNonEcm === 'FARMA';
+  blk.style.display = isFarma ? 'block' : 'none';
+  sel.innerHTML = '<option value="">— Seleziona la tua azienda —</option>';
+  if (!isFarma) return;
+  cfgSponsor.forEach(function(s) {
+    const o = document.createElement('option');
+    o.value = s; o.textContent = s;
+    sel.appendChild(o);
+  });
+}
+
 function onProfChange() {
   if (tipoIscrizione !== 'ECM') return;
   const prof = document.getElementById('f-professione').value;
@@ -1848,6 +1913,9 @@ function goFromProf() {
     const occ = document.getElementById('f-occupazione').value;
     if (!occ) { showMsg('msg-prof', 'Seleziona l\'occupazione.', 'err'); return; }
   }
+  const isFarma = tipoIscrizione === 'NON_ECM' && gruppoNonEcm === 'FARMA';
+  const azienda = isFarma ? (document.getElementById('f-azienda').value || '').trim() : '';
+  if (isFarma && !azienda) { showMsg('msg-prof', 'Seleziona la tua azienda.', 'err'); return; }
 
   // Popola riepilogo
   const cognome = tipoIscrizione === 'ECM'
@@ -1857,10 +1925,11 @@ function goFromProf() {
     ? document.getElementById('f-nome').value
     : document.getElementById('f2-nome').value;
 
-  document.getElementById('rie-tipo').textContent  = tipoIscrizione === 'ECM' ? 'CON CREDITI ECM' : 'SENZA CREDITI ECM';
+  document.getElementById('rie-tipo').textContent  = tipoIscrizione === 'ECM' ? 'CON CREDITI ECM'
+    : (gruppoNonEcm === 'FARMA' ? 'PERSONALE AZIENDA SPONSOR' : 'SENZA CREDITI ECM');
   document.getElementById('rie-email').textContent = emailVerificata;
   document.getElementById('rie-nome').textContent  = cognome + ' ' + nome;
-  document.getElementById('rie-prof').textContent  = prof;
+  document.getElementById('rie-prof').textContent  = azienda ? (prof + ' — ' + azienda) : prof;
 
   // Seleziona i blocchi privacy corretti per ECM vs NON ECM (lo Step B è condiviso)
   const isECM = tipoIscrizione === 'ECM';
@@ -2012,15 +2081,17 @@ function buildClosedWarning() {
 
   // NON ECM chiuso? Solo se la feature è abilitata. Se disabilitata, il canale non esiste
   // per questo evento e non va segnalato come "chiuso".
-  let nonEcmClosed = false;
-  let nonEcmBlocked = false;
-  if (cfgNonEcmEnabled) {
-    const nonEcmQuota = _quotaStatus(cfgQuote['__NON_ECM__'], cfgCounts.nonEcmTotal);
-    nonEcmClosed = nonEcmQuota.full;
-    nonEcmBlocked = nonEcmQuota.max === 0;
-  }
+  // Due canali (v391.5): si segnala ognuno per conto suo.
+  const canaliChiusi = [];
+  [['altro', 'senza crediti ECM'], ['farma', 'del personale delle aziende sponsor']].forEach(function(c) {
+    if (!cfgCanali || !cfgCanali[c[0]].enabled) return;
+    const q = _canaleQuota(c[0]);
+    if (q.full) canaliChiusi.push({ chi: c[1], blocked: q.max === 0 });
+  });
+  // Eventi legacy: i due canali sono lo stesso, una riga basta
+  if (canaliChiusi.length === 2 && !cfgCanali.separati) canaliChiusi.pop();
 
-  if (closedBases.length === 0 && !nonEcmClosed) return false;
+  if (closedBases.length === 0 && canaliChiusi.length === 0) return false;
 
   let html = '';
   if (closedBases.length > 0) {
@@ -2039,10 +2110,10 @@ function buildClosedWarning() {
     });
     html += '</ul>';
   }
-  if (nonEcmClosed) {
-    const motivo = nonEcmBlocked ? 'non sono ammesse per questo evento' : 'risultano al momento esaurite';
-    html += '<p style="margin:' + (closedBases.length ? '6px' : '0') + ' 0 0">Si informa che le iscrizioni <strong>senza crediti ECM</strong> ' + motivo + '.</p>';
-  }
+  canaliChiusi.forEach(function(c, i) {
+    const motivo = c.blocked ? 'non sono ammesse per questo evento' : 'risultano al momento esaurite';
+    html += '<p style="margin:' + (closedBases.length || i ? '6px' : '0') + ' 0 0">Si informa che le iscrizioni <strong>' + c.chi + '</strong> ' + motivo + '.</p>';
+  });
 
   testo.innerHTML = html;
   return true;
@@ -2134,6 +2205,9 @@ async function doSubmit(btn) {
     formData.ConsensoECM        = 'Sì';
     formData.Albo               = document.getElementById('f-albo').value.trim();
     formData.NumIscrizione      = document.getElementById('f-num-iscrizione').value.trim();
+  } else if (gruppoNonEcm === 'FARMA') {
+    // Personale sponsor: l'azienda viaggia nel campo Sponsor (il server la verifica)
+    formData.Sponsor = (document.getElementById('f-azienda').value || '').trim();
   }
 
   spin(btn, true);
