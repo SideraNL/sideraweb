@@ -2293,10 +2293,15 @@ function cmCittaNext() {
   }
   const match = _cmFindCitta(inp);
   if (!match) {
-    if (!confirm('La città indicata non risulta tra quelle in archivio. ' +
-                 'Vuole proseguire comunque (potrà inserire la struttura come "Altro")?')) {
+    // v392.7 — niente confirm() del browser: primo clic avvisa, il secondo sulla
+    // stessa città prosegue (in alcune app di posta il confirm bloccava il form).
+    if (cmState._cittaAvvisata !== inp.toUpperCase()) {
+      cmState._cittaAvvisata = inp.toUpperCase();
+      showFormMsg('La città indicata non risulta tra quelle in archivio. Se è corretta, ' +
+                  'prema di nuovo Avanti: potrà inserire la struttura come "Altro".', 'warning');
       return;
     }
+    clearFormMsg();
     cmState.citta = inp;
     cmState.prov = '';
   } else {
