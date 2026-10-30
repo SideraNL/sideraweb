@@ -130,31 +130,7 @@ function _aggiornaResidenzaEstera() {
     cap.inputMode = est ? 'text' : 'numeric';
   }
 }
-document.addEventListener('change', e => {
-  if (e.target && e.target.id === 'f-pvr') _aggiornaResidenzaEstera();
-  if (e.target && (e.target.id === 'f-citta' || e.target.id === 'f-pvr')) _residenzaCittaProvincia(e.target.id === 'f-citta');
-});
-
-// v391.2 — Città (2.3) ↔ provincia di residenza (2.4). With the city typed and 2.4
-// still empty, the province comes from the comuni table; if the two disagree a
-// non-blocking warning appears (Falco 1352-19: Bassano del Grappa + VT). Table
-// refreshed from ISTAT on 21/10/2026 (v391.3): it suggests, never decides.
-async function _residenzaCittaProvincia(fill) {
-  const sel = $('f-pvr'); if (!sel) return;
-  let w = $('pvr-avviso');
-  if (!w) { w = document.createElement('div'); w.id = 'pvr-avviso'; w.className = 'hint'; w.style.color = '#b45309'; sel.parentNode.appendChild(w); }
-  w.innerHTML = '';
-  const citta = (($('f-citta') || {}).value || '').trim().toUpperCase();
-  if (!citta || !(await _ensureCfCodesLoaded())) return;
-  // Only current comuni (ISTAT list, v391.3): suppressed ones carry 'S' and old provinces.
-  const sig = new Set(Object.entries(CF_CODES_CACHE).filter(([k, v]) => k[0] !== 'Z' && v[2] !== 'S' && String(v[0]).toUpperCase() === citta).map(([, v]) => v[1]));
-  let prov = sig.size === 1 ? [...sig][0] : '';
-  if (!PROVINCE_IT.includes(prov)) prov = '';
-  if (fill && prov && !sel.value) { sel.value = prov; _aggiornaResidenzaEstera(); }
-  const pvr = (sel.value || '').toUpperCase();
-  w.innerHTML = (prov && pvr && pvr !== 'EE' && pvr !== prov)
-    ? `⚠ ${_cfEsc(citta)} risulta in provincia di <b>${prov}</b>, non ${_cfEsc(pvr)}. Verifichi la provincia di <b>residenza</b> (non quella di nascita).` : '';
-}
+// v394.8 — Città/CAP/provincia di residenza: controlli in contratto-residenza.js
 
 // v356.8 — Codice fiscale di un nato all'estero: codice catastale Z nella 12a posizione.
 function _cfNatoEstero(cf) {
