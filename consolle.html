@@ -94,6 +94,20 @@
       </div>
     </div>
 
+    <!-- VIEW: RICADUTE (facoltativo, v396.3 — da Google a Hostinger) -->
+    <div id="view-ric" class="hidden">
+      <div class="header-box"><strong>Provider:</strong> Sidera (ID 84) | <strong>Corso:</strong> <span class="hd-corso"></span></div>
+      <h5 class="text-secondary border-bottom pb-2">Ricadute organizzative</h5>
+      <div class="text-center mb-3 small text-muted">Questionario anonimo e facoltativo</div>
+      <h6 id="ric-step" class="text-secondary"></h6>
+      <div id="ric-q-box"></div>
+      <div class="d-flex justify-content-between mt-3">
+        <button id="ric-btn-back" onclick="ricBack()" class="btn btn-outline-secondary">Indietro</button>
+        <div></div>
+        <button id="ric-btn-next" onclick="ricNext()" class="btn btn-secondary" disabled>Avanti</button>
+      </div>
+    </div>
+
     <!-- VIEW: TEST (regolamento + quiz) -->
     <div id="view-rules" class="hidden text-center">
       <h4 class="text-danger border-bottom pb-2">Regolamento Test ECM</h4>
@@ -133,7 +147,6 @@
 <script>
 // ── CONFIG ──
 const GAS_URL = "https://script.google.com/macros/s/AKfycbwsFIxxUICpKrDwixE0EnAS7sqz6c2k0vlmmByjyWMD2d1SxSvzC_XJvOOo5WdDiHsu/exec";
-const URL_RICADUTE = "https://script.google.com/macros/s/AKfycbyt7cjcmSqPi_j2x7eh8SxFLioLfjpqYd_rM-q1eff9OxAIGk3BQ0B0y-gZrkDZQ_V8/exec";
 const params = new URLSearchParams(window.location.search);
 let corso = params.get('corso');
 
@@ -331,10 +344,64 @@ function renderDashboard() {
   else { sT.innerHTML="<span class='text-primary'>Da completare</span>"; bT.classList.remove('hidden'); }
   const cR = document.getElementById('card-ric'), sR = document.getElementById('status-ric'), bR = document.getElementById('btn-ric');
   cR.className = 'dash-card status-optional';
-  if (localStorage.getItem('ricadute_done_' + corso)) { cR.classList.remove('status-optional'); cR.classList.add('status-optional-done'); sR.innerHTML="<b class='text-success'>Compilato</b>"; bR.classList.add('hidden'); }
+  if ((APP.status && APP.status.ricaduteDone) || localStorage.getItem('ricadute_sent_' + corso)) { cR.classList.remove('status-optional'); cR.classList.add('status-optional-done'); sR.innerHTML="<b class='text-success'>Compilato</b>"; bR.classList.add('hidden'); }
   else { sR.innerHTML="<span class='text-muted'>Facoltativo</span>"; bR.classList.remove('hidden'); }
 }
-function openRicadute() { localStorage.setItem('ricadute_done_'+corso,'1'); window.open(URL_RICADUTE+'?corso='+corso,'_blank'); setTimeout(renderDashboard, 500); }
+
+// ── RICADUTE ORGANIZZATIVE (facoltativo) ──
+// Fino alla v396.3 apriva una web app Google in un'altra scheda e risultava
+// «Compilato» al solo clic. Ora si compila qui e si salva SEMPRE su Hostinger
+// (submit_ricadute.php), anche per i corsi col vecchio backend: «Compilato»
+// compare solo a invio riuscito. Domanda 3 solo con ricaduta, 4 solo senza.
+const ricQ = [
+  {k:'utilita', t:'In che misura ritiene che i contenuti appresi nel corso siano stati utili al suo lavoro?<br><span style="font-weight:normal;font-size:.9rem">1 = Insufficiente, 5 = Molto</span>', o:['5','4','3','2','1']},
+  {k:'ricaduta', t:'Ritiene che vi sia stata una ricaduta organizzativa del corso a cui ha partecipato?', o:['Sì','No']},
+  {k:'area', t:'Ritiene che la ricaduta organizzativa abbia impattato maggiormente su quale area?', o:['Gestionale','Clinica','Relazionale','Altro'], se:'Sì'},
+  {k:'motivo', t:'Se non vi è stata ricaduta organizzativa, ritiene che sia dovuto a:', o:['Fattori correlati al corso','Fattori esterni al corso'], se:'No'},
+  {k:'nuova_edizione', t:'Riterrebbe utile la realizzazione di una nuova edizione dello stesso corso?', o:['Sì','No','Non so']}
+];
+let ricIdx = 0, ricAns = {}, ricPath = [];
+function _ricVisibile(i) { const q = ricQ[i]; return !q.se || ricAns.ricaduta === q.se; }
+function openRicadute() { ricIdx = 0; ricAns = {}; ricPath = []; showView('ric'); renderRicQ(); }
+function renderRicQ() {
+  const q = ricQ[ricIdx];
+  document.getElementById('ric-step').innerText = 'Domanda ' + (ricPath.length + 1) + ' di 4';
+  document.getElementById('ric-q-box').innerHTML = '<div class="question-text">' + q.t + '</div>' + q.o.map((o,i) => '<input type="radio" name="ricans" value="'+o+'" id="rico'+i+'" class="option-input" style="display:none"'+(ricAns[q.k]===o?' checked':'')+' onchange="document.getElementById(\'ric-btn-next\').disabled=false"><label for="rico'+i+'" class="option-label">'+o+'</label>').join('');
+  const btn = document.getElementById('ric-btn-next');
+  btn.disabled = !ricAns[q.k];
+  btn.innerText = ricIdx === ricQ.length - 1 ? 'INVIA' : 'Avanti';
+}
+function ricBack() {
+  if (!ricPath.length) { showView('dashboard'); renderDashboard(); return; }
+  ricIdx = ricPath.pop(); renderRicQ();
+}
+function ricNext() {
+  const sel = document.querySelector('input[name="ricans"]:checked');
+  if (!sel) { showMsg('Rispondi', 'err'); return; }
+  ricAns[ricQ[ricIdx].k] = sel.value;
+  if (ricIdx === ricQ.length - 1) { submitRicadute(); return; }
+  ricPath.push(ricIdx);
+  let n = ricIdx + 1;
+  while (n < ricQ.length - 1 && !_ricVisibile(n)) n++;
+  ricIdx = n; renderRicQ();
+}
+async function submitRicadute() {
+  const body = { idpgt: corso, email: USER_EMAIL, utilita: ricAns.utilita, ricaduta: ricAns.ricaduta,
+                 area: ricAns.ricaduta === 'Sì' ? ricAns.area : '', motivo: ricAns.ricaduta === 'No' ? ricAns.motivo : '',
+                 nuova_edizione: ricAns.nuova_edizione };
+  if (TOKEN) body.t = TOKEN;
+  loading(true); showView('loading');
+  try {
+    const r = await (await fetch(HOST_BASE + '/submit_ricadute.php',
+      { method:'POST', headers:{'Content-Type':'text/plain'}, body: JSON.stringify(body) })).json();
+    loading(false);
+    if (!r.ok && !r.gia) { showMsg(r.error || 'Errore', 'err'); showView('ric'); return; }
+    if (APP.status) APP.status.ricaduteDone = true;
+    try { localStorage.setItem('ricadute_sent_' + corso, '1'); } catch (e) {}
+    document.getElementById('view-end').innerHTML = '<h2 class="text-success mt-4">Grazie!</h2><div class="lead my-3">' + (r.gia ? 'Il questionario risultava già compilato.' : 'Il questionario è stato compilato con successo.') + '</div><button class="btn btn-outline-primary mt-3" onclick="showView(\'dashboard\');renderDashboard()">Torna alla Dashboard</button>';
+    showView('end');
+  } catch(e) { loading(false); showMsg('Errore: ' + e.message, 'err'); showView('ric'); }
+}
 
 // ── CS ──
 function openCs() { showView('cs'); csSection = 0; csQIdx = 0; csAnswers = []; renderCsQ(); }
@@ -463,6 +530,8 @@ document.addEventListener('keydown', e => {
   if (e.key !== 'Enter') return;
   const vt = document.getElementById('view-test');
   if (vt && !vt.classList.contains('hidden')) { const b=document.getElementById('t-btn-next'); if(b&&!b.disabled) b.click(); e.preventDefault(); return; }
+  const vr = document.getElementById('view-ric');
+  if (vr && !vr.classList.contains('hidden')) { const b=document.getElementById('ric-btn-next'); if(b&&!b.disabled) b.click(); e.preventDefault(); return; }
   const vc = document.getElementById('view-cs');
   if (vc && !vc.classList.contains('hidden')) { const b=document.getElementById('cs-btn-next'); if(b&&!b.disabled) b.click(); e.preventDefault(); }
 });
