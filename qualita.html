@@ -39,12 +39,9 @@
     </div>
     <div class="state" id="stato">Caricamento dei risultati…</div>
     <div id="risultati" hidden>
-      <div class="stats" id="sintesi"></div>
-      <section class="card" style="margin-top: 32px">
-        <h2 style="margin-bottom: 6px">Le domande ECM</h2>
-        <p class="muted" style="margin: 0 0 28px; font-size: 15px">Percentuale delle risposte nell'anno. Dal colore più chiaro al più scuro, il giudizio cresce.</p>
-        <div class="q-list" id="domande"></div>
-      </section>
+      <div class="qa-hero" id="hero"></div>
+      <div class="qa-grid" id="domande"></div>
+      <p class="qa-note">Percentuali delle risposte al questionario ECM nell'anno, in forma aggregata e anonima.</p>
     </div>
   </main>
 
@@ -66,19 +63,84 @@
     // Dati: sideraecm.eu/qualita.php — solo percentuali per anno, scritte da MedFIND
     // (scripts/qualita_cs.py) dopo l'invio di ogni rapporto ECM.
     var S = window.Sidera;
-    // Scala sequenziale, un solo tono (blu Sidera) dal chiaro allo scuro: il giudizio cresce.
-    var RAMP = ['#DCE4EF', '#AFC2DC', '#7697C4', '#3F67A1', '#1A3A5C'];
-    var INK = ['#0E2238', '#0E2238', '#0E2238', '#FFFFFF', '#FFFFFF'];
-    // Sintesi di ogni domanda: le voci che contano come giudizio positivo.
-    var SINTESI = {
-      'Rilevanza degli argomenti trattati': [[2, 3, 4], 'rilevante o più'],
-      'Qualità educativa del programma': [[3, 4], 'buona o eccellente'],
-      "Utilità dell'evento": [[2, 3, 4], 'utile o più'],
-      'Tempo dedicato': [[2], 'uguale al previsto']
+    // Per ogni domanda: le voci che contano come giudizio positivo, la frase sotto
+    // l'arco e i colori delle righe. Le prime tre crescono verso l'ultima voce; per
+    // il tempo la risposta giusta e' quella centrale, quindi lo scuro sta in mezzo.
+    var CRESCE = ['#C3D0E2', '#9DB2D1', '#7697C4', '#3F67A1', '#1A3A5C'];
+    var CENTRO = ['#C3D0E2', '#9DB2D1', '#1A3A5C', '#9DB2D1', '#C3D0E2'];
+    var DOMANDE = {
+      'Rilevanza degli argomenti trattati': { pos: [2, 3, 4], frase: 'giudica gli argomenti rilevanti o più', col: CRESCE, giu: true },
+      'Qualità educativa del programma': { pos: [3, 4], frase: 'giudica la qualità educativa buona o eccellente', col: CRESCE, giu: true },
+      "Utilità dell'evento": { pos: [2, 3, 4], frase: "giudica l'evento utile o più", col: CRESCE, giu: true },
+      'Tempo dedicato': { pos: [2], frase: 'trova il tempo dedicato uguale al previsto', col: CENTRO, giu: false }
     };
-    var anni = [], scelto = null;
-    function pct(p) { return String(Math.round(p * 10) / 10).replace('.', ',') + '%'; }
+    var EROE = 'Qualità educativa del programma';
+    var DURATA = 1300, ARCO = 235.62;   // arco di 270° su un cerchio di raggio 50
+    var FERMO = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var anni = [], scelto = null, osserva = null, struttura = '';
+
+    function pct(p, dec) { return (dec ? String(Math.round(p * 10) / 10).replace('.', ',') : String(Math.round(p))) + '%'; }
     function somma(voci, idx) { return idx.reduce(function (a, i) { return a + (voci[i] ? voci[i][1] : 0); }, 0); }
+    function info(d) { return DOMANDE[d.titolo] || { pos: [], frase: '', col: CRESCE, giu: true }; }
+
+    // Un numero che scorre dal valore mostrato al nuovo (anche al cambio d'anno).
+    function conta(el, fine, modo) {
+      var da = parseFloat(el.getAttribute('data-ora') || '0'), t0 = null;
+      el.setAttribute('data-ora', fine);
+      var scrivi = function (x) { el.firstChild.nodeValue = modo === 'eroe' ? String(Math.round(x)) : pct(x, 1); };
+      if (FERMO) { scrivi(fine); return; }
+      requestAnimationFrame(function passo(t) {
+        if (t0 === null) t0 = t;
+        var k = Math.min((t - t0) / DURATA, 1);
+        scrivi(da + (fine - da) * (1 - Math.pow(1 - k, 3)));
+        if (k < 1) requestAnimationFrame(passo);
+      });
+    }
+
+    function scheda(d, n) {
+      var q = info(d);
+      var ordine = d.voci.map(function (v, i) { return i; });
+      if (q.giu) ordine.reverse();   // la risposta migliore in alto
+      return '<article class="qa-card" data-q="' + n + '">' +
+        '<div class="qa-top"><div class="qa-ring" role="img">' +
+          '<svg viewBox="0 0 120 120" aria-hidden="true">' +
+            '<circle class="trk" cx="60" cy="60" r="50" stroke-dasharray="' + ARCO + ' 314.16" transform="rotate(135 60 60)"/>' +
+            '<circle class="arc" cx="60" cy="60" r="50" stroke-dasharray="' + ARCO + ' 314.16" stroke-dashoffset="' + ARCO + '" transform="rotate(135 60 60)"/>' +
+            '<g class="dot"><circle cx="24.64" cy="95.36" r="6"/></g>' +
+          '</svg><b>0%</b></div>' +
+          '<div><h3>' + S.esc(d.titolo) + '</h3><p>' + S.esc(q.frase) + '</p></div></div>' +
+        '<ul class="qa-rows">' + ordine.map(function (i) {
+          return '<li class="qa-row" data-i="' + i + '"><span>' + S.esc(d.voci[i][0]) + '</span>' +
+            '<span class="qa-track"><span class="qa-fill" style="background:' + q.col[i] + '"></span></span><em>0%</em></li>';
+        }).join('') + '</ul></article>';
+    }
+
+    // Porta una scheda ai valori dell'anno: arco, punto, numero, righe.
+    function aggiorna(card, d) {
+      var q = info(d), p = somma(d.voci, q.pos), max = 0;
+      d.voci.forEach(function (v) { if (v[1] > max) max = v[1]; });
+      card.querySelector('.arc').setAttribute('stroke-dashoffset', ARCO * (1 - p / 100));
+      card.querySelector('.dot').style.transform = 'rotate(' + (270 * p / 100) + 'deg)';
+      conta(card.querySelector('.qa-ring b'), p);
+      card.querySelector('.qa-ring').setAttribute('aria-label', pct(p, 1) + ' ' + q.frase);
+      card.querySelectorAll('.qa-row').forEach(function (r, k) {
+        var i = +r.getAttribute('data-i'), v = d.voci[i][1];
+        var f = r.querySelector('.qa-fill');
+        f.style.transitionDelay = FERMO ? '0ms' : (150 + k * 90) + 'ms';
+        f.style.width = v + '%';
+        r.classList.toggle('qa-max', v === max);
+        conta(r.querySelector('em'), v);
+      });
+    }
+
+    function aggiornaEroe(a) {
+      var d = (a.domande || []).filter(function (x) { return x.titolo === EROE; })[0];
+      var h = document.getElementById('hero');
+      h.hidden = !d;
+      if (!d) return;
+      conta(h.querySelector('b'), somma(d.voci, DOMANDE[EROE].pos), 'eroe');
+      h.querySelector('.anno').textContent = a.anno;
+    }
 
     function mostra() {
       var a = anni.filter(function (x) { return x.anno === scelto; })[0];
@@ -93,76 +155,36 @@
       });
       bar.hidden = false;
 
-      var q = (a.domande || []).filter(function (d) { return d.titolo === 'Qualità educativa del programma'; })[0];
-      var qp = q ? Math.round(somma(q.voci, [3, 4])) : 0;
-      document.getElementById('sintesi').innerHTML = q
-        ? '<div class="stat"><b data-conta="' + qp + '" data-intero="1">' + qp + '%</b><span>giudica la qualità educativa buona o eccellente</span></div>' : '';
-
-      document.getElementById('domande').innerHTML = (a.domande || []).map(function (d) {
-        var s = SINTESI[d.titolo];
-        var tot = d.voci.reduce(function (t, v) { return t + Math.max(v[1], 0); }, 0) || 100, prima = 0;
-        var segs = d.voci.map(function (v, i) {
-          if (!(v[1] > 0)) return '';
-          // Un'unica passata da sinistra: ogni tratto parte quando finisce il precedente.
-          var w = v[1] / tot * 100, rit = DURATA * prima / 100, dur = DURATA * w / 100;
-          prima += w;
-          return '<div class="q-seg" title="' + S.esc(v[0] + ': ' + pct(v[1])) + '" data-w="' + w.toFixed(3) + '" style="background:' + RAMP[i] + ';color:' + INK[i] +
-            ';transition-duration:' + dur + 'ms;transition-delay:' + rit + 'ms">' +
-            (v[1] >= 9 ? '<em style="transition-delay:' + Math.round(rit + dur) + 'ms">' + Math.round(v[1]) + '%</em>' : '') + '</div>';
-        }).join('');
-        var aria = d.titolo + ': ' + d.voci.map(function (v) { return v[0] + ' ' + pct(v[1]); }).join(', ');
-        var sp = s ? somma(d.voci, s[0]) : 0;
-        return '<div><div class="q-head"><h3>' + S.esc(d.titolo) + '</h3>' +
-          (s ? '<span><b data-conta="' + sp + '">' + pct(sp) + '</b> ' + s[1] + '</span>' : '') + '</div>' +
-          '<div class="q-bar" role="img" aria-label="' + S.esc(aria) + '">' + segs + '</div>' +
-          '<div class="q-legend">' + d.voci.map(function (v, i) {
-            return '<span><i aria-hidden="true" style="background:' + RAMP[i] + '"></i>' + S.esc(v[0]) + ' <strong>' + pct(v[1]) + '</strong></span>';
-          }).join('') + '</div></div>';
-      }).join('');
+      // Si ridisegna solo se cambiano le domande: al cambio d'anno archi, righe e
+      // numeri scorrono dai valori di prima ai nuovi.
+      var chiave = (a.domande || []).map(function (d) { return d.titolo; }).join('|');
+      var prima = chiave !== struttura;
+      if (prima) {
+        struttura = chiave;
+        document.getElementById('hero').innerHTML = '<b>0<small>%</small></b>' +
+          '<p>dei partecipanti giudica la qualità educativa dei nostri corsi buona o eccellente.' +
+          '<span>Questionario ECM, anno <i class="anno" style="font-style:normal"></i></span></p>';
+        document.getElementById('domande').innerHTML = (a.domande || []).map(scheda).join('');
+      }
       document.getElementById('risultati').hidden = false;
-      anima();
-    }
-
-    // Animazione: parte quando il blocco entra nello schermo, una volta per anno
-    // mostrato. Con «riduci movimento» i valori compaiono subito, fermi.
-    var DURATA = 1100;
-    var FERMO = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    var osserva = null;
-
-    function riempi(barra) {
-      barra.querySelectorAll('.q-seg').forEach(function (g) { g.style.width = g.getAttribute('data-w') + '%'; });
-      barra.classList.add('on');
-    }
-
-    function conta(el) {
-      var fine = parseFloat(el.getAttribute('data-conta')), intero = el.hasAttribute('data-intero'), t0 = null;
-      var scrivi = function (x) { el.textContent = intero ? Math.round(x) + '%' : pct(x); };
-      if (FERMO) { scrivi(fine); return; }
-      scrivi(0);
-      requestAnimationFrame(function passo(t) {
-        if (t0 === null) t0 = t;
-        var k = Math.min((t - t0) / DURATA, 1);
-        scrivi(fine * (1 - Math.pow(1 - k, 3)));
-        if (k < 1) requestAnimationFrame(passo);
-      });
-    }
-
-    function parti(el) { if (el.classList.contains('q-bar')) riempi(el); else conta(el); }
-
-    function anima() {
-      var bersagli = document.querySelectorAll('#risultati .q-bar, #risultati [data-conta]');
+      var schede = document.querySelectorAll('#domande .qa-card');
+      if (!prima || FERMO || !('IntersectionObserver' in window)) {
+        aggiornaEroe(a);
+        schede.forEach(function (c) { aggiorna(c, a.domande[+c.getAttribute('data-q')]); });
+        return;
+      }
+      // Prima apertura: ogni blocco parte quando entra nello schermo.
       if (osserva) osserva.disconnect();
-      if (FERMO || !('IntersectionObserver' in window)) { bersagli.forEach(parti); return; }
-      // I numeri partono a zero solo se l'animazione c'è davvero.
-      bersagli.forEach(function (el) { if (!el.classList.contains('q-bar')) el.textContent = el.hasAttribute('data-intero') ? '0%' : pct(0); });
       osserva = new IntersectionObserver(function (voci) {
         voci.forEach(function (v) {
           if (!v.isIntersecting) return;
           osserva.unobserve(v.target);
-          parti(v.target);
+          if (v.target.id === 'hero') aggiornaEroe(a);
+          else aggiorna(v.target, a.domande[+v.target.getAttribute('data-q')]);
         });
-      }, { threshold: 0.35 });
-      bersagli.forEach(function (el) { osserva.observe(el); });
+      }, { threshold: 0.3 });
+      osserva.observe(document.getElementById('hero'));
+      schede.forEach(function (c) { osserva.observe(c); });
     }
 
     fetch('https://sideraecm.eu/qualita.php', { cache: 'no-store' })
