@@ -115,7 +115,8 @@
           '<h2>' + S.esc(c.titolo) + '</h2>' +
           '<div class="course-meta">' +
             (c.area ? '<span class="badge" style="background:' + col.madre + '">' + S.esc(S.areaNome(c.area)) + '</span>' : '') +
-            '<span>' + tipoTxt + cred + '</span></div>' +
+            '<span>' + tipoTxt + cred + '</span>' +
+            '<span class="course-id">ID ' + S.esc(c.id) + '</span></div>' +
           '<div class="course-actions"><a class="btn btn-line btn-sm" href="' + url + '">Dettagli</a>' + iscr + '</div>' +
         '</div></article>';
     }
