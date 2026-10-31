@@ -211,10 +211,18 @@ h1, h2, h3 { margin: 0; letter-spacing: -0.02em; }
 .q-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; margin-bottom: 10px; }
 .q-head h3 { font-size: 18px; font-weight: 600; letter-spacing: 0; }
 .q-head span { font-size: 15px; font-weight: 600; }
-.q-bar { display: flex; gap: 2px; height: 30px; }
-.q-seg { display: flex; align-items: center; justify-content: center; min-width: 4px; font-size: 13px; font-weight: 600; }
-.q-seg:first-child { border-radius: 4px 0 0 4px; }
-.q-seg:last-child { border-radius: 0 4px 4px 0; }
+.q-bar { display: flex; height: 30px; border-radius: 4px; overflow: hidden; }
+/* Le barre si compongono da sinistra quando entrano nello schermo: ogni tratto
+   cresce dopo il precedente (durata e ritardo li scrive lo script). */
+.q-seg { display: flex; align-items: center; justify-content: center; flex: none; width: 0; overflow: hidden;
+  box-shadow: inset -2px 0 0 var(--white); font-size: 13px; font-weight: 600; white-space: nowrap;
+  transition-property: width; transition-timing-function: linear; }
+.q-seg:last-child { box-shadow: none; }
+.q-seg em { font-style: normal; opacity: 0; transition: opacity .35s ease; }
+.q-bar.on .q-seg em { opacity: 1; }
+@media (prefers-reduced-motion: reduce) {
+  .q-seg, .q-seg em { transition: none !important; }
+}
 .q-legend { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 14px; color: var(--text); margin-top: 10px; }
 .q-legend span { display: inline-flex; align-items: center; gap: 6px; }
 .q-legend i { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }

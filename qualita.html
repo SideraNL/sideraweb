@@ -94,24 +94,75 @@
       bar.hidden = false;
 
       var q = (a.domande || []).filter(function (d) { return d.titolo === 'Qualità educativa del programma'; })[0];
+      var qp = q ? Math.round(somma(q.voci, [3, 4])) : 0;
       document.getElementById('sintesi').innerHTML = q
-        ? '<div class="stat"><b>' + Math.round(somma(q.voci, [3, 4])) + '%</b><span>giudica la qualità educativa buona o eccellente</span></div>' : '';
+        ? '<div class="stat"><b data-conta="' + qp + '" data-intero="1">' + qp + '%</b><span>giudica la qualità educativa buona o eccellente</span></div>' : '';
 
       document.getElementById('domande').innerHTML = (a.domande || []).map(function (d) {
         var s = SINTESI[d.titolo];
+        var tot = d.voci.reduce(function (t, v) { return t + Math.max(v[1], 0); }, 0) || 100, prima = 0;
         var segs = d.voci.map(function (v, i) {
-          return v[1] > 0 ? '<div class="q-seg" title="' + S.esc(v[0] + ': ' + pct(v[1])) + '" style="flex:' + v[1] + ' 1 0;background:' + RAMP[i] + ';color:' + INK[i] + '">' +
-            (v[1] >= 9 ? Math.round(v[1]) + '%' : '') + '</div>' : '';
+          if (!(v[1] > 0)) return '';
+          // Un'unica passata da sinistra: ogni tratto parte quando finisce il precedente.
+          var w = v[1] / tot * 100, rit = DURATA * prima / 100, dur = DURATA * w / 100;
+          prima += w;
+          return '<div class="q-seg" title="' + S.esc(v[0] + ': ' + pct(v[1])) + '" data-w="' + w.toFixed(3) + '" style="background:' + RAMP[i] + ';color:' + INK[i] +
+            ';transition-duration:' + dur + 'ms;transition-delay:' + rit + 'ms">' +
+            (v[1] >= 9 ? '<em style="transition-delay:' + Math.round(rit + dur) + 'ms">' + Math.round(v[1]) + '%</em>' : '') + '</div>';
         }).join('');
         var aria = d.titolo + ': ' + d.voci.map(function (v) { return v[0] + ' ' + pct(v[1]); }).join(', ');
+        var sp = s ? somma(d.voci, s[0]) : 0;
         return '<div><div class="q-head"><h3>' + S.esc(d.titolo) + '</h3>' +
-          (s ? '<span>' + pct(somma(d.voci, s[0])) + ' ' + s[1] + '</span>' : '') + '</div>' +
+          (s ? '<span><b data-conta="' + sp + '">' + pct(sp) + '</b> ' + s[1] + '</span>' : '') + '</div>' +
           '<div class="q-bar" role="img" aria-label="' + S.esc(aria) + '">' + segs + '</div>' +
           '<div class="q-legend">' + d.voci.map(function (v, i) {
             return '<span><i aria-hidden="true" style="background:' + RAMP[i] + '"></i>' + S.esc(v[0]) + ' <strong>' + pct(v[1]) + '</strong></span>';
           }).join('') + '</div></div>';
       }).join('');
       document.getElementById('risultati').hidden = false;
+      anima();
+    }
+
+    // Animazione: parte quando il blocco entra nello schermo, una volta per anno
+    // mostrato. Con «riduci movimento» i valori compaiono subito, fermi.
+    var DURATA = 1100;
+    var FERMO = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var osserva = null;
+
+    function riempi(barra) {
+      barra.querySelectorAll('.q-seg').forEach(function (g) { g.style.width = g.getAttribute('data-w') + '%'; });
+      barra.classList.add('on');
+    }
+
+    function conta(el) {
+      var fine = parseFloat(el.getAttribute('data-conta')), intero = el.hasAttribute('data-intero'), t0 = null;
+      var scrivi = function (x) { el.textContent = intero ? Math.round(x) + '%' : pct(x); };
+      if (FERMO) { scrivi(fine); return; }
+      scrivi(0);
+      requestAnimationFrame(function passo(t) {
+        if (t0 === null) t0 = t;
+        var k = Math.min((t - t0) / DURATA, 1);
+        scrivi(fine * (1 - Math.pow(1 - k, 3)));
+        if (k < 1) requestAnimationFrame(passo);
+      });
+    }
+
+    function parti(el) { if (el.classList.contains('q-bar')) riempi(el); else conta(el); }
+
+    function anima() {
+      var bersagli = document.querySelectorAll('#risultati .q-bar, #risultati [data-conta]');
+      if (osserva) osserva.disconnect();
+      if (FERMO || !('IntersectionObserver' in window)) { bersagli.forEach(parti); return; }
+      // I numeri partono a zero solo se l'animazione c'è davvero.
+      bersagli.forEach(function (el) { if (!el.classList.contains('q-bar')) el.textContent = el.hasAttribute('data-intero') ? '0%' : pct(0); });
+      osserva = new IntersectionObserver(function (voci) {
+        voci.forEach(function (v) {
+          if (!v.isIntersecting) return;
+          osserva.unobserve(v.target);
+          parti(v.target);
+        });
+      }, { threshold: 0.35 });
+      bersagli.forEach(function (el) { osserva.observe(el); });
     }
 
     fetch('https://sideraecm.eu/qualita.php', { cache: 'no-store' })
