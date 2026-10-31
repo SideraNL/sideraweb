@@ -270,3 +270,67 @@ h1, h2, h3 { margin: 0; letter-spacing: -0.02em; }
 .foot .wrap { padding-top: 28px; padding-bottom: 28px; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px 24px; font-size: 14px; }
 .foot nav { display: flex; flex-wrap: wrap; gap: 8px 20px; }
 .foot a { color: var(--white); }
+
+/* ── Chi siamo (31/10/2026, skill frontend-design + Impeccable) ───────── */
+.cs-intro { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); gap: 56px; padding-top: 80px; padding-bottom: 80px; align-items: end; }
+.cs-intro h2 { font-size: 40px; line-height: 1.15; font-weight: 600; letter-spacing: -0.025em; max-width: 22ch; }
+.cs-intro p { margin: 24px 0 0; font-size: 18px; line-height: 1.65; color: var(--text); max-width: 60ch; }
+.cs-facts { margin: 0; border-top: 2px solid var(--ink); }
+.cs-facts div { padding: 16px 0; border-bottom: 1px solid var(--line); }
+.cs-facts dt { font-size: 14px; color: var(--muted); }
+.cs-facts dd { margin: 2px 0 0; font-size: 20px; font-weight: 600; letter-spacing: -0.01em; }
+
+.cs-mission { background: var(--white); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+.cs-mission .wrap { padding-top: 72px; padding-bottom: 72px; display: grid; grid-template-columns: 80px minmax(0, 1fr); gap: 24px; }
+.cs-mission svg { width: 56px; height: 56px; }
+.cs-mission blockquote { margin: 0; font-size: 28px; line-height: 1.4; font-weight: 500; letter-spacing: -0.015em; max-width: 34ch; }
+.cs-mission cite { display: block; margin-top: 20px; font-style: normal; font-size: 15px; color: var(--muted); }
+
+/* Il percorso del corso: l'unico momento animato della pagina. */
+.cs-path { background: var(--ink); color: var(--white); }
+.cs-path .wrap { padding-top: 88px; padding-bottom: 96px; }
+.cs-path h2 { font-size: 36px; font-weight: 600; letter-spacing: -0.02em; }
+.cs-path .lead { margin: 16px 0 0; max-width: 62ch; font-size: 18px; line-height: 1.6; color: var(--on-dark); }
+.cs-steps { list-style: none; margin: 64px 0 0; padding: 0; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); position: relative; }
+.cs-steps::before, .cs-steps::after { content: ""; position: absolute; top: 11px; left: 12px; right: 12px; height: 2px; }
+.cs-steps::before { background: #2A456C; }
+.cs-steps::after { background: var(--accent); transform-origin: left; transform: scaleX(0); transition: transform 2.4s cubic-bezier(.6,.1,.2,1); }
+.cs-path.go .cs-steps::after { transform: scaleX(1); }
+.cs-steps li { position: relative; padding-right: 24px; }
+.cs-dot { display: block; width: 24px; height: 24px; border-radius: 50%; background: var(--ink); border: 2px solid #2A456C; transition: border-color .3s, background .3s; }
+.cs-path.go .cs-dot { border-color: var(--accent); background: var(--accent); }
+.cs-steps li:nth-child(1) .cs-dot { transition-delay: .1s; }
+.cs-steps li:nth-child(2) .cs-dot { transition-delay: .6s; }
+.cs-steps li:nth-child(3) .cs-dot { transition-delay: 1.1s; }
+.cs-steps li:nth-child(4) .cs-dot { transition-delay: 1.6s; }
+.cs-steps li:nth-child(5) .cs-dot { transition-delay: 2.1s; }
+.cs-steps b { display: block; margin-top: 24px; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-weight: 500; font-size: 14px; color: var(--accent); }
+.cs-steps h3 { margin-top: 6px; font-size: 20px; font-weight: 600; line-height: 1.3; }
+.cs-steps p { margin: 10px 0 0; font-size: 15px; line-height: 1.55; color: var(--on-dark-soft); }
+
+.cs-values { padding-top: 80px; padding-bottom: 96px; }
+.cs-values h2 { font-size: 32px; font-weight: 600; }
+.cs-vgrid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 32px; margin-top: 40px; }
+.cs-vgrid div { padding: 4px 0 4px 24px; border-left: 2px solid var(--line-strong); }
+.cs-vgrid h3 { font-size: 22px; font-weight: 600; }
+.cs-vgrid p { margin: 12px 0 0; font-size: 17px; line-height: 1.6; color: var(--text); }
+
+@media (max-width: 860px) {
+  .cs-intro { grid-template-columns: 1fr; gap: 40px; padding-top: 56px; padding-bottom: 56px; }
+  .cs-intro h2 { font-size: 32px; }
+  .cs-mission .wrap { grid-template-columns: 1fr; padding-top: 56px; padding-bottom: 56px; }
+  .cs-mission blockquote { font-size: 23px; }
+  .cs-steps { grid-template-columns: 1fr; margin-top: 40px; }
+  .cs-steps::before, .cs-steps::after { top: 12px; bottom: 12px; left: 11px; right: auto; width: 2px; height: auto; }
+  .cs-steps::after { transform-origin: top; transform: scaleY(0); }
+  .cs-path.go .cs-steps::after { transform: scaleY(1); }
+  .cs-steps li { display: grid; grid-template-columns: 24px minmax(0, 1fr); column-gap: 20px; padding: 0 0 32px; }
+  .cs-steps li:last-child { padding-bottom: 0; }
+  .cs-steps .cs-dot { grid-row: span 3; }
+  .cs-steps b { margin-top: 2px; }
+  .cs-vgrid { grid-template-columns: 1fr; gap: 32px; }
+  .cs-vgrid div { padding-left: 20px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cs-steps::after, .cs-dot { transition: none !important; }
+}

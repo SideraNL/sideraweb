@@ -1,3 +1,8 @@
 # Documentazione privata (domini, DNS, costi, account) — MAI pubblicare:
 # il repo e' pubblico e GitHub Pages serve tutto cio' che viene pushato.
 docs-privati/
+
+# Impostazioni e skill di Claude Code (impeccable): restano sul PC, non vanno sul sito.
+.claude/
+PRODUCT.md
+DESIGN.md
