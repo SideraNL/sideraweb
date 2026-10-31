@@ -3,118 +3,83 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SideraAPP — Sidera s.r.l.</title>
-  <meta name="description" content="SideraAPP - L'applicazione di Sidera per la formazione a distanza ECM.">
+  <title>Sidera APP — Sidera s.r.l.</title>
+  <meta name="description" content="Installa l'app Sidera Corsi: notifiche sui nuovi corsi ECM e su quelli in partenza, direttamente sul tuo smartphone.">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>S</text></svg>">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/sidera.css">
 </head>
 <body>
-
-  <!-- Navigation -->
-  <nav class="navbar">
-    <div class="container">
-      <a href="index.html" class="nav-logo">
-        <img src="https://i.ibb.co/XxFJ4bjn/logo-Sidera1280.png" alt="Sidera" class="nav-logo-img">
-      </a>
-      <ul class="nav-links">
-        <li><a href="index.html">Home</a></li>
-        <li><a href="corsi.html">Corsi ECM</a></li>
-        <li><a href="presentazione.html">Chi Siamo</a></li>
-      </ul>
-      <button class="hamburger" aria-label="Menu">
-        <span></span><span></span><span></span>
-      </button>
+  <div class="top">
+    <video class="top-video" src="img/sfondo_lago.mp4" poster="img/sfondo_lago.jpg" autoplay muted loop playsinline aria-hidden="true"></video>
+    <div class="top-veil" aria-hidden="true"></div>
+    <header class="wrap nav">
+      <a class="nav-logo" href="index.html"><img src="img/logo_bianco.png" alt="Sidera"></a>
+      <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="menu">Menu</button>
+      <nav class="nav-links" id="menu" aria-label="Pagine del sito">
+        <a href="corsi.html">Corsi ECM</a>
+        <a href="regolamento.html">Regolamento</a>
+        <a href="app.html" aria-current="page">Sidera APP</a>
+        <a href="qualita.html">Qualità</a>
+        <a href="presentazione.html">Chi siamo</a>
+      </nav>
+    </header>
+    <div class="wrap top-title">
+      <p class="eyebrow">App Sidera Corsi</p>
+      <h1>Sidera APP</h1>
+      <p>Rimani aggiornato sui corsi ECM: ricevi notifiche sui nuovi corsi e su quelli in partenza direttamente sul tuo smartphone.</p>
     </div>
-  </nav>
-  <div class="mobile-overlay"></div>
+  </div>
 
-  <!-- Page Header -->
-  <section class="page-header">
-    <div class="container">
-      <h1>SideraAPP</h1>
-      <p>La piattaforma di formazione a distanza per i professionisti sanitari</p>
-    </div>
-  </section>
+  <main class="wrap page">
+    <div class="split">
+      <div class="card qr-card">
+        <span class="mono muted" style="font-size: 13px; letter-spacing: 0.08em; text-transform: uppercase">Inquadra con la fotocamera</span>
+        <img src="img/qr_app.png" alt="QR code per aprire l'app: app.sideraecm.eu">
+        <span style="font-size: 18px; font-weight: 700">app.sideraecm.eu</span>
+        <a class="btn btn-navy" style="width: 100%" href="https://app.sideraecm.eu" target="_blank" rel="noopener">Apri l'App</a>
+        <span class="muted" style="font-size: 14px; line-height: 1.5">Senza passare dallo store: si aggiunge alla schermata Home.</span>
+      </div>
 
-  <!-- App Showcase -->
-  <section class="section">
-    <div class="container">
-      <div class="app-showcase">
-        <div class="app-info fade-in-left">
-          <h2>Formazione ECM sempre con te</h2>
-          <p>SideraAPP &egrave; la web application di Sidera che ti permette di accedere ai corsi FAD (Formazione a Distanza) direttamente dal tuo smartphone, tablet o computer.</p>
-          <p>Con SideraAPP puoi seguire i corsi ECM in qualsiasi momento e da qualsiasi luogo, monitorare i tuoi progressi e ottenere i crediti formativi necessari.</p>
-
-          <h3 style="font-family: 'Inter', sans-serif; font-size: 18px; color: var(--primary); margin-top: 32px; margin-bottom: 16px;">Come iniziare</h3>
-          <ol class="app-steps">
-            <li>Inquadra il QR code con la fotocamera del tuo dispositivo oppure accedi direttamente al link della web app</li>
-            <li>Effettua il login con le credenziali ricevute via email al momento dell'iscrizione al corso</li>
-            <li>Seleziona il corso FAD a cui sei iscritto e inizia la formazione</li>
-            <li>Completa tutti i moduli e supera il test finale per ottenere i crediti ECM</li>
+      <div style="flex: 999 1 560px; min-width: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); gap: 20px">
+        <section class="card" style="margin: 0">
+          <h2 style="font-size: 22px">iPhone (iOS)</h2>
+          <ol class="steps">
+            <li>Apri <strong>Safari</strong> e inquadra il QR code (o visita il link)</li>
+            <li>Tocca il pulsante <strong>Condividi</strong> nella barra in basso</li>
+            <li>Scorri verso il basso e tocca <strong>«Aggiungi a schermata Home»</strong></li>
+            <li>Tocca <strong>Aggiungi</strong> in alto a destra</li>
+            <li>L'app appare nella schermata Home: aprila e <strong>attiva le notifiche</strong></li>
           </ol>
-
-          <h3 style="font-family: 'Inter', sans-serif; font-size: 18px; color: var(--primary); margin-top: 32px; margin-bottom: 16px;">Requisiti</h3>
-          <p>SideraAPP funziona su qualsiasi browser moderno (Chrome, Safari, Firefox, Edge). Non &egrave; necessario scaricare alcuna applicazione dallo store: basta accedere al link e aggiungere l'app alla schermata home del dispositivo per un accesso rapido.</p>
-        </div>
-
-        <div class="app-qr fade-in-right">
-          <div class="app-qr-placeholder">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="3" height="3"/><line x1="21" y1="14" x2="21" y2="14.01"/><line x1="21" y1="21" x2="21" y2="21.01"/><line x1="17" y1="21" x2="17" y2="21.01"/><line x1="21" y1="17" x2="21" y2="17.01"/><rect x="5" y="5" width="3" height="3"/><rect x="16" y="5" width="3" height="3"/><rect x="5" y="16" width="3" height="3"/>
-            </svg>
-            <span>QR Code SideraAPP</span>
-          </div>
-        </div>
+        </section>
+        <section class="card" style="margin: 0">
+          <h2 style="font-size: 22px">Android</h2>
+          <ol class="steps">
+            <li>Apri <strong>Chrome</strong> e inquadra il QR code (o visita il link)</li>
+            <li>Tocca il menu <strong>⋮</strong> in alto a destra</li>
+            <li>Tocca <strong>«Aggiungi a schermata Home»</strong> o <strong>«Installa app»</strong></li>
+            <li>Tocca <strong>Installa</strong> per confermare</li>
+            <li>L'app appare nella schermata Home: aprila e <strong>attiva le notifiche</strong></li>
+          </ol>
+        </section>
+        <a class="cta-dark" style="grid-column: 1 / -1" href="corsi.html">Nell'app trovi il calendario dei corsi, il dettaglio di ogni evento e il Regolamento, sempre aggiornati. <span aria-hidden="true">→</span></a>
       </div>
     </div>
-  </section>
+  </main>
 
-  <!-- Footer -->
-  <footer class="footer">
-    <div class="container">
-      <div class="footer-grid">
-        <div class="footer-brand">
-          <span class="nav-logo-text">Sidera</span>
-          <p>Sidera s.r.l. &mdash; Provider ECM standard n. 84 accreditato da AGENAS. Progettazione ed erogazione di attivit&agrave; di formazione sanitaria accreditata ECM.</p>
-        </div>
-        <div class="footer-col">
-          <h4>Navigazione</h4>
-          <ul>
-            <li><a href="index.html">Home</a></li>
-            <li><a href="corsi.html">Corsi ECM</a></li>
-                <li><a href="presentazione.html">Chi Siamo</a></li>
-              </ul>
-        </div>
-        <div class="footer-col">
-          <h4>Legale</h4>
-          <ul>
-            <li><a href="privacy.html">Privacy Policy</a></li>
-            <li><a href="codice-etico.html">Codice Etico</a></li>
-          </ul>
-        </div>
-        <div class="footer-col">
-          <h4>Contatti</h4>
-          <ul>
-            <li>Vicolo Tonale 4</li>
-            <li>25032 Chiari (BS)</li>
-            <li><a href="mailto:info@sideraweb.it">info@sideraweb.it</a></li>
-          </ul>
-        </div>
-      </div>
-      <div class="footer-bottom">
-        <span>&copy; 2026 Sidera s.r.l. &mdash; P.IVA 02893270120 &mdash; Tutti i diritti riservati</span>
-        <div class="footer-certs">
-          <span>Provider ECM n. 84</span>
-          <span>|</span>
-          <span>ISO 9001 ITALCERT</span>
-        </div>
-      </div>
+  <footer class="foot">
+    <div class="wrap">
+      <span>© 2026 Sidera s.r.l. · Provider ECM n. 84 · ISO 9001 ITALCERT</span>
+      <nav aria-label="Collegamenti">
+        <a href="regolamento.html">Regolamento</a>
+        <a href="privacy.html">Privacy</a>
+        <a href="codice-etico.html">Codice etico</a>
+        <a href="mailto:info@sideraweb.it">info@sideraweb.it</a>
+      </nav>
     </div>
   </footer>
-
-  <script src="js/main.js"></script>
+  <script src="js/sidera.js"></script>
 </body>
 </html>

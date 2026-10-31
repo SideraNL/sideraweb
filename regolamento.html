@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Regolamento — Sidera s.r.l.</title>
+  <meta name="description" content="Regolamento per la partecipazione ai corsi ECM di Sidera s.r.l.: iscrizione, presenze, test ECM, attestati e webinar.">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>S</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/sidera.css">
+</head>
+<body>
+  <div class="top">
+    <video class="top-video" src="img/sfondo_lago.mp4" poster="img/sfondo_lago.jpg" autoplay muted loop playsinline aria-hidden="true"></video>
+    <div class="top-veil" aria-hidden="true"></div>
+    <header class="wrap nav">
+      <a class="nav-logo" href="index.html"><img src="img/logo_bianco.png" alt="Sidera"></a>
+      <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="menu">Menu</button>
+      <nav class="nav-links" id="menu" aria-label="Pagine del sito">
+        <a href="corsi.html">Corsi ECM</a>
+        <a href="regolamento.html" aria-current="page">Regolamento</a>
+        <a href="app.html">Sidera APP</a>
+        <a href="qualita.html">Qualità</a>
+        <a href="presentazione.html">Chi siamo</a>
+      </nav>
+    </header>
+    <div class="wrap top-title">
+      <p class="eyebrow" id="aggiornato">Regolamento in vigore</p>
+      <h1>Regolamento</h1>
+      <p>Informazioni utili per la partecipazione ai nostri corsi ECM.</p>
+    </div>
+  </div>
+
+  <main class="wrap page">
+    <div class="stats">
+      <div class="stat"><b>90%</b><span>presenza minima, in sala o collegati</span></div>
+      <div class="stat"><b>75%</b><span>risposte corrette per superare il test, un solo tentativo</span></div>
+      <div class="stat"><b>3 giorni</b><span>per compilare test e questionario, e per le segnalazioni</span></div>
+      <div class="stat dark"><b>90 giorni</b><span>per richiedere copia degli attestati</span></div>
+    </div>
+
+    <div class="split" style="margin-top: 48px">
+      <aside style="flex: 1 1 220px; min-width: 0">
+        <p class="mono muted" style="margin: 0 0 12px; font-size: 13px; letter-spacing: 0.06em; text-transform: uppercase">In questa pagina</p>
+        <nav class="toc" id="indice" aria-label="Sezioni del regolamento"></nav>
+      </aside>
+      <div style="flex: 999 1 640px; min-width: 0" id="sezioni"></div>
+    </div>
+  </main>
+
+  <footer class="foot">
+    <div class="wrap">
+      <span>© 2026 Sidera s.r.l. · Provider ECM n. 84 · ISO 9001 ITALCERT</span>
+      <nav aria-label="Collegamenti">
+        <a href="privacy.html">Privacy</a>
+        <a href="codice-etico.html">Codice etico</a>
+        <a href="mailto:info@sideraweb.it">info@sideraweb.it</a>
+      </nav>
+    </div>
+  </footer>
+
+  <script src="js/sidera.js"></script>
+  <script>
+  (function () {
+    // Il testo vero sta su https://sideraecm.eu/regolamento.php, unica copia
+    // (hostinger_backend/lib/regolamento.php). Questa copia statica e' solo la rete:
+    // si vede se Hostinger non risponde. Aggiornata al 31/10/2026.
+    var RISERVA = {
+      aggiornato: '2026-10-31',
+      sezioni: [
+        { titolo: 'Iscrizione & Accesso', voci: [
+          'L\'iscrizione ai corsi avviene tramite il pulsante "Iscriviti" presente nella scheda di ciascun corso',
+          'Per i corsi residenziali, i posti sono limitati e assegnati in ordine di iscrizione',
+          'L\'iscrizione si intende confermata alla ricezione dell\'email di conferma',
+          'Per i webinar l\'iscrizione va effettuata <strong>prima dell\'inizio</strong> del webinar: non sono accolte iscrizioni durante il webinar'] },
+        { titolo: 'Attestati e Presenza', voci: [
+          'Per i corsi residenziali, è richiesta la presenza ad almeno il <strong>90%</strong> delle ore previste anche per il rilascio degli attestati di partecipazione',
+          'Per i webinar (FAD sincrona), è richiesto il collegamento per almeno il <strong>90%</strong> della durata dell\'evento, anche per il rilascio degli attestati di partecipazione',
+          'La rilevazione delle presenze avviene tramite scansione del QR Code in ingresso e in uscita. Per i webinar la presenza è rilevata direttamente dalla piattaforma di connessione tramite il link personale e non cedibile',
+          'Gli attestati di partecipazione sono inviati per email entro <strong>5 giorni</strong> dall\'evento a chi ha raggiunto la presenza richiesta',
+          'Gli attestati ECM sono rilasciati al completamento del percorso formativo e al superamento del test di verifica, e sono inviati per email entro <strong>30 giorni</strong> dall\'evento',
+          'Eventuali segnalazioni relative a presenze, test o customer satisfaction devono pervenire all\'indirizzo <strong>direzione@sideraweb.it</strong> entro <strong>3 giorni solari</strong> dalla chiusura dell\'evento',
+          'Le segnalazioni e/o richieste pervenute oltre il <strong>90° giorno</strong> dall\'evento non sono ammissibili',
+          '<strong>È possibile richiedere copia degli attestati entro 90 giorni dall\'evento. Non saranno accolte richieste successive a questo termine.</strong>'] },
+        { titolo: 'Test ECM', voci: [
+          'Il test di verifica dell\'apprendimento è obbligatorio per l\'ottenimento dei crediti ECM',
+          'Il link per il test ECM e il questionario di customer satisfaction è inviato per email entro le <strong>ore 10</strong> del giorno successivo all\'evento, dopo la verifica delle presenze',
+          'Test e questionario si possono compilare fino alle <strong>ore 23:59 del terzo giorno</strong> successivo all\'evento (evento il giorno 10: fino al 13 compreso); poi il link si chiude',
+          'Nello stesso link si compila prima il questionario di customer satisfaction: il test si apre subito dopo',
+          'Il test si considera superato con almeno il 75% di risposte corrette',
+          'E\' consentito un solo tentativo di risposta'] }
+      ],
+      webinar: null
+    };
+    var MESI = ['gennaio', 'febbraio', 'marzo', 'aprile', 'maggio', 'giugno', 'luglio', 'agosto', 'settembre', 'ottobre', 'novembre', 'dicembre'];
+
+    // Le voci contengono <strong>: e' testo nostro (lib/regolamento.php), non input di utenti.
+    function voce(v) {
+      var intera = /^<strong>[\s\S]*<\/strong>$/.test(v) && v.indexOf('<strong>', 1) < 0;
+      return intera ? '</ul><div class="highlight">' + v.replace(/<\/?strong>/g, '') + '</div><ul>' : '<li>' + v + '</li>';
+    }
+    function mostra(reg) {
+      var sez = (reg.sezioni || []).slice();
+      if (reg.webinar && reg.webinar.voci && reg.webinar.voci.length) sez.push(reg.webinar);
+      document.getElementById('indice').innerHTML = sez.map(function (s, i) {
+        return '<a href="#sez' + i + '">' + Sidera.esc(s.titolo.replace('&', 'e')) + '</a>';
+      }).join('');
+      document.getElementById('sezioni').innerHTML = sez.map(function (s, i) {
+        return '<section class="card" id="sez' + i + '"><h2>' + Sidera.esc(s.titolo.replace('&', 'e')) + '</h2><ul>' +
+          (s.voci || []).map(voce).join('') + '</ul></section>';
+      }).join('').replace(/<ul><\/ul>/g, '');
+      var a = String(reg.aggiornato || '').split('-');
+      if (a.length === 3) document.getElementById('aggiornato').textContent =
+        'Aggiornato al ' + Number(a[2]) + ' ' + MESI[Number(a[1]) - 1] + ' ' + a[0];
+    }
+
+    fetch('https://sideraecm.eu/regolamento.php', { cache: 'no-store' })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (d) { mostra(d && d.ok && d.regolamento && d.regolamento.sezioni ? d.regolamento : RISERVA); })
+      .catch(function () { mostra(RISERVA); });
+  })();
+  </script>
+</body>
+</html>

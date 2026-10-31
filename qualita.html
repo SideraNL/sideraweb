@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Qualità — Sidera s.r.l.</title>
+  <meta name="description" content="Come i partecipanti valutano i corsi ECM di Sidera: risultati aggregati e anonimi del questionario ECM, anno per anno.">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>S</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/sidera.css">
+</head>
+<body>
+  <div class="top">
+    <video class="top-video" src="img/sfondo_lago.mp4" poster="img/sfondo_lago.jpg" autoplay muted loop playsinline aria-hidden="true"></video>
+    <div class="top-veil" aria-hidden="true"></div>
+    <header class="wrap nav">
+      <a class="nav-logo" href="index.html"><img src="img/logo_bianco.png" alt="Sidera"></a>
+      <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="menu">Menu</button>
+      <nav class="nav-links" id="menu" aria-label="Pagine del sito">
+        <a href="corsi.html">Corsi ECM</a>
+        <a href="regolamento.html">Regolamento</a>
+        <a href="app.html">Sidera APP</a>
+        <a href="qualita.html" aria-current="page">Qualità</a>
+        <a href="presentazione.html">Chi siamo</a>
+      </nav>
+    </header>
+    <div class="wrap top-title">
+      <p class="eyebrow">Customer satisfaction ECM</p>
+      <h1>Qualità</h1>
+      <p>Come i partecipanti valutano i nostri corsi: i risultati del questionario ECM, in forma aggregata e anonima, aggiornati alla chiusura di ogni evento con l'invio del rapporto ECM.</p>
+    </div>
+  </div>
+
+  <main class="wrap page">
+    <div class="filter-row" role="group" aria-label="Anno" id="anni" style="margin-bottom: 28px" hidden>
+      <span class="filter-label" style="width: auto; margin-right: 6px">Anno</span>
+    </div>
+    <div class="state" id="stato">Caricamento dei risultati…</div>
+    <div id="risultati" hidden>
+      <div class="stats" id="sintesi"></div>
+      <section class="card" style="margin-top: 32px">
+        <h2 style="margin-bottom: 6px">Le domande ECM</h2>
+        <p class="muted" style="margin: 0 0 28px; font-size: 15px">Percentuale delle risposte nell'anno. Dal colore più chiaro al più scuro, il giudizio cresce.</p>
+        <div class="q-list" id="domande"></div>
+      </section>
+    </div>
+  </main>
+
+  <footer class="foot">
+    <div class="wrap">
+      <span>© 2026 Sidera s.r.l. · Provider ECM n. 84 · ISO 9001 ITALCERT</span>
+      <nav aria-label="Collegamenti">
+        <a href="regolamento.html">Regolamento</a>
+        <a href="privacy.html">Privacy</a>
+        <a href="codice-etico.html">Codice etico</a>
+        <a href="mailto:info@sideraweb.it">info@sideraweb.it</a>
+      </nav>
+    </div>
+  </footer>
+
+  <script src="js/sidera.js"></script>
+  <script>
+  (function () {
+    // Dati: sideraecm.eu/qualita.php — solo percentuali per anno, scritte da MedFIND
+    // (scripts/qualita_cs.py) dopo l'invio di ogni rapporto ECM.
+    var S = window.Sidera;
+    // Scala sequenziale, un solo tono (blu Sidera) dal chiaro allo scuro: il giudizio cresce.
+    var RAMP = ['#DCE4EF', '#AFC2DC', '#7697C4', '#3F67A1', '#1A3A5C'];
+    var INK = ['#0E2238', '#0E2238', '#0E2238', '#FFFFFF', '#FFFFFF'];
+    // Sintesi di ogni domanda: le voci che contano come giudizio positivo.
+    var SINTESI = {
+      'Rilevanza degli argomenti trattati': [[2, 3, 4], 'rilevante o più'],
+      'Qualità educativa del programma': [[3, 4], 'buona o eccellente'],
+      "Utilità dell'evento": [[2, 3, 4], 'utile o più'],
+      'Tempo dedicato': [[2], 'uguale al previsto']
+    };
+    var anni = [], scelto = null;
+    function pct(p) { return String(Math.round(p * 10) / 10).replace('.', ',') + '%'; }
+    function somma(voci, idx) { return idx.reduce(function (a, i) { return a + (voci[i] ? voci[i][1] : 0); }, 0); }
+
+    function mostra() {
+      var a = anni.filter(function (x) { return x.anno === scelto; })[0];
+      var bar = document.getElementById('anni');
+      bar.querySelectorAll('.pill').forEach(function (p) { p.remove(); });
+      anni.forEach(function (x) {
+        var b = document.createElement('button');
+        b.type = 'button'; b.className = 'pill'; b.textContent = x.anno;
+        b.setAttribute('aria-pressed', x.anno === scelto ? 'true' : 'false');
+        b.onclick = function () { scelto = x.anno; mostra(); };
+        bar.appendChild(b);
+      });
+      bar.hidden = false;
+
+      var q = (a.domande || []).filter(function (d) { return d.titolo === 'Qualità educativa del programma'; })[0];
+      document.getElementById('sintesi').innerHTML = q
+        ? '<div class="stat"><b>' + Math.round(somma(q.voci, [3, 4])) + '%</b><span>giudica la qualità educativa buona o eccellente</span></div>' : '';
+
+      document.getElementById('domande').innerHTML = (a.domande || []).map(function (d) {
+        var s = SINTESI[d.titolo];
+        var segs = d.voci.map(function (v, i) {
+          return v[1] > 0 ? '<div class="q-seg" title="' + S.esc(v[0] + ': ' + pct(v[1])) + '" style="flex:' + v[1] + ' 1 0;background:' + RAMP[i] + ';color:' + INK[i] + '">' +
+            (v[1] >= 9 ? Math.round(v[1]) + '%' : '') + '</div>' : '';
+        }).join('');
+        var aria = d.titolo + ': ' + d.voci.map(function (v) { return v[0] + ' ' + pct(v[1]); }).join(', ');
+        return '<div><div class="q-head"><h3>' + S.esc(d.titolo) + '</h3>' +
+          (s ? '<span>' + pct(somma(d.voci, s[0])) + ' ' + s[1] + '</span>' : '') + '</div>' +
+          '<div class="q-bar" role="img" aria-label="' + S.esc(aria) + '">' + segs + '</div>' +
+          '<div class="q-legend">' + d.voci.map(function (v, i) {
+            return '<span><i aria-hidden="true" style="background:' + RAMP[i] + '"></i>' + S.esc(v[0]) + ' <strong>' + pct(v[1]) + '</strong></span>';
+          }).join('') + '</div></div>';
+      }).join('');
+      document.getElementById('risultati').hidden = false;
+    }
+
+    fetch('https://sideraecm.eu/qualita.php', { cache: 'no-store' })
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        anni = (d && d.ok && d.anni) || [];
+        if (!anni.length) { document.getElementById('stato').textContent = 'I risultati saranno pubblicati alla chiusura del primo evento dell\'anno.'; return; }
+        scelto = anni[0].anno;
+        document.getElementById('stato').hidden = true;
+        mostra();
+      })
+      .catch(function () { document.getElementById('stato').textContent = 'I risultati non sono raggiungibili in questo momento. Riprova tra qualche minuto.'; });
+  })();
+  </script>
+</body>
+</html>

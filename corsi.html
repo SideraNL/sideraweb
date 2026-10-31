@@ -3,384 +3,158 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Catalogo Corsi ECM — Sidera s.r.l.</title>
-  <meta name="description" content="Catalogo corsi ECM accreditati AGENAS di Sidera s.r.l. Formazione residenziale e FAD per professionisti sanitari.">
+  <title>Corsi ECM — Sidera s.r.l.</title>
+  <meta name="description" content="Calendario dei corsi ECM residenziali e dei webinar di Sidera s.r.l., Provider ECM n. 84.">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>S</text></svg>">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
-  <link rel="preconnect" href="https://drive.google.com">
-  <link rel="dns-prefetch" href="https://lh3.googleusercontent.com">
-  <link rel="stylesheet" href="css/style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/sidera.css">
 </head>
 <body>
-
-  <!-- Navigation -->
-  <nav class="navbar">
-    <div class="container">
-      <a href="index.html" class="nav-logo">
-        <img src="https://i.ibb.co/XxFJ4bjn/logo-Sidera1280.png" alt="Sidera" class="nav-logo-img">
-      </a>
-      <ul class="nav-links">
-        <li><a href="index.html">Home</a></li>
-        <li><a href="corsi.html">Corsi ECM</a></li>
-        <li><a href="presentazione.html">Chi Siamo</a></li>
-      </ul>
-      <button class="hamburger" aria-label="Menu">
-        <span></span><span></span><span></span>
-      </button>
+  <div class="top">
+    <video class="top-video" src="img/sfondo_lago.mp4" poster="img/sfondo_lago.jpg" autoplay muted loop playsinline aria-hidden="true"></video>
+    <div class="top-veil" aria-hidden="true"></div>
+    <header class="wrap nav">
+      <a class="nav-logo" href="index.html"><img src="img/logo_bianco.png" alt="Sidera"></a>
+      <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="menu">Menu</button>
+      <nav class="nav-links" id="menu" aria-label="Pagine del sito">
+        <a href="corsi.html" aria-current="page">Corsi ECM</a>
+        <a href="regolamento.html">Regolamento</a>
+        <a href="app.html">Sidera APP</a>
+        <a href="qualita.html">Qualità</a>
+        <a href="presentazione.html">Chi siamo</a>
+      </nav>
+    </header>
+    <div class="wrap top-title">
+      <p class="eyebrow">Calendario</p>
+      <h1>Corsi ECM</h1>
+      <p>Ogni corso ha la sua pagina con programma, relatori, sede e locandina.</p>
     </div>
-  </nav>
-  <div class="mobile-overlay"></div>
+  </div>
 
-  <!-- Page Header -->
-  <section class="page-header">
-    <div class="container">
-      <h1>Catalogo Corsi</h1>
-      <p>Esplora i nostri corsi ECM accreditati per professionisti sanitari</p>
+  <main class="wrap page">
+    <div class="filters" id="filtri" hidden>
+      <div class="filter-row" role="group" aria-label="Tipologia">
+        <span class="filter-label">Tipologia</span>
+        <span id="filtro-tipo" style="display: contents"></span>
+      </div>
+      <div class="filter-row" role="group" aria-label="Area terapeutica">
+        <span class="filter-label">Area terapeutica</span>
+        <span id="filtro-area" style="display: contents"></span>
+      </div>
+      <span class="muted" style="font-size: 14px" id="conteggio" aria-live="polite"></span>
     </div>
-  </section>
+    <div class="state" id="stato">Caricamento del calendario…</div>
+    <div class="course-grid" id="corsi"></div>
+  </main>
 
-  <!-- Regulation Section -->
-  <section class="section">
-    <div class="container">
-      <div class="section-header fade-in">
-        <h2 class="section-title">Regolamento</h2>
-        <p class="section-lead">Informazioni utili per la partecipazione ai nostri corsi ECM</p>
-      </div>
-
-      <!-- Il testo vero sta su https://sideraecm.eu/regolamento.php, unica copia,
-           letta anche da SideraAPP. Quello qui sotto e' il ripiego mostrato se
-           l'endpoint non risponde: va riallineato quando si modifica il testo. -->
-      <div class="accordion-group fade-in" id="regolamento-accordion">
-        <details class="accordion-item">
-          <summary class="accordion-header">Iscrizione &amp; Accesso</summary>
-          <div class="accordion-body">
-            <ul>
-              <li>L'iscrizione ai corsi avviene tramite il pulsante "Iscriviti" presente nella scheda di ciascun corso</li>
-              <li>Per i corsi residenziali, i posti sono limitati e assegnati in ordine di iscrizione</li>
-              <li>L'iscrizione si intende confermata alla ricezione dell'email di conferma</li>
-            </ul>
-          </div>
-        </details>
-        <details class="accordion-item">
-          <summary class="accordion-header">Attestati e Presenza</summary>
-          <div class="accordion-body">
-            <ul>
-              <li>Per i corsi residenziali, &egrave; richiesta la presenza ad almeno il <strong>90%</strong> delle ore previste anche per il rilascio degli attestati di partecipazione</li>
-              <li>Per i webinar (FAD sincrona), &egrave; richiesto il collegamento per almeno il <strong>90%</strong> della durata dell&rsquo;evento, anche per il rilascio degli attestati di partecipazione</li>
-              <li>La rilevazione delle presenze avviene tramite scansione del QR Code in ingresso e in uscita. Per i webinar la presenza &egrave; rilevata direttamente dalla piattaforma di connessione tramite il link personale e non cedibile</li>
-              <li>Gli attestati ECM sono rilasciati al completamento del percorso formativo e al superamento del test di verifica</li>
-              <li>Eventuali segnalazioni relative a presenze, test o customer satisfaction devono pervenire entro <strong>3 giorni solari</strong> dalla chiusura dell'evento</li>
-              <li>Le segnalazioni e/o richieste pervenute oltre il <strong>90&deg; giorno</strong> dall'evento non sono ammissibili</li>
-            </ul>
-          </div>
-        </details>
-        <details class="accordion-item">
-          <summary class="accordion-header">Test ECM</summary>
-          <div class="accordion-body">
-            <ul>
-              <li>Il test di verifica dell'apprendimento &egrave; obbligatorio per l'ottenimento dei crediti ECM</li>
-              <li>Il test si considera superato con almeno il 75% di risposte corrette</li>
-              <li>E' consentito un solo tentativo di risposta</li>
-            </ul>
-          </div>
-        </details>
-      </div>
-
-      <!-- Course Catalog -->
-      <div class="section-header fade-in" style="margin-top: 40px;">
-        <h2 class="section-title">Corsi disponibili</h2>
-      </div>
-
-      <div id="corso-stale-banner">Aggiornamento catalogo in corso...</div>
-
-      <div id="corso-loading" class="corso-loading">
-        <div class="corso-spinner"></div>
-        <p class="corso-loading-text">Caricamento catalogo corsi...</p>
-      </div>
-
-      <div id="corso-filters"></div>
-      <div id="corso-grid"></div>
-      <div id="corso-error">Nessun corso disponibile al momento.</div>
-
-      <!-- Privacy ECM -->
-      <div class="privacy-ecm fade-in">
-        <p>I dati personali raccolti durante l'iscrizione ai corsi sono trattati in conformit&agrave; con il GDPR e la normativa ECM vigente.<br>
-        Per maggiori informazioni, consulta la nostra <a href="privacy.html">informativa sulla privacy</a>.</p>
-      </div>
-    </div>
-  </section>
-
-  <!-- Footer -->
-  <footer class="footer">
-    <div class="container">
-      <div class="footer-grid">
-        <div class="footer-brand">
-          <span class="nav-logo-text">Sidera</span>
-          <p>Sidera s.r.l. &mdash; Provider ECM standard n. 84 accreditato da AGENAS. Progettazione ed erogazione di attivit&agrave; di formazione sanitaria accreditata ECM.</p>
-        </div>
-        <div class="footer-col">
-          <h4>Navigazione</h4>
-          <ul>
-            <li><a href="index.html">Home</a></li>
-            <li><a href="corsi.html">Corsi ECM</a></li>
-                <li><a href="presentazione.html">Chi Siamo</a></li>
-              </ul>
-        </div>
-        <div class="footer-col">
-          <h4>Legale</h4>
-          <ul>
-            <li><a href="privacy.html">Privacy Policy</a></li>
-            <li><a href="codice-etico.html">Codice Etico</a></li>
-          </ul>
-        </div>
-        <div class="footer-col">
-          <h4>Contatti</h4>
-          <ul>
-            <li>Vicolo Tonale 4</li>
-            <li>25032 Chiari (BS)</li>
-            <li><a href="mailto:info@sideraweb.it">info@sideraweb.it</a></li>
-          </ul>
-        </div>
-      </div>
-      <div class="footer-bottom">
-        <span>&copy; 2026 Sidera s.r.l. &mdash; P.IVA 02893270120 &mdash; Tutti i diritti riservati</span>
-        <div class="footer-certs">
-          <span>Provider ECM n. 84</span>
-          <span>|</span>
-          <span>ISO 9001 ITALCERT</span>
-        </div>
-      </div>
+  <footer class="foot">
+    <div class="wrap">
+      <span>© 2026 Sidera s.r.l. · Provider ECM n. 84 · ISO 9001 ITALCERT</span>
+      <nav aria-label="Collegamenti">
+        <a href="regolamento.html">Regolamento</a>
+        <a href="privacy.html">Privacy</a>
+        <a href="codice-etico.html">Codice etico</a>
+        <a href="mailto:info@sideraweb.it">info@sideraweb.it</a>
+      </nav>
     </div>
   </footer>
 
-  <script src="js/main.js"></script>
+  <script src="js/sidera.js"></script>
   <script>
-    // ── Course Catalog — integrated from SitoCorsi_embed.html ─────────────
-    (function() {
-      // Catalogo: sideraecm.eu/corsi.php (piu' sotto). Il vecchio lettore del foglio
-      // Google DBCORSI e' stato tolto il 30/09/2026: il foglio non si aggiorna piu'.
+  (function () {
+    // Catalogo: sideraecm.eu/corsi.php, solo eventi PUBBLICATI (stato ATTIVO).
+    var S = window.Sidera;
+    var tutti = [], tipo = 'Tutti', area = 'Tutte';
+    var OGGI = new Date(); OGGI.setHours(0, 0, 0, 0);
+    var PIN = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#E5332A" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0119 9.5C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg>';
+    var SCHERMO = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#E5332A" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="13" rx="2"/><path d="M8 21h8M12 17v4"/></svg>';
 
-      var CACHE_KEY      = 'dbcorsi_catalogo';
-      var CACHE_TS_KEY   = 'dbcorsi_catalogo_ts';
-      var CACHE_MAX_AGE  = 10 * 60 * 1000;
+    function pill(label, on, fn) {
+      var b = document.createElement('button');
+      b.type = 'button'; b.className = 'pill'; b.textContent = label;
+      b.setAttribute('aria-pressed', on ? 'true' : 'false');
+      b.onclick = fn;
+      return b;
+    }
 
-      // Palette AREA TERAPEUTICA — allineata a MedFIND/BROCHURE (_BR_AREA_COLORS
-      // in blueprints/brochure.py): la card del sito e la brochure stampata dello
-      // stesso evento devono avere lo stesso colore. Fallback = "altro".
-      var AREA_COLORS = {
-        'PSICHIATRIA': '#1565C0', 'ONCOLOGIA': '#C2185B',
-        'PNEUMOLOGIA': '#00897B', 'GASTROENTEROLOGIA': '#E65100'
-      };
-      var AREA_COLOR_DEFAULT = '#1D3557';   // "altro" in BROCHURE
+    function filtri() {
+      var t = document.getElementById('filtro-tipo'), a = document.getElementById('filtro-area');
+      t.innerHTML = ''; a.innerHTML = '';
+      [['Tutti', 'Tutti'], ['Residenziale', 'Residenziali'], ['Webinar', 'Webinar']].forEach(function (x) {
+        t.appendChild(pill(x[1], tipo === x[0], function () { tipo = x[0]; filtri(); mostra(); }));
+      });
+      var aree = [];
+      tutti.forEach(function (c) { var n = S.areaNome(c.area); if (n && aree.indexOf(n) < 0) aree.push(n); });
+      aree.sort();
+      ['Tutte'].concat(aree).forEach(function (n) {
+        a.appendChild(pill(n, area === n, function () { area = n; filtri(); mostra(); }));
+      });
+      document.getElementById('filtri').hidden = false;
+    }
 
-      var allCorsi = [];
+    function scheda(c) {
+      var col = S.area(c.area), web = S.webinar(c.luogo);
+      var url = 'corso.html?id=' + encodeURIComponent(c.id);
+      var quando = S.intervallo(c.d0, c.d1);
+      var tipoTxt = web ? 'Webinar' : 'Residenziale';
+      var cred = c.crediti && !/no.?ecm/i.test(c.crediti) && c.crediti !== '0' ? ' · ' + S.esc(S.crediti(c.crediti)) + ' crediti ECM' : '';
+      // Il giorno di un webinar l'iscrizione passa dal dettaglio, che sa l'ora d'inizio
+      // e la toglie quando il webinar parte (non sono accolte iscrizioni durante il webinar).
+      var oggiWeb = web && c.d0.getTime() === OGGI.getTime();
+      var iscr = S.url(c.linkIscrizione) && !oggiWeb
+        ? '<a class="btn btn-navy btn-sm" href="' + S.url(c.linkIscrizione) + '" target="_blank" rel="noopener">Iscriviti</a>' : '';
+      return '<article class="course" style="background:' + col.tinta + ';border-color:' + col.bordo + '">' +
+        '<a class="course-cover" href="' + url + '">' +
+          (S.url(c.img) ? '<img src="' + S.url(c.img) + '" alt="Locandina: ' + S.esc(c.titolo) + '" loading="lazy">' : '') +
+        '</a>' +
+        '<div class="course-body">' +
+          '<div class="course-head"><span class="city">' + (web ? SCHERMO : PIN) + S.esc(c.luogo) + '</span>' +
+          '<span class="course-date">' + quando + '</span></div>' +
+          '<h2>' + S.esc(c.titolo) + '</h2>' +
+          '<div class="course-meta">' +
+            (c.area ? '<span class="badge" style="background:' + col.madre + '">' + S.esc(S.areaNome(c.area)) + '</span>' : '') +
+            '<span>' + tipoTxt + cred + '</span></div>' +
+          '<div class="course-actions"><a class="btn btn-line btn-sm" href="' + url + '">Dettagli</a>' + iscr + '</div>' +
+        '</div></article>';
+    }
 
-      function convertDriveLink(url) {
-        if (!url) return '';
-        if (url.indexOf('drive.google.com/file/d/') >= 0) {
-          var m = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
-          if (m) return 'https://drive.google.com/thumbnail?id=' + m[1] + '&sz=w400';
+    function mostra() {
+      var lista = tutti.filter(function (c) {
+        var web = S.webinar(c.luogo);
+        return (tipo === 'Tutti' || (tipo === 'Webinar') === web) &&
+               (area === 'Tutte' || S.areaNome(c.area) === area);
+      });
+      document.getElementById('corsi').innerHTML = lista.map(scheda).join('');
+      document.getElementById('conteggio').textContent = lista.length === 1 ? '1 corso' : lista.length + ' corsi';
+      var st = document.getElementById('stato');
+      st.hidden = lista.length > 0;
+      st.textContent = 'Nessun corso con questi filtri.';
+    }
+
+    fetch('https://sideraecm.eu/corsi.php', { cache: 'no-store' })
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        if (!d || !d.ok) throw new Error('catalogo non disponibile');
+        var oggi = OGGI;
+        tutti = (d.corsi || []).map(function (c) {
+          c.d0 = S.data(c.data); c.d1 = S.data(c.dataFin) || c.d0;
+          return c;
+        }).filter(function (c) {
+          // Il calendario mostra gli eventi non ancora conclusi.
+          return c.d0 && c.d1 >= oggi;
+        }).sort(function (a, b) { return a.d0 - b.d0; });
+        if (!tutti.length) {
+          document.getElementById('stato').textContent = 'Al momento non ci sono corsi in calendario.';
+          return;
         }
-        return url;
-      }
-
-      function saveToCache(corsi) {
-        try {
-          localStorage.setItem(CACHE_KEY, JSON.stringify(corsi));
-          localStorage.setItem(CACHE_TS_KEY, String(Date.now()));
-        } catch (e) {}
-      }
-
-      function loadFromCache() {
-        try {
-          var raw = localStorage.getItem(CACHE_KEY);
-          if (!raw) return null;
-          return JSON.parse(raw);
-        } catch (e) { return null; }
-      }
-
-      function isCacheStale() {
-        var ts = localStorage.getItem(CACHE_TS_KEY);
-        if (!ts) return true;
-        return (Date.now() - Number(ts)) > CACHE_MAX_AGE;
-      }
-
-      function areaColor(area) {
-        return AREA_COLORS[(area || '').toUpperCase()] || AREA_COLOR_DEFAULT;
-      }
-
-      function ecmHtml(crediti) {
-        if (!crediti || crediti === '0' || /no.?ecm/i.test(crediti))
-          return '<span class="corso-ecm none">NO ECM</span>';
-        return '<span class="corso-ecm">' + crediti + ' ECM</span>';
-      }
-
-      function buildFilters(corsi) {
-        var aree = [];
-        corsi.forEach(function(c) {
-          var a = (c.area || '').toUpperCase();
-          if (a && aree.indexOf(a) < 0) aree.push(a);
-        });
-        aree.sort();
-        var el = document.getElementById('corso-filters');
-        el.innerHTML = '';
-        ['TUTTI'].concat(aree).forEach(function(area) {
-          var btn = document.createElement('button');
-          btn.className = 'corso-filter-btn' + (area === 'TUTTI' ? ' active' : '');
-          btn.dataset.area = area;
-          btn.textContent = area === 'TUTTI' ? 'TUTTI I CORSI' : area;
-          btn.onclick = function() { applyFilter(area); };
-          el.appendChild(btn);
-        });
-        el.style.display = 'flex';
-      }
-
-      function applyFilter(area) {
-        document.querySelectorAll('.corso-filter-btn').forEach(function(b) {
-          b.classList.toggle('active', b.dataset.area === area);
-        });
-        var list = area === 'TUTTI' ? allCorsi
-          : allCorsi.filter(function(c) { return (c.area || '').toUpperCase() === area; });
-        renderCards(list);
-      }
-
-      function renderCards(corsi) {
-        var grid = document.getElementById('corso-grid');
-        var err  = document.getElementById('corso-error');
-        if (!corsi.length) {
-          grid.style.display = 'none'; err.style.display = 'block'; return;
-        }
-        err.style.display = 'none';
-        grid.style.display = 'grid';
-        grid.innerHTML = '';
-        corsi.forEach(function(c) {
-          // Card interamente cliccabile \u2192 pagina di dettaglio corso.html.
-          // ISCRIVITI/LOCANDINA vivono ora li', non piu' qui sulla card.
-          var card = document.createElement('a');
-          card.className = 'corso-card';
-          card.href = 'corso.html?id=' + encodeURIComponent(c.id || '');
-          // Bordo per area terapeutica (stessa palette della brochure).
-          card.style.borderColor = areaColor(c.area);
-          var imgTag = c.img
-            ? '<img class="corso-card-img" src="' + c.img + '" alt="" loading="lazy" decoding="async" onerror="this.style.display=\'none\'">'
-            : '';
-          var dataTxt = c.data || '';
-          if (c.dataFin && c.dataFin !== c.data) dataTxt += ' \u2013 ' + c.dataFin;
-          // Il tasto "Dettagli" e' uno <span>, non un <a>: la card e' gia' un
-          // link e annidarne un altro sarebbe HTML non valido. Il click sul
-          // tasto ricade comunque sulla card, che naviga.
-          card.innerHTML = imgTag +
-            '<div class="corso-card-body">' +
-              '<div style="display:flex;justify-content:space-between;align-items:center">' +
-                '<div class="corso-card-area" style="color:' + areaColor(c.area) + '">' + (c.area || '') + '</div>' +
-                '<span style="font-size:.75rem;font-weight:700;color:#64748b;background:#f1f5f9;border-radius:4px;padding:1px 6px">' + (c.id || '') + '</span>' +
-              '</div>' +
-              '<div class="corso-card-title">' + (c.titolo || '') + '</div>' +
-              '<div class="corso-card-meta">' +
-                '<span class="corso-card-date">' + dataTxt + '</span>' +
-                (function(l){ var w = (l||'').toUpperCase().indexOf('WEBINAR') >= 0; return '<span style="font-weight:600;font-size:.8rem;padding:2px 8px;border-radius:4px;' + (w ? 'background:#dbeafe;color:#1d4ed8' : 'background:#dcfce7;color:#15803d') + '">' + (l||'') + '</span>'; })(c.luogo) +
-                ecmHtml(c.crediti) +
-                (c.costo && c.costo !== '0' ? '<span style="font-weight:600;color:#0f766e">\u20ac ' + c.costo + '</span>' : '<span style="color:#16a34a;font-weight:600">Gratuito</span>') +
-              '</div>' +
-              '<div class="corso-card-actions">' +
-                '<span class="corso-btn-dettagli" style="background:' + areaColor(c.area) + '">Dettagli</span>' +
-              '</div>' +
-            '</div>';
-          grid.appendChild(card);
-        });
-      }
-
-      function parseDateIT(str) {
-        if (!str) return Infinity;
-        var p = str.split('/');
-        if (p.length < 3) return Infinity;
-        return new Date(Number(p[2]), Number(p[1]) - 1, Number(p[0])).getTime();
-      }
-
-      function showCorsi(corsi) {
-        allCorsi = corsi.slice().sort(function(a, b) {
-          return parseDateIT(a.data) - parseDateIT(b.data);
-        });
-        document.getElementById('corso-loading').style.display = 'none';
-        buildFilters(allCorsi);
-        renderCards(allCorsi);
-      }
-
-      function showError() {
-        document.getElementById('corso-loading').style.display = 'none';
-        var err = document.getElementById('corso-error');
-        err.textContent = 'Errore nel caricamento del catalogo.';
-        err.style.display = 'block';
-      }
-
-      // Catalogo da MedFIND/Hostinger (sostituisce Google Sheets/gviz).
-      // Regolamento: una sola copia, su Hostinger. Se non risponde resta quello
-      // statico gia' nel markup, che e' la rete e non la fonte.
-      fetch('https://sideraecm.eu/regolamento.php', { cache: 'no-store' })
-        .then(function (r) { return r.ok ? r.json() : null; })
-        .then(function (d) {
-          var reg = d && d.ok && d.regolamento;
-          var box = document.getElementById('regolamento-accordion');
-          if (!reg || !reg.sezioni || !reg.sezioni.length || !box) return;
-          box.innerHTML = reg.sezioni.map(function (sez) {
-            var voci = (sez.voci || []).map(function (v) { return '<li>' + v + '</li>'; }).join('');
-            return '<details class="accordion-item">' +
-              '<summary class="accordion-header">' + sez.titolo + '</summary>' +
-              '<div class="accordion-body"><ul>' + voci + '</ul></div></details>';
-          }).join('');
-        })
-        .catch(function () { /* resta il testo statico */ });
-
-      var CORSI_API = 'https://sideraecm.eu/corsi.php';
-      function fetchFromNetwork() {
-        return fetch(CORSI_API, { cache: 'no-store' })
-          .then(function(r) { return r.json(); })
-          .then(function(data) {
-            if (!data || !data.ok) throw new Error('catalogo non disponibile');
-            var corsi = (data.corsi || []).map(function(c) {
-              return {
-                id:             c.id || '',
-                titolo:         c.titolo || '',
-                sottotitolo:    c.sottotitolo || '',
-                data:           c.data || '',
-                dataFin:        c.dataFin || '',
-                luogo:          c.luogo || '',
-                crediti:        c.crediti || '',
-                costo:          c.costo || '',
-                img:            convertDriveLink(c.img || ''),
-                linkIscrizione: c.linkIscrizione || '',
-                linkPdf:        c.linkPdf || '',
-                area:           c.area || ''
-              };
-            });
-            saveToCache(corsi);
-            return corsi;
-          });
-      }
-
-      // Cache-first, then background update
-      var cached = loadFromCache();
-      if (cached && cached.length) {
-        showCorsi(cached);
-        if (isCacheStale()) {
-          document.getElementById('corso-stale-banner').style.display = 'block';
-          fetchFromNetwork()
-            .then(function(corsi) {
-              document.getElementById('corso-stale-banner').style.display = 'none';
-              showCorsi(corsi);
-            })
-            .catch(function() {
-              document.getElementById('corso-stale-banner').style.display = 'none';
-            });
-        }
-      } else {
-        fetchFromNetwork()
-          .then(function(corsi) { showCorsi(corsi); })
-          .catch(function() { showError(); });
-      }
-    })();
+        filtri(); mostra();
+      })
+      .catch(function () {
+        document.getElementById('stato').textContent = 'Il calendario non è raggiungibile in questo momento. Riprova tra qualche minuto.';
+      });
+  })();
   </script>
 </body>
 </html>
