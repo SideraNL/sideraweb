@@ -160,6 +160,9 @@ let corso = params.get('corso');
 // pagina ha ancora tutto quello che le serve per ripiegare sull'OTP invece di
 // lasciare la persona davanti a un muro. È la rete, e va tenuta finché l'OTP esiste.
 const TOKEN = (params.get('t') || '').trim();
+// Token di sessione: quello del link o, dopo l'OTP, quello che rende test_verify.php.
+// Il server accetta test e CS solo con questo (v397.5).
+let SESSION_T = TOKEN;
 
 // ── Backend bilingue (Fase D): default Google (GAS), Hostinger se ?backend=hostinger ──
 // Il contratto degli endpoint Hostinger è 1:1 con le action GAS (info/otp/verify/
@@ -221,7 +224,7 @@ async function gasPost(action, body) {
     // rispondendo e per quale corso, non i campi che parte da qui. Così una pagina
     // aperta col link personale non può salvare a nome di un altro nemmeno se
     // qualcuno le cambia i dati sotto il naso.
-    if (TOKEN) b.t = TOKEN;
+    if (SESSION_T) b.t = SESSION_T;
     // text/plain: niente preflight (come GAS); il backend legge comunque il JSON da php://input.
     const r = await fetch(HOST_BASE + '/' + (HOST_MAP[action] || ''),
       { method:'POST', headers:{'Content-Type':'text/plain'}, body: JSON.stringify(b) });
@@ -324,6 +327,7 @@ async function verifyOtp() {
   try {
     const r = await gasGet({action:'verify', corso, email: USER_EMAIL, otp: code});
     if (!r.ok) { loading(false); showMsg(r.error || 'Codice errato', 'err'); return; }
+    if (r.t) SESSION_T = r.t;
     loading(false);
     _entraNellaDashboard(r);
   } catch(e) { loading(false); showMsg('Errore: ' + e.message, 'err'); }
@@ -432,11 +436,15 @@ function handleCsNext() {
   if (csSection===0 && csQIdx===4) {
     let note = '';
     if (!document.getElementById('cs-sponsor-box').classList.contains('hidden')) {
-      note = document.getElementById('cs-sponsor-note').value;
+      note = document.getElementById('cs-sponsor-note').value.trim();
       if (!note) { showMsg('Specificare obbligatorio!', 'err'); return; }
     }
-    csAnswers.push(sel.value); csAnswers.push(note);
-  } else csAnswers.push(sel.value);
+    csAnswers.length = 4; csAnswers.push(sel.value); csAnswers.push(note);
+  } else {
+    // per posizione, non in coda: un nuovo INVIA dopo un errore non ripete l'ultima risposta
+    csAnswers.length = csSection === 0 ? csQIdx : 6 + csQIdx;
+    csAnswers.push(sel.value);
+  }
   if (csQIdx < 4) { csQIdx++; renderCsQ(); }
   else if (csSection === 0) { csSection = 1; csQIdx = 0; showMsg('Parte 1 completata. Proseguiamo.', 'ok'); renderCsQ(); }
   else submitCs();
