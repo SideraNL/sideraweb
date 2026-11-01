@@ -468,12 +468,12 @@ function renderTestQ() {
   document.getElementById('t-btn-back').style.display = tIdx === 0 ? 'none' : '';
 }
 function prevTestQ() {
-  if (tIdx > 0) { tIdx--; tAnswers.pop(); renderTestQ(); }
+  if (tIdx > 0) { tIdx--; tAnswers.length = tIdx; renderTestQ(); }
 }
 function nextTestQ() {
   const sel = document.querySelector('input[name="tans"]:checked');
   if (!sel) { showMsg('Rispondi', 'err'); return; }
-  tAnswers.push({questionText: APP.quiz[tIdx].text, selectedOption: sel.value});
+  tAnswers[tIdx] = {questionText: APP.quiz[tIdx].text, selectedOption: sel.value};
   tIdx++; renderTestQ();
 }
 function startTimer() {
@@ -509,8 +509,10 @@ async function submitTest(force) {
   if (!force) {
     const sel = document.querySelector('input[name="tans"]:checked');
     if (!sel) { showMsg('Rispondi', 'err'); return; }
-    tAnswers.push({questionText: APP.quiz[tIdx].text, selectedOption: sel.value});
+    // per indice, non push: un nuovo INVIA dopo un errore non ripete l'ultima risposta
+    tAnswers[tIdx] = {questionText: APP.quiz[tIdx].text, selectedOption: sel.value};
   }
+  if (tAnswers.length !== APP.quiz.length || tAnswers.some(a => !a)) { showMsg('Rispondi a tutte le domande', 'err'); return; }
   clearInterval(timerInterval); localStorage.removeItem('ecm_end_' + corso);
   loading(true); showView('loading');
   try {
