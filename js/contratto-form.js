@@ -289,6 +289,7 @@ function populate(data) {
   if (Array.isArray(data.dbao)) {
     cmDbaoCache = data.dbao;
   }
+  entiPrivatiInit(data.enti_privati);  // v398.1 — avviso enti privati al 5.1
   // v128.1 — Snapshot AGENAS embedded nel prefill (override del fallback statico).
   // Se GAS porta dati AGENAS aggiornati, sostituiscono la costante AGENAS_DATA inline.
   // Fallback: se data.agenas manca o è malformato, usiamo l'embedded (sempre presente).
@@ -1167,6 +1168,7 @@ async function validateStep() {
       if (bx) bx.scrollIntoView({ behavior: 'smooth', block: 'center' });
       return false;
     }
+    if (a3PrivatoBloccante()) return false;
     const sel = document.querySelector('input[name="opzione"]:checked');
     if (!sel) {
       showFormMsg('Non riusciamo a determinare il regime applicabile. Riveda le risposte.', 'error');
@@ -1436,6 +1438,7 @@ function a3Calcola() {
   A3.det = det;
   _a3Show('a3-prot', det === 'C');
   _a3Show('a3-rapp-conferma', _a3RappConfermaDovuta());
+  a3PrivatoAggiorna();
   if ($('a3-rapp-ente')) $('a3-rapp-ente').textContent = (($('f-ente') || {}).value || '').trim();
   A3.legacy = det ? A3_LEGACY[det] : '';
   A3.sub = (A3.legacy === 'C')
@@ -1495,6 +1498,7 @@ function getA3Payload() {
     regolamento_art: (($('a3-reg-art') || {}).value || '').trim(),
     regolamento_link: (($('a3-reg-link') || {}).value || '').trim(),
     opzione_dettaglio: A3.det || '',
+    privato_conferma: a3PrivatoValore(),
   };
 }
 

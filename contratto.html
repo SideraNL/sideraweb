@@ -410,6 +410,20 @@
                sceglierebbe questa voce. -->
           <label class="a3-opt"><input type="radio" name="a3-dip" value="si_asp" onchange="a3Calcola()"><span><b>Dipendente pubblico collocato in aspettativa, comando o fuori ruolo <u>per svolgere questo incarico</u></b> — non vale se si trova in aspettativa per altri motivi (maternità, studio, altro impiego): in quel caso scelga la voce che descrive il Suo rapporto di lavoro</span></label>
         </div>
+        <!-- v398.1 — Ente di diritto privato (Gemelli, Cattolica, Humanitas…) e
+             «dipendente pubblico a tempo pieno»: il relatore conferma o corregge.
+             Non decidiamo noi se l'art. 53 gli si applica: lo dichiara lui (CTR-21).
+             Elenco dei privati: contratti_ref 'enti_privati', da config.py. -->
+        <div id="a3-priv-conferma" style="display:none;margin-top:14px;padding:12px 14px;background:#fffbeb;border:1px solid #fcd34d;border-radius:6px">
+          <div style="font-size:14.5px;color:#78350f;line-height:1.6">
+            L'ente indicato (<b id="a3-priv-ente"></b>), pur erogando servizi per il Servizio Sanitario Nazionale, risulta di diritto privato: di norma i suoi dipendenti non sono soggetti all'autorizzazione prevista dall'art. 53 del D.Lgs. 165/2001.
+            <br><b>Conferma di avere un rapporto di pubblico impiego per il quale è tenuto/a a chiedere l'autorizzazione prevista per i dipendenti pubblici dall'art. 53 del D.Lgs. 165/2001?</b>
+          </div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px">
+            <button type="button" id="a3-priv-no" onclick="a3PrivatoRisposta('no')" style="padding:8px 14px;border-radius:6px;border:1px solid #1a56db;background:#fff;color:#1a56db;font-size:14.5px;font-weight:600;cursor:pointer">No, non sono tenuto/a</button>
+            <button type="button" id="a3-priv-si" onclick="a3PrivatoRisposta('si')" style="padding:8px 14px;border-radius:6px;border:1px solid #1a56db;background:#fff;color:#1a56db;font-size:14.5px;font-weight:600;cursor:pointer">Sì, confermo</button>
+          </div>
+        </div>
       </div>
 
       <!-- Q1 in versione dedotta (v298.9). Chi al 3.2 ha dichiarato di essere
@@ -816,9 +830,9 @@
   </div>
 </div>
 
-<script src="js/contratto-form.js?v=394.8"></script>
+<script src="js/contratto-form.js?v=398.1"></script>
 <script src="js/contratto-residenza.js?v=394.8"></script>
-<script src="js/contratto-ente.js?v=386.5"></script>
+<script src="js/contratto-ente.js?v=398.1"></script>
 
 </body>
 </html>
