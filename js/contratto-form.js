@@ -1590,7 +1590,7 @@ function renderSummary() {
   } else if (cdi.aziende.length === 0) {
     cdiTxt = '<i style="color:#dc2626">— nessuna azienda indicata e flag "nessun rapporto" non spuntato</i>';
   } else {
-    cdiTxt = cdi.aziende.map((a, i) => `${i + 1}. ${a}`).join('<br>');
+    cdiTxt = cdi.aziende.map((a, i) => `${i + 1}. ${_cfEsc(a)}`).join('<br>');
   }
 
   tbl.innerHTML = `
@@ -1612,8 +1612,33 @@ function renderSummary() {
 // lo stesso file del form RS (respsci_aziende.json, scripts/gen_respsci_aziende.py),
 // servito alla radice da Flask e da GitHub Pages. Se non si carica, i campi
 // restano di testo libero.
-const CDI_N_AZIENDE = 3;
+// v399.3 — tre campi visibili, altri col bottone «＋ Aggiungi azienda» fino a
+// CDI_MAX_AZIENDE (lo stesso numero sta in config.py): l'art. 76 chiede tutti i
+// rapporti dei due anni, e tre campi non bastavano (Pompili, 1345).
+const CDI_MAX_AZIENDE = 20;
 let CDI_AZIENDE = [];
+
+function cdiCampiAziende() {
+  return Array.from(document.querySelectorAll('#cdi-aziende-block input[id^="cdi-az-"]'));
+}
+
+function cdiAggiungiAzienda() {
+  const campi = cdiCampiAziende();
+  if (campi.length >= CDI_MAX_AZIENDE) return;
+  const n = campi.length + 1;
+  const ultimo = campi[campi.length - 1];
+  const label = ultimo.closest('label').cloneNode(true);
+  label.querySelector('.pn').textContent = '9.' + (n + 1);
+  label.childNodes.forEach(function (nd) {
+    if (nd.nodeType === 3 && nd.textContent.trim()) nd.textContent = 'Azienda ' + n + ' ';
+  });
+  const inp = label.querySelector('input');
+  inp.id = 'cdi-az-' + n;
+  inp.value = '';
+  ultimo.closest('label').parentNode.appendChild(label);
+  inp.focus();
+  if (n >= CDI_MAX_AZIENDE) $('cdi-add-btn').style.display = 'none';
+}
 
 async function cdiCaricaAziende() {
   try {
@@ -1636,7 +1661,7 @@ function cdiNormalizzaAzienda(el) {
   el.value = hit || v;
 }
 
-// CDI: toggle checkbox "no collaborazioni" → disabilita le 3 input azienda
+// CDI: toggle checkbox "no collaborazioni" → disabilita i campi azienda
 function cdiToggleNoCollab() {
   const cb = $('cdi-no-collab');
   const block = $('cdi-aziende-block');
@@ -1644,23 +1669,19 @@ function cdiToggleNoCollab() {
   const off = cb.checked;
   block.style.opacity = off ? '0.45' : '1';
   block.style.pointerEvents = off ? 'none' : 'auto';
-  for (let i = 1; i <= CDI_N_AZIENDE; i++) {
-    const el = $('cdi-az-' + i);
-    if (el) {
-      el.disabled = off;
-      if (off) el.value = '';
-    }
-  }
+  cdiCampiAziende().forEach(function (el) {
+    el.disabled = off;
+    if (off) el.value = '';
+  });
 }
 
 function getCdiPayload() {
   const noCollab = !!($('cdi-no-collab') && $('cdi-no-collab').checked);
   const aziende = [];
   if (!noCollab) {
-    for (let i = 1; i <= CDI_N_AZIENDE; i++) {
-      const el = $('cdi-az-' + i);
-      if (el && (el.value || '').trim()) aziende.push(el.value.trim());
-    }
+    cdiCampiAziende().forEach(function (el) {
+      if ((el.value || '').trim()) aziende.push(el.value.trim());
+    });
   }
   return { aziende, no_collab: noCollab };
 }

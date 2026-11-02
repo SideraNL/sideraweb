@@ -583,7 +583,7 @@
     <div class="card step" data-step="cdi" style="display:none">
       <div class="card-icon" style="background:#fef3c7;color:#92400e">Conflitto di interesse</div>
       <h2><span class="pn">9.</span>Dichiarazione conflitto di interesse</h2>
-      <p class="lead">Ai sensi della normativa ECM, indichi le <b>aziende con cui ha avuto rapporti commerciali in ambito sanitario negli ultimi due anni</b> (massimo 3 — solo le principali).</p>
+      <p class="lead">Ai sensi della normativa ECM, indichi <b>tutte le aziende con cui ha avuto rapporti commerciali in ambito sanitario negli ultimi due anni</b> (fino a 20).</p>
 
       <div style="background:#f1f5f9;border-radius:8px;padding:14px 16px;margin:14px 0">
         <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:14px;color:#0f172a">
@@ -595,8 +595,8 @@
       <div id="cdi-aziende-block">
         <!-- v367.1 — Come nel form RS (v362.8): scrivendo compare l'elenco delle aziende
              farmaceutiche di DBCLIENT (respsci_aziende.json); se l'azienda non c'e' resta
-             il testo scritto. Tre campi: bastano le principali. -->
-        <p style="font-size:14px;color:#64748b;margin:8px 0 10px">Inizi a scrivere il nome e lo scelga dall'elenco; se l'azienda non compare, la scriva per intero (anche solo 1 — i campi non compilati restano vuoti):</p>
+             il testo scritto. Tre campi visibili, gli altri col bottone (v399.3, fino a 20). -->
+        <p style="font-size:14px;color:#64748b;margin:8px 0 10px">Inizi a scrivere il nome e lo scelga dall'elenco; se l'azienda non compare, la scriva per intero (anche solo 1 — i campi non compilati restano vuoti). Se ne servono di più, usi <b>＋ Aggiungi azienda</b>:</p>
         <datalist id="cdi-aziende-list"></datalist>
         <div style="display:grid;grid-template-columns:1fr;gap:10px">
           <label style="font-size:14px;color:#334155;font-weight:600"><span class="pn">9.2</span>Azienda 1
@@ -609,6 +609,8 @@
             <input type="text" id="cdi-az-3" list="cdi-aziende-list" autocomplete="off" maxlength="120" onblur="cdiNormalizzaAzienda(this)" style="width:100%;padding:8px 10px;border:1px solid #cbd5e1;border-radius:5px;margin-top:3px;font-size:14px" placeholder="Inizi a scrivere il nome dell'azienda…">
           </label>
         </div>
+        <!-- v399.3 — fino a 20 aziende (art. 76: tutti i rapporti dei due anni; caso Pompili 1345) -->
+        <button type="button" id="cdi-add-btn" onclick="cdiAggiungiAzienda()" style="margin-top:10px;background:#1a56db;color:#fff;border:none;border-radius:6px;padding:7px 14px;font-size:14px;font-weight:600;cursor:pointer">＋ Aggiungi azienda</button>
       </div>
     </div>
 
@@ -837,7 +839,7 @@
   </div>
 </div>
 
-<script src="js/contratto-form.js?v=398.2"></script>
+<script src="js/contratto-form.js?v=399.3"></script>
 <script src="js/contratto-residenza.js?v=394.8"></script>
 <script src="js/contratto-ente.js?v=398.2"></script>
 
