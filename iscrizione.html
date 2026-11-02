@@ -654,8 +654,9 @@
         <div id="blk-albo" class="mb-3" style="display:none">
           <div class="step-title" style="font-size:.92rem;margin-bottom:12px">Dati Albo Professionale</div>
           <div class="row g-2">
-            <div class="col-7" id="blk-albo-testo"><label class="f-label">Albo di iscrizione</label><input type="text" id="f-albo" class="form-control" placeholder="es. Ordine delle Professioni Infermieristiche di Roma"></div>
+            <div class="col-7" id="blk-albo-testo"><label class="f-label">Albo di iscrizione</label><input type="text" id="f-albo" class="form-control" placeholder="es. Ordine di appartenenza"></div>
             <div class="col-7" id="blk-albo-omceo" style="display:none"><label class="f-label">Ordine dei Medici *</label><select id="f-albo-omceo" class="form-select"><option value="">— Seleziona l'Ordine provinciale —</option></select></div>
+            <div class="col-7" id="blk-albo-opi" style="display:none"><label class="f-label">OPI di iscrizione *</label><select id="f-albo-opi" class="form-select"><option value="">— Seleziona l'Ordine (OPI) —</option></select></div>
             <div class="col-7" id="blk-albo-psi" style="display:none"><label class="f-label">Ordine degli Psicologi *</label><select id="f-albo-psi" class="form-select"><option value="">— Seleziona l'Ordine regionale —</option></select></div>
             <div class="col-5"><label class="f-label">N° Iscrizione <span id="num-iscr-req" style="display:none">*</span></label><input type="text" id="f-num-iscrizione" class="form-control" placeholder="es. 12345"></div>
           </div>
@@ -1091,6 +1092,16 @@ const ORDINI_PSICOLOGI = ["dell'Abruzzo", 'della Basilicata', 'della Provincia A
   'della Liguria', 'della Lombardia', 'delle Marche', 'del Molise', 'del Piemonte', 'della Puglia',
   'della Sardegna', 'della Sicilia', 'della Toscana', 'della Provincia Autonoma di Trento',
   "dell'Umbria", "della Valle d'Aosta", 'del Veneto'];
+
+// v399.1 — infermieri: i 102 OPI dall'elenco ufficiale FNOPI (fnopi.it, «Elenco OPI», 02/11/2026).
+// Quattro sono interprovinciali e lo dicono nel nome dell'Ordine.
+const OPI_ELENCO = ["Agrigento","Alessandria","Ancona","Aosta","Arezzo","Ascoli Piceno","Asti","Avellino","Bari","Barletta-Andria-Trani","Belluno","Benevento","Bergamo","Biella","Bologna","Bolzano","Brescia","Brindisi","Cagliari","Caltanissetta","Campobasso-Isernia","Carbonia-Iglesias","Caserta","Catania","Catanzaro","Chieti","Como","Cosenza","Cremona","Crotone","Cuneo","Enna","Fermo","Ferrara","Firenze-Pistoia","Foggia","Forlì-Cesena","Frosinone","Genova","Gorizia","Grosseto","Imperia","L'Aquila","La Spezia","Latina","Lecce","Lecco","Livorno","Lucca","Macerata","Mantova","Massa Carrara","Matera","Messina","Milano-Lodi-Monza e Brianza","Modena","Napoli","Novara-Verbano Cusio Ossola","Nuoro","Oristano","Padova","Palermo","Parma","Pavia","Perugia","Pesaro-Urbino","Pescara","Piacenza","Pisa","Pordenone","Potenza","Prato","Ragusa","Ravenna","Reggio Calabria","Reggio Emilia","Rieti","Rimini","Roma","Rovigo","Salerno","Sassari","Savona","Siena","Siracusa","Sondrio","Taranto","Teramo","Terni","Torino","Trapani","Trento","Treviso","Trieste","Udine","Varese","Venezia","Vercelli","Verona","Vibo Valentia","Vicenza","Viterbo"];
+const OPI_INTERPROVINCIALI = ['Campobasso-Isernia', 'Firenze-Pistoia', 'Milano-Lodi-Monza e Brianza', 'Novara-Verbano Cusio Ossola'];
+
+function alboInfermiere(prof) {
+  const p = (prof || '').toUpperCase();
+  return !alboMedico(prof) && (p.includes('INFERMIERE') || p.includes('INFERMIERISTICA'));
+}
 
 // Medico wins: "Medico chirurgo - Psicoterapia" is a doctor.
 function alboPsicologo(prof) {
@@ -1990,10 +2001,22 @@ function onProfChange() {
   document.getElementById('blk-albo').style.display = richiedeAlbo(prof) ? 'block' : 'none';
   const med = alboMedico(prof);
   const psi = alboPsicologo(prof);
+  const inf = alboInfermiere(prof);
   document.getElementById('blk-albo-omceo').style.display = med ? 'block' : 'none';
   document.getElementById('blk-albo-psi').style.display = psi ? 'block' : 'none';
-  document.getElementById('blk-albo-testo').style.display = (med || psi) ? 'none' : 'block';
-  document.getElementById('num-iscr-req').style.display = (med || psi) ? 'inline' : 'none';
+  document.getElementById('blk-albo-opi').style.display = inf ? 'block' : 'none';
+  document.getElementById('blk-albo-testo').style.display = (med || psi || inf) ? 'none' : 'block';
+  document.getElementById('num-iscr-req').style.display = (med || psi || inf) ? 'inline' : 'none';
+  const selOpi = document.getElementById('f-albo-opi');
+  if (inf && selOpi.options.length <= 1) {
+    OPI_ELENCO.forEach(function(n) {
+      const opt = document.createElement('option');
+      opt.value = 'Ordine delle Professioni Infermieristiche ' +
+        (OPI_INTERPROVINCIALI.includes(n) ? 'Interprovinciale ' : '') + 'di ' + n;
+      opt.textContent = n;
+      selOpi.appendChild(opt);
+    });
+  }
   const selPsi = document.getElementById('f-albo-psi');
   if (psi && selPsi.options.length <= 1) {
     ORDINI_PSICOLOGI.forEach(function(o) {
@@ -2018,6 +2041,7 @@ function onProfChange() {
 function alboScelto(prof) {
   if (alboMedico(prof)) return document.getElementById('f-albo-omceo').value;
   if (alboPsicologo(prof)) return document.getElementById('f-albo-psi').value;
+  if (alboInfermiere(prof)) return document.getElementById('f-albo-opi').value;
   return document.getElementById('f-albo').value.trim();
 }
 
@@ -2036,6 +2060,14 @@ function goFromProf() {
       const num = document.getElementById('f-num-iscrizione').value.trim();
       if (!/\d/.test(num) || num.length > 20) {
         showMsg('msg-prof', 'Indica il numero di iscrizione all\'Ordine.', 'err'); return;
+      }
+    } else if (alboInfermiere(prof)) {
+      if (!document.getElementById('f-albo-opi').value) {
+        showMsg('msg-prof', 'Seleziona l\'Ordine delle Professioni Infermieristiche (OPI) a cui sei iscritto.', 'err'); return;
+      }
+      const num = document.getElementById('f-num-iscrizione').value.trim();
+      if (!/\d/.test(num) || num.length > 20) {
+        showMsg('msg-prof', 'Indica il numero di iscrizione all\'albo dell\'OPI.', 'err'); return;
       }
     } else if (alboPsicologo(prof)) {
       if (!document.getElementById('f-albo-psi').value) {
