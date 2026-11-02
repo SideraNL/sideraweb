@@ -410,18 +410,25 @@
                sceglierebbe questa voce. -->
           <label class="a3-opt"><input type="radio" name="a3-dip" value="si_asp" onchange="a3Calcola()"><span><b>Dipendente pubblico collocato in aspettativa, comando o fuori ruolo <u>per svolgere questo incarico</u></b> — non vale se si trova in aspettativa per altri motivi (maternità, studio, altro impiego): in quel caso scelga la voce che descrive il Suo rapporto di lavoro</span></label>
         </div>
-        <!-- v398.1 — Ente di diritto privato (Gemelli, Cattolica, Humanitas…) e
-             «dipendente pubblico a tempo pieno»: il relatore conferma o corregge.
-             Non decidiamo noi se l'art. 53 gli si applica: lo dichiara lui (CTR-21).
+        <!-- v398.2 — Ente di diritto privato (Gemelli, Cattolica, Humanitas…) e
+             «dipendente pubblico» al 5.1: le due risposte devono coincidere
+             (Nicola 02/11/2026, parere Simpliciter: la dichiarazione non cambia
+             la natura dell'ente). Si torna al 3.1 o si corregge il 5.1; dal
+             terzo tentativo bloccato compare «Segnala a Sidera» (CTR-21).
              Elenco dei privati: contratti_ref 'enti_privati', da config.py. -->
         <div id="a3-priv-conferma" style="display:none;margin-top:14px;padding:12px 14px;background:#fffbeb;border:1px solid #fcd34d;border-radius:6px">
           <div style="font-size:14.5px;color:#78350f;line-height:1.6">
-            L'ente indicato (<b id="a3-priv-ente"></b>), pur erogando servizi per il Servizio Sanitario Nazionale, risulta di diritto privato: di norma i suoi dipendenti non sono soggetti all'autorizzazione prevista dall'art. 53 del D.Lgs. 165/2001.
-            <br><b>Conferma di avere un rapporto di pubblico impiego per il quale è tenuto/a a chiedere l'autorizzazione prevista per i dipendenti pubblici dall'art. 53 del D.Lgs. 165/2001?</b>
+            L'ente indicato al punto 3.1 (<b id="a3-priv-ente"></b>), pur erogando servizi per il Servizio Sanitario Nazionale, risulta di diritto privato: i suoi dipendenti non sono dipendenti pubblici ai fini dell'art. 53 del D.Lgs. 165/2001.
+            <br><b>Le due risposte devono coincidere.</b> Se ha un rapporto di pubblico impiego con un'altra amministrazione, indichi quella al punto 3.1; altrimenti scelga «Non sono dipendente di una pubblica amministrazione».
           </div>
           <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px">
-            <button type="button" id="a3-priv-no" onclick="a3PrivatoRisposta('no')" style="padding:8px 14px;border-radius:6px;border:1px solid #1a56db;background:#fff;color:#1a56db;font-size:14.5px;font-weight:600;cursor:pointer">No, non sono tenuto/a</button>
-            <button type="button" id="a3-priv-si" onclick="a3PrivatoRisposta('si')" style="padding:8px 14px;border-radius:6px;border:1px solid #1a56db;background:#fff;color:#1a56db;font-size:14.5px;font-weight:600;cursor:pointer">Sì, confermo</button>
+            <button type="button" id="a3-priv-ente-btn" onclick="a3PrivatoCambiaEnte()" style="padding:8px 14px;border-radius:6px;border:1px solid #1a56db;background:#1a56db;color:#fff;font-size:14.5px;font-weight:600;cursor:pointer">↩ Cambia l'ente al punto 3.1</button>
+            <button type="button" id="a3-priv-no" onclick="a3PrivatoRisposta('no')" style="padding:8px 14px;border-radius:6px;border:1px solid #1a56db;background:#fff;color:#1a56db;font-size:14.5px;font-weight:600;cursor:pointer">Non sono dipendente pubblico</button>
+          </div>
+          <div id="a3-priv-segnala" style="display:none;margin-top:12px;padding-top:10px;border-top:1px solid #fcd34d">
+            <div style="font-size:14px;color:#78350f;line-height:1.5">Non riesce a far coincidere le due risposte? Ci segnali la difficoltà: Sidera La ricontatterà.</div>
+            <button type="button" id="a3-priv-segnala-btn" onclick="a3PrivatoSegnala()" style="margin-top:8px;padding:8px 14px;border-radius:6px;border:1px solid #d97706;background:#d97706;color:#fff;font-size:14.5px;font-weight:600;cursor:pointer">✉ Segnala a Sidera</button>
+            <div id="a3-priv-segnala-esito" style="margin-top:6px;font-size:13.5px"></div>
           </div>
         </div>
       </div>
@@ -830,9 +837,9 @@
   </div>
 </div>
 
-<script src="js/contratto-form.js?v=398.1"></script>
+<script src="js/contratto-form.js?v=398.2"></script>
 <script src="js/contratto-residenza.js?v=394.8"></script>
-<script src="js/contratto-ente.js?v=398.1"></script>
+<script src="js/contratto-ente.js?v=398.2"></script>
 
 </body>
 </html>

@@ -1436,7 +1436,7 @@ function a3Calcola() {
     else det = 'C';
   }
   A3.det = det;
-  _a3Show('a3-prot', det === 'C');
+  _a3Show('a3-prot', det === 'C' && !_a3PrivatoDovuta());  // v398.2 — non con ente privato
   _a3Show('a3-rapp-conferma', _a3RappConfermaDovuta());
   a3PrivatoAggiorna();
   if ($('a3-rapp-ente')) $('a3-rapp-ente').textContent = (($('f-ente') || {}).value || '').trim();
@@ -1463,7 +1463,7 @@ function a3Calcola() {
 
   const box = $('a3-esito');
   if (box) {
-    if (det) {
+    if (det && !_a3PrivatoDovuta()) {  // v398.2 — ente privato e «dipendente pubblico»: niente esito
       $('a3-esito-testo').textContent = A3_TESTI[det][0];
       $('a3-esito-nota').textContent = A3_TESTI[det][1];
       box.style.display = '';

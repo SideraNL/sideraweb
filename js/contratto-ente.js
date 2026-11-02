@@ -70,13 +70,20 @@ function rapportoEnteValore() {
 }
 
 /* v398.1 — Ente di diritto privato (Gemelli, Cattolica, Humanitas…) e risposta
-   «dipendente pubblico a tempo pieno» al 5.1: il relatore conferma o corregge
-   (caso Schiavoni 1361-5). L'elenco arriva dal prefill (`enti_privati`, da
-   config.py via ente_privato() di MedFIND): un ID DBAO noto o un nome che lo
-   rivela, salvo che il nome contenga anche un ente pubblico. */
+   «dipendente pubblico» al 5.1 (caso Schiavoni 1361-5). L'elenco arriva dal
+   prefill (`enti_privati`, da config.py via ente_privato() di MedFIND): un ID
+   DBAO noto o un nome che lo rivela, salvo che il nome contenga anche un ente
+   pubblico.
+   v398.2 — Non si conferma piu': le due risposte devono coincidere (ente
+   pubblico + dipendente pubblico, oppure ente privato + non dipendente). Si
+   torna al 3.1 o si corregge il 5.1; dal terzo Avanti bloccato compare
+   «Segnala a Sidera», che avvisa Sidera con un'email (contratto_segnala.php). */
 let _ENTI_PRIVATI = null;
-let _a3PrivConf = '';      // 'si' | 'no' | ''
-let _a3PrivConfEnte = '';  // ente a cui si riferisce la risposta
+let _a3PrivConf = '';      // 'no' se ha corretto il 5.1 dall'avviso
+let _a3PrivConfEnte = '';  // ente a cui si riferisce la correzione
+let _a3PrivTentativi = 0;  // Avanti bloccati dall'incoerenza
+let _a3PrivSegnalata = false;
+const A3_PRIV_TENTATIVI = 3;
 
 function entiPrivatiInit(d) {
   if (!d || !Array.isArray(d.ids)) return;
@@ -99,59 +106,103 @@ function _entePrivatoForm() {
 }
 
 function _a3PrivatoDovuta() {
-  return A3.reg_raw === 'pieno' && _entePrivatoForm();
+  // Il 3.2 «professore di ateneo statale» ha il suo controllo (univCoerenza)
+  // e nasconde il 5.1: qui solo la risposta data al 5.1.
+  return A3.dip === 'si' && !a3ModoUniversitario() && _entePrivatoForm();
 }
 
-function _a3PrivConfValida() {
-  return _a3PrivConf === 'si' && _a3PrivConfEnte === (($('f-ente') || {}).value || '').trim();
-}
-
-// Chiamata da a3Calcola: mostra il riquadro e lo stato dei due bottoni.
+// Chiamata da a3Calcola: mostra il riquadro e, dal terzo tentativo, la segnalazione.
 function a3PrivatoAggiorna() {
   const dov = _a3PrivatoDovuta();
   const bx = $('a3-priv-conferma');
   if (bx) bx.style.display = dov ? '' : 'none';
-  // Un «Sì» vale per la risposta a cui e' stato dato: se il 5.1 cambia, si
-  // richiede di nuovo.
-  if (!dov && _a3PrivConf === 'si') _a3PrivConf = '';
   if (!dov) return;
   if ($('a3-priv-ente')) $('a3-priv-ente').textContent = (($('f-ente') || {}).value || '').trim();
-  const si = $('a3-priv-si');
-  if (si) {
-    const on = _a3PrivConfValida();
-    si.style.background = on ? '#1a56db' : '#fff';
-    si.style.color = on ? '#fff' : '#1a56db';
-    si.textContent = on ? '✓ Sì, confermo' : 'Sì, confermo';
-  }
+  const sg = $('a3-priv-segnala');
+  if (sg) sg.style.display = (_a3PrivTentativi >= A3_PRIV_TENTATIVI) ? '' : 'none';
 }
 
 function a3PrivatoRisposta(v) {
+  if (v !== 'no') return;
   _a3PrivConf = v;
   _a3PrivConfEnte = (($('f-ente') || {}).value || '').trim();
-  if (v === 'no') {
-    // Corregge il 5.1: da qui il form prosegue come per un dipendente privato.
-    document.querySelectorAll('input[name="a3-dip"]').forEach(r => { r.checked = (r.value === 'no'); });
-    a3Calcola();
-    const q2 = $('a3-q2');
-    if (q2) q2.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  // Corregge il 5.1: da qui il form prosegue come per un dipendente privato.
+  document.querySelectorAll('input[name="a3-dip"]').forEach(r => { r.checked = (r.value === 'no'); });
+  a3Calcola();
+  const q2 = $('a3-q2');
+  if (q2) q2.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+// Torna al passo 3 e indica la card dell'azienda. Non apre il modale da solo:
+// entrando nel passo 3 renderStep puo' gia' aprirne uno (ECM, tipologia).
+function a3PrivatoCambiaEnte() {
+  const i = getCurrentSteps().indexOf('3');
+  if (i < 0) return;
+  CURRENT_STEP_INDEX = i;
+  renderStep();
+  showFormMsg('Clicchi sulla card dell’azienda (punto 3.1) per indicare l’ente di cui è dipendente.', 'info');
+  setTimeout(() => {
+    const card = $('azienda-summary');
+    if (!card) return;
+    card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    card.style.outline = '3px solid #f59e0b';
+    card.style.outlineOffset = '3px';
+    setTimeout(() => { card.style.outline = ''; }, 4000);
+  }, 400);
+}
+
+function _a3PrivatoRispostaTesto() {
+  const r = document.querySelector('input[name="a3-dip"]:checked');
+  const lb = r && r.closest('label');
+  return lb ? lb.textContent.replace(/\s+/g, ' ').trim().slice(0, 200) : '';
+}
+
+async function a3PrivatoSegnala() {
+  const btn = $('a3-priv-segnala-btn');
+  const out = $('a3-priv-segnala-esito');
+  const esito = (msg, ok) => { if (out) { out.textContent = msg; out.style.color = ok ? '#15803d' : '#b91c1c'; } };
+  if (_a3PrivSegnalata) { esito('Segnalazione già inviata: Sidera La ricontatterà.', true); return; }
+  if (['localhost', '127.0.0.1'].includes(window.location.hostname)) {
+    esito('Prova in locale: nessuna email inviata.', true);
     return;
   }
-  a3PrivatoAggiorna();
+  if (btn) btn.disabled = true;
+  try {
+    const r = await fetch(HOSTINGER_URL + '/contratto_segnala.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({
+        token: TOKEN,
+        ente: (($('f-ente') || {}).value || '').trim(),
+        risposta: _a3PrivatoRispostaTesto(),
+        tentativi: _a3PrivTentativi,
+      }),
+    });
+    const d = await r.json().catch(() => ({}));
+    if (!d.ok) throw new Error(d.error || 'invio non riuscito');
+    _a3PrivSegnalata = true;
+    esito('Segnalazione inviata: Sidera La ricontatterà. Può chiudere la pagina e riprendere dallo stesso link.', true);
+  } catch (e) {
+    if (btn) btn.disabled = false;
+    esito('Non è stato possibile inviare la segnalazione (' + e.message + '). Scriva a sidera@sideraweb.com.', false);
+  }
 }
 
 // Validazione del passo: true = blocca.
 function a3PrivatoBloccante() {
   a3PrivatoAggiorna();  // l'ente puo' essere cambiato al 3.1 dopo il 5.1
-  if (!_a3PrivatoDovuta() || _a3PrivConfValida()) return false;
-  showFormMsg('Il Suo ente risulta di diritto privato: confermi o corregga la risposta al punto 5.1.', 'error');
+  if (!_a3PrivatoDovuta()) return false;
+  _a3PrivTentativi++;
+  a3PrivatoAggiorna();
+  showFormMsg('L’ente indicato al punto 3.1 è di diritto privato: cambi l’ente o corregga la risposta al punto 5.1.', 'error');
   const bx = $('a3-priv-conferma');
   if (bx) bx.scrollIntoView({ behavior: 'smooth', block: 'center' });
   return true;
 }
 
-// Per il submit (art3.privato_conferma): 'si' se ha confermato con l'avviso
-// a schermo, 'no' se l'ha corretto, '' se l'avviso non e' mai comparso.
+// Per il submit (art3.privato_conferma): 'no' se ha corretto il 5.1
+// dall'avviso, '' altrimenti. Con l'ente privato non si arriva piu' al submit
+// da dipendente pubblico, quindi 'si' non esiste piu' (v398.2).
 function a3PrivatoValore() {
-  if (_a3PrivatoDovuta()) return _a3PrivConfValida() ? 'si' : '';
   return (_a3PrivConf === 'no' && A3.dip === 'no' && _a3PrivConfEnte === (($('f-ente') || {}).value || '').trim()) ? 'no' : '';
 }
