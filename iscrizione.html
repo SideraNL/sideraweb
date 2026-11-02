@@ -2007,9 +2007,10 @@ function goFromProf() {
       if (!document.getElementById('f-albo-omceo').value) {
         showMsg('msg-prof', 'Seleziona l\'Ordine dei Medici Chirurghi e degli Odontoiatri a cui sei iscritto.', 'err'); return;
       }
-      const num = document.getElementById('f-num-iscrizione').value.replace(/\s/g, '');
-      if (!/^\d{1,7}$/.test(num)) {
-        showMsg('msg-prof', 'Indica il numero di iscrizione all\'Ordine (solo cifre).', 'err'); return;
+      // Real numbers include leading zeros and prefixes ("0000046292", "M69479"): a digit is enough.
+      const num = document.getElementById('f-num-iscrizione').value.trim();
+      if (!/\d/.test(num) || num.length > 20) {
+        showMsg('msg-prof', 'Indica il numero di iscrizione all\'Ordine.', 'err'); return;
       }
     } else if (richiedeAlbo(prof) && alboIncoerente(prof, document.getElementById('f-albo').value)) {
       showMsg('msg-prof', 'L\'albo indicato non corrisponde alla professione scelta. Controlla la professione: se non è tra quelle accreditate, torna indietro e scegli l\'iscrizione SENZA CREDITI ECM.', 'err'); return;
@@ -2311,7 +2312,7 @@ async function doSubmit(btn) {
     formData.DichiarazioneInvito= reclutamento;
     formData.ConsensoECM        = 'Sì';
     formData.Albo               = alboScelto(formData.Professione);
-    formData.NumIscrizione      = document.getElementById('f-num-iscrizione').value.replace(/\s/g, '');
+    formData.NumIscrizione      = document.getElementById('f-num-iscrizione').value.trim();
   } else if (gruppoNonEcm === 'FARMA') {
     // Personale sponsor: l'azienda viaggia nel campo Sponsor (il server la verifica)
     formData.Sponsor = (document.getElementById('f-azienda').value || '').trim();
