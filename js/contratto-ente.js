@@ -206,3 +206,33 @@ function a3PrivatoBloccante() {
 function a3PrivatoValore() {
   return (_a3PrivConf === 'no' && A3.dip === 'no' && _a3PrivConfEnte === (($('f-ente') || {}).value || '').trim()) ? 'no' : '';
 }
+
+/* v400.1 — Ente pubblico in archivio senza PEC (Nicola 03/11/2026). Quasi sempre
+   e' un presidio ospedaliero, che non e' un ente a se': il datore di lavoro e'
+   l'azienda sanitaria da cui dipende, e la PEC per l'informativa e' la sua.
+   Lo chiediamo al relatore, scegliendo dall'Indice PA che porta anche la PEC.
+   Mappare i presidi in blocco per provincia dava errori (privati agganciati a
+   un'ASL, Thiene sull'ULSS sbagliata): lo sa meglio lui. */
+function cmPubblicaSenzaPec() {
+  if ((($('f-company-type') || {}).value || '').toLowerCase() !== 'pubblica') return false;
+  if ((($('f-pec') || {}).value || '').trim()) return false;
+  const nome = _cmSoloDenominazione((($('f-ente') || {}).value || '').trim());
+  const box = $('cm-ipa-presidio');
+  if (box) {
+    box.innerHTML = 'Nei nostri archivi risulta <b>' + _cfEsc(nome || 'una struttura') + '</b>, '
+      + 'senza l’indicazione dell’ente da cui dipende. Se è un ospedale di un’ASL/ASST/ULSS '
+      + 'o di un’azienda ospedaliera, cerchi qui sotto <b>l’azienda</b> che Le paga lo stipendio: '
+      + 'a lei invieremo le comunicazioni previste per i dipendenti pubblici. '
+      + 'Se invece non è dipendente pubblico, torni indietro e scelga «Privata / altro».';
+    box.style.display = '';
+  }
+  cmState.type = 'pubblica';
+  $('cm-ipa-q').value = '';
+  $('cm-ipa-prov').value = cmState.prov || (($('f-azienda-prov') || {}).value || '');
+  cmState.ipa_tutti = false;
+  $('cm-ipa-estendi').style.display = '';
+  cmShowStep('cm-step-ipa');
+  $('cm-overlay').style.display = 'flex';
+  setTimeout(() => { $('cm-ipa-q').focus(); cmIpaSearch(); }, 50);
+  return true;
+}

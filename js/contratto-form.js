@@ -637,7 +637,7 @@ function renderStep() {
       // v128.3 — DBDOC ha l'ente ma non la tipologia (mai legato a DBAO).
       // Apri il modal Azienda dal bivio per chiedere conferma Pubblica/Privata.
       setTimeout(openCompanyModal, 200);
-    } else if (enteAlreadyFilled) {
+    } else if (enteAlreadyFilled && !cmPubblicaSenzaPec()) {   // v400.1
       setTimeout(tryAutoOpenEcmModal, 250);
     }
   }
@@ -1054,8 +1054,8 @@ async function validateStep() {
     if (ctype === 'pubblica') {
       const pec = ($('f-pec').value || '').trim();
       if (!pec) {
-        showFormMsg('Per le aziende pubbliche la PEC è obbligatoria. Riapra il modale "Azienda" per inserirla.', 'error');
-        return false;
+        showFormMsg('Indichi l’ente pubblico da cui dipende, scegliendolo dall’elenco ufficiale.', 'error');
+        cmPubblicaSenzaPec(); return false;   // v400.1 — apre la ricerca IPA
       }
     }
     // v298.5 — Punto 3.2: da questa risposta dipende il vocabolario del punto
@@ -1949,6 +1949,7 @@ function _cm(id) { return document.getElementById(id); }
 
 function openCompanyModal() {
   // Apre sempre dal bivio (R7: "Modifica" riapre da Step 1).
+  const pb = _cm('cm-ipa-presidio'); if (pb) pb.style.display = 'none';   // v400.1
   cmShowStep('cm-step-bivio');
   _cm('cm-overlay').style.display = 'flex';
 }
