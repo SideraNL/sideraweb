@@ -1494,7 +1494,13 @@ async function confirmOcr(btn) {
   spin(btn, true);
   try {
     const d = await gasPost('checkDuplicateCF', { cf, idpgt: idPgt });
-    if (d.isDuplicate) {
+    if (d.isFaculty) {
+      // v401.1 — relatore/moderatore/RS: un solo ruolo per evento (normativa ECM)
+      document.getElementById('ocr-ok').style.display = 'none';
+      document.getElementById('ocr-fail').style.display = 'block';
+      document.getElementById('ocr-fail').querySelector('.msg').innerHTML =
+        '<strong>⚠️ Iscrizione non possibile</strong><br>' + (d.message || '');
+    } else if (d.isDuplicate) {
       document.getElementById('ocr-ok').style.display = 'none';
       document.getElementById('ocr-fail').style.display = 'block';
       document.getElementById('ocr-fail').querySelector('.msg').innerHTML =
