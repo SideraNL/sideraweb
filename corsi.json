@@ -1,21 +1,5 @@
 [
   {
-    "idPgt": "1346",
-    "luogo": "L'AQUILA",
-    "data": "07/11/2026",
-    "titolo": "GESTIONE DELLA MALATTIA DI CROHN E DELLA COLITE ULCEROSA",
-    "backend": "hostinger",
-    "orari": [
-      {
-        "giorno": "1",
-        "data": "07/11/2026",
-        "ora_in": "10:00",
-        "ora_out": "13:30",
-        "pause": []
-      }
-    ]
-  },
-  {
     "idPgt": "1345",
     "luogo": "MILANO",
     "data": "18/11/2026",
