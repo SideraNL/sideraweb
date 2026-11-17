@@ -339,6 +339,8 @@ function populate(data) {
   // Atteso (Fase 5): data.anagrafica.ente, data.anagrafica.pec, data.anagrafica.dbao_id,
   // data.anagrafica.azienda_tipo, data.anagrafica.azienda_citta, data.anagrafica.azienda_prov,
   // data.anagrafica.company_type ('pubblica'|'privata'). Se assenti, summary parte vuota.
+  // v406.9 — ateneo nel secondo ente DBDOC (convenzionato): il 3.2 «Sì» è ammesso
+  window._ENTE2_ATENEO = String(a.ente2_ateneo || '').trim();
   if (a.ente) {
     $('f-ente').value = a.ente || '';
     $('f-pec').value = a.pec || '';
@@ -1066,6 +1068,18 @@ async function validateStep() {
       if (r) r.scrollIntoView({ behavior: 'smooth', block: 'center' });
       return false;
     }
+    // v406.9 — Chi si dichiara professore o ricercatore universitario deve avere
+    // un ateneo fra i propri enti: senza, la comunicazione all'ente citerebbe una
+    // norma che non lo riguarda (caso 1356, 17/11/2026). Prima era solo un avviso.
+    if (a3ModoUniversitario() && !_haAteneo()) {
+      univCoerenza();
+      showFormMsg('Al punto 3.2 ha indicato di essere professore o ricercatore universitario, ma '
+        + 'l’ente indicato al punto 3.1 non è un’università. Indichi l’ateneo al punto 3.1 '
+        + 'oppure risponda «No» al punto 3.2.', 'error');
+      const r = $('univ-row');
+      if (r) r.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return false;
+    }
     // v386.3 — Azienda privata che ha l'aria di un ente pubblico: con la privata
     // il passo 5 non compare, quindi è l'unico punto in cui chiederlo.
     if (rapportoEnteCheck()) {
@@ -1329,6 +1343,9 @@ function a3ModoUniversitario() {
 function univPrefill() {
   if (document.querySelector('input[name="f-univ"]:checked')) return;
   if ((($('f-dip-pubblico') || {}).value || '').trim() !== '3') return;
+  // v406.9 — e solo se l'ente del punto 3.1 è un ateneo: altrimenti il «Sì»
+  // precompilato verrebbe comunque rifiutato al passo successivo.
+  if (!_haAteneo()) return;
   const si = document.querySelector('input[name="f-univ"][value="si"]');
   if (si) si.checked = true;
 }
@@ -1349,9 +1366,17 @@ function onUnivChange() {
    un'università. Si confrontano quindi gli inizi, non una sottostringa. */
 function _enteEAteneo() {
   const tipo = (($('f-azienda-tipo') || {}).value || '').toUpperCase().trim();
-  if (tipo.startsWith('UNIVERSIT')) return true;
   const ente = (($('f-ente') || {}).value || '').toUpperCase().trim();
-  return /^(UNIVERSIT|POLITECNICO|SCUOLA (NORMALE|SUPERIORE|IMT|IUSS)|LIBERA UNIVERSIT)/.test(ente);
+  // v406.9 — «Università popolare / della terza età»: associazioni, non atenei
+  if (/^UNIVERSIT\S*\s+(POPOLAR|DELLA TERZA|DEL(LA)? TEMPO LIBERO|DELL.ETA)/.test(ente)) return false;
+  if (tipo.startsWith('UNIVERSIT')) return true;
+  return /^(UNIVERSIT|LIBERA UNIVERSIT|POLITECNICO|ISTITUTO UNIVERSITARIO|SCUOLA (NORMALE|SUPERIORE|IMT|IUSS|INTERNAZIONALE SUPERIORE)|SISSA\b|GRAN SASSO SCIENCE INSTITUTE|GSSI\b)/.test(ente);
+}
+
+/* v406.9 — Un ateneo fra gli enti del relatore: quello del 3.1, oppure il
+   secondo ente che DBDOC conosce (professore convenzionato, ente 1 ospedale). */
+function _haAteneo() {
+  return _enteEAteneo() || !!window._ENTE2_ATENEO;
 }
 
 /* v299.0 — Confronta 3.1 e 3.2 e, se non tornano, lo dice. Non corregge e non
@@ -1364,11 +1389,11 @@ function univCoerenza() {
   const ente = (($('f-ente') || {}).value || '').trim();
   if (!r || !ente) { box.style.display = 'none'; return; }
   const ateneo = _enteEAteneo();
-  if (r.value === 'si' && !ateneo) {
+  if (r.value === 'si' && !_haAteneo()) {
     box.innerHTML = 'Al punto <b>3.1</b> ha indicato <b>' + _cfEsc(ente) + '</b>, che non risulta un ateneo. '
       + 'Se il Suo rapporto di lavoro dipendente è con l’università, torni al punto 3.1 e indichi l’ateneo; '
       + 'se invece è dipendente di questa struttura, risponda <b>No</b> qui. '
-      + 'La comunicazione prima dell’evento partirà comunque verso l’amministrazione indicata al punto 3.1.';
+      + 'Senza un ateneo al punto 3.1 non è possibile rispondere <b>Sì</b>.';
     box.style.display = '';
   } else if (r.value === 'no' && ateneo) {
     box.innerHTML = 'Al punto <b>3.1</b> ha indicato un ateneo. Se vi lavora come personale tecnico o '
