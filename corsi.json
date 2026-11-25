@@ -91,27 +91,57 @@
     ]
   },
   {
-    "idPgt": "1367",
-    "luogo": "",
-    "data": "12/02/2027",
-    "titolo": ""
-  },
-  {
     "idPgt": "1362",
     "luogo": "CATANIA",
     "data": "12/02/2027",
     "titolo": ""
   },
   {
-    "idPgt": "1363",
-    "luogo": "NAPOLI",
-    "data": "09/03/2027",
+    "idPgt": "1367",
+    "luogo": "",
+    "data": "12/02/2027",
     "titolo": ""
+  },
+  {
+    "idPgt": "1370",
+    "luogo": "ALESSANDRIA",
+    "data": "09/03/2027",
+    "titolo": "TBD"
+  },
+  {
+    "idPgt": "1375",
+    "luogo": "MILANO",
+    "data": "10/03/2027",
+    "titolo": "CONNESSIONI CHE CURANO"
   },
   {
     "idPgt": "1366",
     "luogo": "GENOVA",
     "data": "12/03/2027",
+    "titolo": "GRUPPO MULTIDISCIPLINARE NELLE PNEUMOPATIE INTERSTIZIALI DIFFUSE"
+  },
+  {
+    "idPgt": "1368",
+    "luogo": "BRESCIA",
+    "data": "18/03/2027",
+    "titolo": "FORUM OF ADVANCED TRAINING IN PSYCHIATRY"
+  },
+  {
+    "idPgt": "1369",
+    "luogo": "BRESCIA",
+    "data": "19/03/2027",
+    "titolo": "FORUM OF ADVANCED TRAINING IN PSYCHIATRY"
+  },
+  {
+    "idPgt": "1363",
+    "luogo": "NAPOLI",
+    "data": "01/05/2027",
     "titolo": ""
+  },
+  {
+    "idPgt": "1374",
+    "luogo": "MILANO",
+    "data": "09/06/2027",
+    "titolo": "QUELLO CHE I NUMERI NON DICONO"
   }
 ]
