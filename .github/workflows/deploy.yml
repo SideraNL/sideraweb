@@ -29,6 +29,18 @@ jobs:
         uses: actions/upload-pages-artifact@v3
         with:
           path: '.'
+      # 25/11/2026 — actions/deploy-pages#451: subito dopo l'upload l'artifact
+      # puo' restare invisibile per qualche secondo ("No artifacts named
+      # github-pages"). Si aspetta prima del deploy e, se fallisce, si riprova.
+      - name: Attesa visibilita' artifact
+        run: sleep 20
       - name: Deploy to GitHub Pages
         id: deployment
+        continue-on-error: true
+        uses: actions/deploy-pages@v4
+      - name: Attesa prima del secondo tentativo
+        if: steps.deployment.outcome == 'failure'
+        run: sleep 45
+      - name: Deploy to GitHub Pages (secondo tentativo)
+        if: steps.deployment.outcome == 'failure'
         uses: actions/deploy-pages@v4
