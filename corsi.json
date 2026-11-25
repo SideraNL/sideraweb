@@ -91,6 +91,12 @@
     ]
   },
   {
+    "idPgt": "1367",
+    "luogo": "",
+    "data": "12/02/2027",
+    "titolo": ""
+  },
+  {
     "idPgt": "1362",
     "luogo": "CATANIA",
     "data": "12/02/2027",
@@ -100,6 +106,12 @@
     "idPgt": "1363",
     "luogo": "NAPOLI",
     "data": "09/03/2027",
+    "titolo": ""
+  },
+  {
+    "idPgt": "1366",
+    "luogo": "GENOVA",
+    "data": "12/03/2027",
     "titolo": ""
   }
 ]
