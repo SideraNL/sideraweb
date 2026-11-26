@@ -365,6 +365,28 @@
           <input id="f-partita_iva" maxlength="11">
         </div>
       </div>
+
+      <!-- v412.4 — Marca da bollo sulla notula (Nicola 26/11/2026): le notule
+           arrivano quasi tutte per email, e allora il bollo lo appone Sidera
+           trattenendone il costo. La stessa clausola sta nel contratto PDF
+           (ART. 1 TER) con una firma dedicata. Solo per incarichi retribuiti. -->
+      <div id="bollo-box" style="display:none;margin-top:18px;border:2px solid #ea580c;background:#fff7ed;border-radius:8px;padding:14px 16px">
+        <div style="font-weight:700;color:#9a3412;font-size:15px;margin-bottom:6px"><span class="pn">4.4</span>Marca da bollo e contributi INPS</div>
+        <div style="color:#431407;font-size:14px;line-height:1.5">
+          <b>Marca da bollo.</b> Sulla notula di importo superiore a 77,47 € non soggetta a IVA va apposta una marca da bollo da <b>2,00 €</b>.
+          <ul style="margin:8px 0 8px 18px;padding:0">
+            <li>Se appone Lei la marca da bollo, la notula va spedita <b>in originale cartaceo</b> a: <b>Sidera s.r.l., Vicolo Tonale 4, 25032 Chiari (BS)</b>.</li>
+            <li>Se invia la notula per email o fax senza marca da bollo, la marca la apporrà Sidera e il relativo costo (<b>2,00 €</b>) verrà <b>detratto dal compenso netto</b>.</li>
+          </ul>
+          <span style="color:#7c2d12;font-size:13px">Non si applica a chi emette fattura elettronica.</span>
+          <div style="margin-top:10px"><b>Contributi INPS.</b> Il compenso indicato nel contratto è <b>omnicomprensivo</b> e rappresenta il <b>costo azienda complessivo per Sidera</b>: comprende gli eventuali contributi INPS (Gestione Separata), sia la quota a carico di Sidera sia quella a Suo carico. Se i contributi sono dovuti, ad esempio per il superamento della soglia di 5.000 € annui per le prestazioni occasionali, la notula va emessa in modo che il costo complessivo per Sidera non superi l'importo del contratto.</div>
+          <div style="margin-top:8px;color:#7c2d12;font-size:13px">Queste clausole andranno firmate anche nel contratto.</div>
+        </div>
+        <div class="accept-box" style="margin-top:10px">
+          <input type="checkbox" id="ack-bollo">
+          <label for="ack-bollo"><b>Dichiaro</b> di aver letto e di accettare le clausole sulla marca da bollo della notula e sui contributi INPS.</label>
+        </div>
+      </div>
     </div>
 
     <!-- ───────── STEP 5: Autorizzazione (Opzione A/B/C) ───────── -->
@@ -841,7 +863,7 @@
   </div>
 </div>
 
-<script src="js/contratto-form.js?v=412.3"></script>
+<script src="js/contratto-form.js?v=412.4"></script>
 <script src="js/contratto-azienda.js?v=411.2"></script>
 <script src="js/contratto-residenza.js?v=394.8"></script>
 <script src="js/contratto-ente.js?v=400.1"></script>

@@ -542,6 +542,9 @@ function updateIbanRequiredMark() {
           ? 'Il compenso verrà accreditato con bonifico bancario: indichi il Suo IBAN e, se applicabile, la Partita IVA.'
           : 'Indichi come preferisce ricevere il compenso e, se applicabile, la Partita IVA.');
   }
+  // v412.4 — riquadro marca da bollo: solo per incarichi retribuiti
+  const bolloBox = $('bollo-box');
+  if (bolloBox) bolloBox.style.display = CONTRATTO_INFO.importo > 0 ? '' : 'none';
   const mark = $('iban-req-mark');
   if (mark) mark.style.display = ibanIsRequired() ? 'inline' : 'none';
   const fb = $('iban-feedback');
@@ -1154,6 +1157,12 @@ async function validateStep() {
   // v133.1 — Skip se incarico gratuito (IBAN row nascosta)
   if (stepKey === '4' && !pmQuestionIsHidden() && !metodoPagamento()) {
     showFormMsg('Indichi come preferisce ricevere il compenso (bonifico o link di pagamento) per procedere.', 'error');
+    return false;
+  }
+
+  // v412.4 — clausola marca da bollo: va accettata per procedere
+  if (stepKey === '4' && CONTRATTO_INFO.importo > 0 && $('ack-bollo') && !$('ack-bollo').checked) {
+    showFormMsg('Per procedere confermi di aver letto e accettato le clausole sulla marca da bollo e sui contributi INPS (punto 4.4).', 'error');
     return false;
   }
 
