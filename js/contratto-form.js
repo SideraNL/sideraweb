@@ -487,7 +487,16 @@ function validateIban(iban) {
 // entrambi convinti di aver "solo lasciato vuoto" un campo facoltativo,
 // mentre in realtà quella era già una scelta di canale di pagamento — e
 // nessuno gliel'aveva chiesta in modo esplicito.
+// v412.3 — Nicola 26/11/2026: il link di pagamento costa a Sidera lo 0,70%
+// dell'importo (Revolut, incasso su carta). Per i relatori italiani l'IBAN e'
+// obbligatorio e il pagamento e' sempre il bonifico; il link resta solo per
+// chi e' segnato STRANIERO nel contratto o risiede all'estero (2.4 = EE).
+function linkAmmesso() {
+  return CONTRATTO_INFO.straniero || (($('f-pvr') || {}).value === 'EE');
+}
+
 function metodoPagamento() {
+  if (CONTRATTO_INFO.importo > 0 && !linkAmmesso()) return 'bonifico';
   const el = document.querySelector('input[name="metodo_pagamento"]:checked');
   return el ? el.value : '';
 }
@@ -509,7 +518,7 @@ function ibanIsHidden() {
 }
 
 function pmQuestionIsHidden() {
-  return CONTRATTO_INFO.importo === 0;
+  return CONTRATTO_INFO.importo === 0 || !linkAmmesso();
 }
 
 function onMetodoPagamentoChange() {
@@ -527,16 +536,20 @@ function updateIbanRequiredMark() {
   if (ibanRow) ibanRow.style.display = ibanIsHidden() ? 'none' : '';
   const lead = $('step4-lead');
   if (lead) {
-    lead.textContent = pmQuestionIsHidden()
+    lead.textContent = CONTRATTO_INFO.importo === 0
       ? 'Indichi la Partita IVA se applicabile.'
-      : 'Indichi come preferisce ricevere il compenso e, se applicabile, la Partita IVA.';
+      : (!linkAmmesso()
+          ? 'Il compenso verrà accreditato con bonifico bancario: indichi il Suo IBAN e, se applicabile, la Partita IVA.'
+          : 'Indichi come preferisce ricevere il compenso e, se applicabile, la Partita IVA.');
   }
   const mark = $('iban-req-mark');
   if (mark) mark.style.display = ibanIsRequired() ? 'inline' : 'none';
   const fb = $('iban-feedback');
   if (fb && !$('f-iban').value) {
     fb.textContent = ibanIsRequired()
-      ? '⚠ IBAN obbligatorio: ha scelto il pagamento tramite bonifico'
+      ? (linkAmmesso()
+          ? '⚠ IBAN obbligatorio: ha scelto il pagamento tramite bonifico'
+          : '⚠ IBAN obbligatorio per l\'accredito del compenso')
       : 'Inserisca l\'IBAN per l\'accredito del compenso';
     fb.style.color = ibanIsRequired() ? '#dc2626' : '#94a3b8';
   }
@@ -609,6 +622,9 @@ function renderStep() {
 
   // v141.0 — pulisci eventuali info-box quando entro in un nuovo step
   clearFormMsg();
+  // v412.3 — la residenza (2.4) decide se il link di pagamento e' ammesso:
+  // riallinea la sezione pagamento a ogni cambio di step.
+  updateIbanRequiredMark();
 
   // Mostra solo lo step corrente
   $$('.step').forEach(el => {
@@ -1146,7 +1162,9 @@ async function validateStep() {
     const v = (ibanEl.value || '').trim();
     if (!v) {
       if (ibanIsRequired()) {
-        showFormMsg('IBAN obbligatorio: ha scelto il pagamento tramite bonifico. Inserisca l\'IBAN per procedere, oppure torni indietro e scelga il link di pagamento.', 'error');
+        showFormMsg(linkAmmesso()
+          ? 'IBAN obbligatorio: ha scelto il pagamento tramite bonifico. Inserisca l\'IBAN per procedere, oppure scelga il link di pagamento.'
+          : 'IBAN obbligatorio: il compenso viene accreditato con bonifico bancario. Inserisca l\'IBAN per procedere.', 'error');
         ibanEl.focus();
         return false;
       }
